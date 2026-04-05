@@ -65,7 +65,6 @@ export async function POST(request: Request) {
         archetype: artResult.traits.archetype,
         energy: artResult.traits.energy,
         backgroundStyle: artResult.backgroundStyle,
-        coreStyle: artResult.coreStyle,
         palette: artResult.palette,
         traits: artResult.traits.traits,
       },

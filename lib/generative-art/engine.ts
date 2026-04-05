@@ -1,13 +1,12 @@
 /**
  * Main Generative Art Engine
- * Orchestrates all layers to create unique agent artwork
+ * Creates unique cyber character cNFT artwork for agents
  */
 
 import { SeededRandom } from "./noise";
 import { generatePalette, type ColorPalette } from "./palette";
 import { drawBackground, getBackgroundStyle, type BackgroundStyle } from "./backgrounds";
-import { drawCore, getCoreStyle, type CoreStyle } from "./cores";
-import { applyEffects } from "./effects";
+import { drawCyberCharacter, type CharacterConfig } from "./characters";
 import { generateTraits, type AgentTraits } from "./traits";
 
 export interface GenerateArtParams {
@@ -24,7 +23,6 @@ export interface ArtResult {
   palette: ColorPalette;
   traits: AgentTraits;
   backgroundStyle: BackgroundStyle;
-  coreStyle: CoreStyle;
   metadata: ArtMetadata;
 }
 
@@ -40,10 +38,9 @@ export interface ArtMetadata {
  * Generate complete agent artwork as PNG data URL
  */
 export function generateAgentArt(params: GenerateArtParams): ArtResult {
-  const { seed, personality, riskLevel, toolCount, size = 2048 } = params;
+  const { seed, name, personality, riskLevel, toolCount, size = 1024 } = params;
 
   if (typeof document === "undefined") {
-    // Server-side: return placeholder
     const traits = generateTraits({ seed, personality, riskLevel, toolCount });
     const palette = generatePalette({
       seed: seed + 1000,
@@ -52,20 +49,18 @@ export function generateAgentArt(params: GenerateArtParams): ArtResult {
       toolCount,
     });
     const backgroundStyle = getBackgroundStyle(seed + 2000);
-    const coreStyle = getCoreStyle(seed + 3000);
 
     return {
       imageDataUrl: "",
       palette,
       traits,
       backgroundStyle,
-      coreStyle,
       metadata: {
         width: size,
         height: size,
         seed,
         generatedAt: new Date().toISOString(),
-        version: "1.0.0",
+        version: "2.0.0",
       },
     };
   }
@@ -81,43 +76,24 @@ export function generateAgentArt(params: GenerateArtParams): ArtResult {
     toolCount,
   });
 
-  // Determine styles
+  // Determine background style
   const backgroundStyle = getBackgroundStyle(seed + 2000);
-  const coreStyle = getCoreStyle(seed + 3000);
 
   // Create canvas
   const canvas = document.createElement("canvas");
-
   canvas.width = size;
   canvas.height = size;
   const ctx = canvas.getContext("2d")!;
 
-  // Layer 1: Background
-  drawBackground(ctx, {
-    style: backgroundStyle,
+  // Draw cyber character (includes background, body, face, hair, eyes, mouth, implants, accessories, effects, frame)
+  drawCyberCharacter(ctx, {
     palette,
     size,
-    seed: seed + 4000,
-    complexity: traits.complexity,
-  });
-
-  // Layer 2: Core
-  drawCore(ctx, {
-    style: coreStyle,
-    palette,
-    size,
-    seed: seed + 5000,
-    complexity: traits.complexity,
-    energy: traits.rarityScore,
-  });
-
-  // Layer 3: Effects
-  applyEffects(ctx, {
-    palette,
-    size,
-    seed: seed + 6000,
-    complexity: traits.complexity,
-    rarity: traits.rarityScore,
+    seed,
+    name,
+    personality,
+    riskLevel,
+    toolCount,
   });
 
   // Generate data URL
@@ -128,13 +104,12 @@ export function generateAgentArt(params: GenerateArtParams): ArtResult {
     palette,
     traits,
     backgroundStyle,
-    coreStyle,
     metadata: {
       width: size,
       height: size,
       seed,
       generatedAt: new Date().toISOString(),
-      version: "1.0.0",
+      version: "2.0.0",
     },
   };
 }
@@ -150,7 +125,7 @@ export function generateAgentPreview(params: GenerateArtParams): string {
  * Generate SVG version for fast loading
  */
 export function generateAgentSVG(params: GenerateArtParams): string {
-  const { seed, personality, riskLevel, toolCount } = params;
+  const { seed, name, personality, riskLevel, toolCount } = params;
   const palette = generatePalette({
     seed: seed + 1000,
     personality,
@@ -162,35 +137,32 @@ export function generateAgentSVG(params: GenerateArtParams): string {
   const size = 512;
   const rng = new SeededRandom(seed);
 
-  const backgroundStyle = getBackgroundStyle(seed + 2000);
-  const coreStyle = getCoreStyle(seed + 3000);
-
   const defs: string[] = [];
   const elements: string[] = [];
 
   const bgGradId = `bg-${seed}`;
-  const coreGradId = `core-${seed}`;
-  const filterId = `glow-${seed}`;
+  const charGradId = `char-${seed}`;
+  const glowId = `glow-${seed}`;
 
   defs.push(`
-    <radialGradient id="${bgGradId}" cx="${rng.nextFloat(20, 80)}%" cy="${rng.nextFloat(20, 80)}%" r="${rng.nextFloat(50, 90)}%">
-      <stop offset="0%" stop-color="${palette.primary}" stop-opacity="0.35"/>
-      <stop offset="50%" stop-color="${palette.secondary}" stop-opacity="0.15"/>
-      <stop offset="100%" stop-color="${palette.background}"/>
+    <radialGradient id="${bgGradId}" cx="50%" cy="50%" r="60%">
+      <stop offset="0%" stop-color="${palette.primary}" stop-opacity="0.15"/>
+      <stop offset="50%" stop-color="${palette.background}"/>
+      <stop offset="100%" stop-color="#0a0a0f"/>
     </radialGradient>
   `);
 
   defs.push(`
-    <radialGradient id="${coreGradId}" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="${palette.highlight}" stop-opacity="0.7"/>
-      <stop offset="60%" stop-color="${palette.primary}" stop-opacity="0.3"/>
+    <radialGradient id="${charGradId}" cx="45%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="${palette.highlight}" stop-opacity="0.6"/>
+      <stop offset="40%" stop-color="${palette.primary}" stop-opacity="0.2"/>
       <stop offset="100%" stop-color="${palette.primary}" stop-opacity="0"/>
     </radialGradient>
   `);
 
   defs.push(`
-    <filter id="${filterId}" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="${rng.nextFloat(2, 8)}" result="blur"/>
+    <filter id="${glowId}" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="${rng.nextFloat(3, 8)}" result="blur"/>
       <feMerge>
         <feMergeNode in="blur"/>
         <feMergeNode in="SourceGraphic"/>
@@ -198,297 +170,97 @@ export function generateAgentSVG(params: GenerateArtParams): string {
     </filter>
   `);
 
+  // Background
   elements.push(`<rect width="${size}" height="${size}" fill="url(#${bgGradId})"/>`);
 
-  const shapeType = rng.nextInt(0, 5);
-  const cx = rng.nextFloat(size * 0.3, size * 0.7);
-  const cy = rng.nextFloat(size * 0.3, size * 0.7);
+  // Grid
+  elements.push(`<pattern id="grid-${seed}" width="${size / 20}" height="${size / 20}" patternUnits="userSpaceOnUse">
+    <path d="M ${size / 20} 0 L 0 0 0 ${size / 20}" fill="none" stroke="${palette.primary}" stroke-width="0.3" opacity="0.08"/>
+  </pattern>`);
+  elements.push(`<rect width="${size}" height="${size}" fill="url(#grid-${seed})"/>`);
 
-  if (shapeType === 0) {
-    elements.push(...generateGeometricCore(rng, size, cx, cy, palette, traits, coreGradId, filterId));
-  } else if (shapeType === 1) {
-    elements.push(...generateOrbitalCore(rng, size, cx, cy, palette, traits, filterId));
-  } else if (shapeType === 2) {
-    elements.push(...generateCrystalCore(rng, size, cx, cy, palette, traits, filterId));
-  } else if (shapeType === 3) {
-    elements.push(...generateWaveCore(rng, size, palette, traits, filterId));
-  } else if (shapeType === 4) {
-    elements.push(...generateConstellationCore(rng, size, palette, traits, filterId));
+  // Character silhouette
+  const cx = size / 2;
+  const cy = size / 2;
+  const bodyW = size * rng.nextFloat(0.25, 0.35);
+  const headR = size * rng.nextFloat(0.1, 0.15);
+  const headY = cy - size * 0.05;
+
+  // Body
+  elements.push(`<path d="M ${cx - bodyW} ${size} Q ${cx - bodyW * 0.7} ${cy + size * 0.15} ${cx} ${cy + size * 0.15} Q ${cx + bodyW * 0.7} ${cy + size * 0.15} ${cx + bodyW} ${size}" fill="#1a1a2e" stroke="${palette.primary}" stroke-width="1" opacity="0.6"/>`);
+
+  // Head
+  const faceType = rng.nextInt(0, 2);
+  if (faceType === 0) {
+    elements.push(`<ellipse cx="${cx}" cy="${headY}" rx="${headR}" ry="${headR * 1.2}" fill="#1e1e32" stroke="${palette.primary}" stroke-width="0.8" opacity="0.7"/>`);
+  } else if (faceType === 1) {
+    elements.push(`<circle cx="${cx}" cy="${headY}" r="${headR * 1.1}" fill="#1e1e32" stroke="${palette.primary}" stroke-width="0.8" opacity="0.7"/>`);
   } else {
-    elements.push(...generateFractalCore(rng, size, cx, cy, palette, traits, filterId));
+    elements.push(`<polygon points="${cx},${headY - headR * 1.2} ${cx + headR},${headY} ${cx + headR * 0.6},${headY + headR} ${cx - headR * 0.6},${headY + headR} ${cx - headR},${headY}" fill="#1e1e32" stroke="${palette.primary}" stroke-width="0.8" opacity="0.7"/>`);
   }
 
-  elements.push(...generateParticles(rng, size, palette, traits));
-  elements.push(...generateGridPattern(rng, size, palette, traits));
+  // Eyes
+  const eyeType = rng.nextInt(0, 3);
+  const eyeSpacing = size * 0.05;
+  const eyeY = headY - size * 0.01;
+  const eyeColor = rng.pick([palette.highlight, palette.accent, "#00ff88", "#ff0066", "#00ccff"]);
+
+  if (eyeType === 0) {
+    // Normal eyes
+    for (let side = -1; side <= 1; side += 2) {
+      const ex = cx + side * eyeSpacing;
+      elements.push(`<circle cx="${ex}" cy="${eyeY}" r="${size * 0.015}" fill="${eyeColor}" opacity="0.7" filter="url(#${glowId})"/>`);
+      elements.push(`<circle cx="${ex}" cy="${eyeY}" r="${size * 0.006}" fill="#000"/>`);
+    }
+  } else if (eyeType === 1) {
+    // Visor
+    elements.push(`<rect x="${cx - eyeSpacing * 1.5}" y="${eyeY - size * 0.008}" width="${eyeSpacing * 3}" height="${size * 0.016}" rx="2" fill="${eyeColor}" opacity="0.5" filter="url(#${glowId})"/>`);
+  } else if (eyeType === 2) {
+    // Rectangular eyes
+    for (let side = -1; side <= 1; side += 2) {
+      const ex = cx + side * eyeSpacing;
+      elements.push(`<rect x="${ex - size * 0.02}" y="${eyeY - size * 0.008}" width="${size * 0.04}" height="${size * 0.016}" fill="${eyeColor}" opacity="0.6" filter="url(#${glowId})"/>`);
+    }
+  } else {
+    // Single glowing eye
+    elements.push(`<circle cx="${cx}" cy="${eyeY}" r="${size * 0.02}" fill="${eyeColor}" opacity="0.8" filter="url(#${glowId})"/>`);
+  }
+
+  // Cyber implants
+  const implantCount = Math.min(toolCount, 4);
+  for (let i = 0; i < implantCount; i++) {
+    const side = rng.next() > 0.5 ? 1 : -1;
+    const ix = cx + side * size * rng.nextFloat(0.08, 0.18);
+    const iy = headY + size * rng.nextFloat(-0.1, 0.1);
+    elements.push(`<circle cx="${ix}" cy="${iy}" r="${rng.nextFloat(1, 3)}" fill="${palette.accent}" opacity="${rng.nextFloat(0.3, 0.6)}"/>`);
+  }
+
+  // Particles
+  const particleCount = rng.nextInt(10, 30);
+  for (let i = 0; i < particleCount; i++) {
+    const x = rng.nextFloat(0, size);
+    const y = rng.nextFloat(0, size);
+    const r = rng.nextFloat(0.5, 2);
+    const color = rng.pick([palette.highlight, palette.accent, palette.primary]);
+    elements.push(`<circle cx="${x}" cy="${y}" r="${r}" fill="${color}" opacity="${rng.nextFloat(0.1, 0.3)}"/>`);
+  }
+
+  // Tech frame corners
+  const bracketSize = size * 0.04;
+  const margin = size * 0.03;
+  const borderColor = riskLevel === "Aggressive" ? "#ff4444" : riskLevel === "Conservative" ? "#44ff88" : palette.primary;
+  elements.push(`<path d="M ${margin} ${margin + bracketSize} L ${margin} ${margin} L ${margin + bracketSize} ${margin}" fill="none" stroke="${borderColor}" stroke-width="2" opacity="0.4"/>`);
+  elements.push(`<path d="M ${size - margin - bracketSize} ${margin} L ${size - margin} ${margin} L ${size - margin} ${margin + bracketSize}" fill="none" stroke="${borderColor}" stroke-width="2" opacity="0.4"/>`);
+  elements.push(`<path d="M ${margin} ${size - margin - bracketSize} L ${margin} ${size - margin} L ${margin + bracketSize} ${size - margin}" fill="none" stroke="${borderColor}" stroke-width="2" opacity="0.4"/>`);
+  elements.push(`<path d="M ${size - margin - bracketSize} ${size - margin} L ${size - margin} ${size - margin} L ${size - margin} ${size - margin - bracketSize}" fill="none" stroke="${borderColor}" stroke-width="2" opacity="0.4"/>`);
+
+  // ID text
+  elements.push(`<text x="${margin + 4}" y="${size - margin - 6}" font-family="monospace" font-size="${size * 0.015}" fill="${borderColor}" opacity="0.3">ID:${seed.toString(16).slice(0, 8).toUpperCase()}</text>`);
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">
     <defs>${defs.join("")}</defs>
     ${elements.join("")}
   </svg>`;
-}
-
-function generateGeometricCore(
-  rng: SeededRandom,
-  size: number,
-  cx: number,
-  cy: number,
-  palette: ColorPalette,
-  traits: AgentTraits,
-  gradId: string,
-  filterId: string
-): string[] {
-  const elements: string[] = [];
-  const complexity = Math.floor(3 + traits.complexity * 8);
-  const maxRadius = size * rng.nextFloat(0.15, 0.3);
-
-  elements.push(`<circle cx="${cx}" cy="${cy}" r="${maxRadius * 1.5}" fill="url(#${gradId})" filter="url(#${filterId})"/>`);
-
-  const sides = rng.nextInt(3, 8);
-  for (let layer = 0; layer < complexity; layer++) {
-    const radius = maxRadius * (1 - layer / complexity);
-    const rotation = rng.nextFloat(0, 360);
-    const color = rng.pick([palette.primary, palette.secondary, palette.accent, palette.highlight]);
-    const opacity = rng.nextFloat(0.15, 0.6);
-    const strokeWidth = rng.nextFloat(0.5, 2.5);
-
-    const points: string[] = [];
-    for (let i = 0; i < sides; i++) {
-      const angle = ((360 / sides) * i + rotation) * (Math.PI / 180);
-      const x = cx + Math.cos(angle) * radius;
-      const y = cy + Math.sin(angle) * radius;
-      points.push(`${x},${y}`);
-    }
-
-    if (rng.next() > 0.4) {
-      elements.push(`<polygon points="${points.join(" ")}" fill="none" stroke="${color}" stroke-width="${strokeWidth}" opacity="${opacity}"/>`);
-    } else {
-      elements.push(`<polygon points="${points.join(" ")}" fill="${color}" opacity="${opacity * 0.3}"/>`);
-    }
-  }
-
-  elements.push(`<circle cx="${cx}" cy="${cy}" r="${rng.nextFloat(4, 12)}" fill="${palette.highlight}" opacity="0.9" filter="url(#${filterId})"/>`);
-
-  return elements;
-}
-
-function generateOrbitalCore(
-  rng: SeededRandom,
-  size: number,
-  cx: number,
-  cy: number,
-  palette: ColorPalette,
-  traits: AgentTraits,
-  filterId: string
-): string[] {
-  const elements: string[] = [];
-  const orbitCount = Math.floor(3 + traits.rarityScore * 8);
-
-  elements.push(`<circle cx="${cx}" cy="${cy}" r="${size * 0.06}" fill="${palette.highlight}" filter="url(#${filterId})"/>`);
-
-  for (let i = 0; i < orbitCount; i++) {
-    const radius = size * rng.nextFloat(0.08, 0.35);
-    const color = rng.pick([palette.primary, palette.secondary, palette.accent]);
-    const opacity = rng.nextFloat(0.15, 0.5);
-    const rx = radius * rng.nextFloat(0.6, 1);
-    const ry = radius * rng.nextFloat(0.6, 1);
-    const tilt = rng.nextFloat(0, 180);
-
-    elements.push(`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="none" stroke="${color}" stroke-width="${rng.nextFloat(0.5, 2)}" opacity="${opacity}" transform="rotate(${tilt} ${cx} ${cy})"/>`);
-
-    const dotCount = rng.nextInt(1, 4);
-    for (let d = 0; d < dotCount; d++) {
-      const angle = rng.nextFloat(0, Math.PI * 2);
-      const dx = cx + Math.cos(angle) * rx;
-      const dy = cy + Math.sin(angle) * ry;
-      elements.push(`<circle cx="${dx}" cy="${dy}" r="${rng.nextFloat(2, 5)}" fill="${palette.highlight}" opacity="${rng.nextFloat(0.5, 0.9)}"/>`);
-    }
-  }
-
-  return elements;
-}
-
-function generateCrystalCore(
-  rng: SeededRandom,
-  size: number,
-  cx: number,
-  cy: number,
-  palette: ColorPalette,
-  traits: AgentTraits,
-  filterId: string
-): string[] {
-  const elements: string[] = [];
-  const crystalCount = Math.floor(3 + traits.complexity * 6);
-
-  for (let i = 0; i < crystalCount; i++) {
-    const angle = rng.nextFloat(0, Math.PI * 2);
-    const dist = rng.nextFloat(size * 0.05, size * 0.25);
-    const px = cx + Math.cos(angle) * dist;
-    const py = cy + Math.sin(angle) * dist;
-    const w = rng.nextFloat(10, 40);
-    const h = rng.nextFloat(20, 80);
-    const rotation = rng.nextFloat(0, 360);
-    const color = rng.pick([palette.primary, palette.secondary, palette.accent, palette.highlight]);
-    const opacity = rng.nextFloat(0.2, 0.7);
-
-    elements.push(`<rect x="${px - w / 2}" y="${py - h / 2}" width="${w}" height="${h}" rx="${rng.nextFloat(1, 8)}" fill="${color}" opacity="${opacity}" transform="rotate(${rotation} ${px} ${py})" filter="url(#${filterId})"/>`);
-  }
-
-  elements.push(`<circle cx="${cx}" cy="${cy}" r="${size * 0.04}" fill="${palette.highlight}" opacity="0.9"/>`);
-
-  return elements;
-}
-
-function generateWaveCore(
-  rng: SeededRandom,
-  size: number,
-  palette: ColorPalette,
-  traits: AgentTraits,
-  filterId: string
-): string[] {
-  const elements: string[] = [];
-  const waveCount = Math.floor(4 + traits.complexity * 6);
-
-  for (let w = 0; w < waveCount; w++) {
-    const yBase = size * rng.nextFloat(0.1, 0.9);
-    const amplitude = rng.nextFloat(10, 50);
-    const frequency = rng.nextFloat(0.01, 0.04);
-    const phase = rng.nextFloat(0, Math.PI * 2);
-    const color = rng.pick([palette.primary, palette.secondary, palette.accent]);
-    const opacity = rng.nextFloat(0.15, 0.5);
-    const strokeWidth = rng.nextFloat(1, 3);
-
-    let path = `M 0 ${yBase}`;
-    for (let x = 0; x <= size; x += 8) {
-      const y = yBase + Math.sin(x * frequency + phase) * amplitude;
-      path += ` L ${x} ${y}`;
-    }
-
-    elements.push(`<path d="${path}" fill="none" stroke="${color}" stroke-width="${strokeWidth}" opacity="${opacity}" filter="url(#${filterId})"/>`);
-  }
-
-  return elements;
-}
-
-function generateConstellationCore(
-  rng: SeededRandom,
-  size: number,
-  palette: ColorPalette,
-  traits: AgentTraits,
-  filterId: string
-): string[] {
-  const elements: string[] = [];
-  const pointCount = Math.floor(8 + traits.rarityScore * 30);
-  const points: { x: number; y: number }[] = [];
-
-  for (let i = 0; i < pointCount; i++) {
-    const x = rng.nextFloat(size * 0.1, size * 0.9);
-    const y = rng.nextFloat(size * 0.1, size * 0.9);
-    const r = rng.nextFloat(2, 6);
-    const color = rng.pick([palette.highlight, palette.accent, palette.primary]);
-    points.push({ x, y });
-
-    elements.push(`<circle cx="${x}" cy="${y}" r="${r}" fill="${color}" opacity="${rng.nextFloat(0.4, 0.9)}" filter="url(#${filterId})"/>`);
-  }
-
-  for (let i = 0; i < points.length; i++) {
-    for (let j = i + 1; j < points.length; j++) {
-      const dx = points[i].x - points[j].x;
-      const dy = points[i].y - points[j].y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < size * 0.2) {
-        const opacity = (1 - dist / (size * 0.2)) * 0.3;
-        elements.push(`<line x1="${points[i].x}" y1="${points[i].y}" x2="${points[j].x}" y2="${points[j].y}" stroke="${palette.primary}" stroke-width="0.5" opacity="${opacity}"/>`);
-      }
-    }
-  }
-
-  return elements;
-}
-
-function generateFractalCore(
-  rng: SeededRandom,
-  size: number,
-  cx: number,
-  cy: number,
-  palette: ColorPalette,
-  traits: AgentTraits,
-  filterId: string
-): string[] {
-  const elements: string[] = [];
-  const branches = Math.floor(3 + traits.complexity * 5);
-  const depth = Math.floor(3 + traits.rarityScore * 3);
-
-  function branch(x: number, y: number, angle: number, length: number, d: number) {
-    if (d > depth || length < 3) return;
-
-    const x2 = x + Math.cos(angle) * length;
-    const y2 = y + Math.sin(angle) * length;
-    const color = rng.pick([palette.primary, palette.secondary, palette.accent]);
-    const opacity = rng.nextFloat(0.2, 0.6);
-    const sw = rng.nextFloat(0.5, 2.5) * (1 - d / (depth + 1));
-
-    elements.push(`<line x1="${x}" y1="${y}" x2="${x2}" y2="${y2}" stroke="${color}" stroke-width="${sw}" opacity="${opacity}" stroke-linecap="round"/>`);
-
-    const spread = rng.nextFloat(0.3, 0.8);
-    branch(x2, y2, angle - spread, length * rng.nextFloat(0.6, 0.8), d + 1);
-    branch(x2, y2, angle + spread, length * rng.nextFloat(0.6, 0.8), d + 1);
-
-    if (rng.next() > 0.6) {
-      branch(x2, y2, angle, length * rng.nextFloat(0.5, 0.7), d + 1);
-    }
-  }
-
-  for (let i = 0; i < branches; i++) {
-    const angle = (Math.PI * 2 / branches) * i + rng.nextFloat(-0.2, 0.2);
-    branch(cx, cy, angle, size * rng.nextFloat(0.08, 0.15), 0);
-  }
-
-  elements.push(`<circle cx="${cx}" cy="${cy}" r="${rng.nextFloat(4, 10)}" fill="${palette.highlight}" opacity="0.8" filter="url(#${filterId})"/>`);
-
-  return elements;
-}
-
-function generateParticles(
-  rng: SeededRandom,
-  size: number,
-  palette: ColorPalette,
-  traits: AgentTraits
-): string[] {
-  const elements: string[] = [];
-  const count = Math.floor(15 + traits.rarityScore * 60);
-
-  for (let i = 0; i < count; i++) {
-    const x = rng.nextFloat(0, size);
-    const y = rng.nextFloat(0, size);
-    const r = rng.nextFloat(0.5, 3);
-    const color = rng.pick([palette.highlight, palette.accent, palette.primary]);
-    const opacity = rng.nextFloat(0.1, 0.5);
-    elements.push(`<circle cx="${x}" cy="${y}" r="${r}" fill="${color}" opacity="${opacity}"/>`);
-  }
-
-  return elements;
-}
-
-function generateGridPattern(
-  rng: SeededRandom,
-  size: number,
-  palette: ColorPalette,
-  traits: AgentTraits
-): string[] {
-  if (rng.next() > 0.3) return [];
-
-  const elements: string[] = [];
-  const spacing = rng.nextFloat(20, 60);
-  const opacity = rng.nextFloat(0.03, 0.1);
-
-  for (let x = 0; x <= size; x += spacing) {
-    elements.push(`<line x1="${x}" y1="0" x2="${x}" y2="${size}" stroke="${palette.primary}" stroke-width="0.3" opacity="${opacity}"/>`);
-  }
-  for (let y = 0; y <= size; y += spacing) {
-    elements.push(`<line x1="0" y1="${y}" x2="${size}" y2="${y}" stroke="${palette.primary}" stroke-width="0.3" opacity="${opacity}"/>`);
-  }
-
-  return elements;
 }
 
 /**
@@ -509,13 +281,11 @@ export function getAgentVisualSummary(params: {
   });
   const traits = generateTraits(params);
   const backgroundStyle = getBackgroundStyle(params.seed + 2000);
-  const coreStyle = getCoreStyle(params.seed + 3000);
 
   return {
     palette,
     traits,
     backgroundStyle,
-    coreStyle,
     gradientCSS: `linear-gradient(135deg, ${palette.background} 0%, ${palette.primary}40 50%, ${palette.secondary}20 100%)`,
   };
 }

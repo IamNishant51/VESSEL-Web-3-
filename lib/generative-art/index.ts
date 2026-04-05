@@ -1,11 +1,9 @@
 export { generateAgentArt, generateAgentPreview, generateAgentSVG, getAgentVisualSummary } from "./engine";
 export { generatePalette, getTailwindGradient } from "./palette";
 export { getBackgroundStyle } from "./backgrounds";
-export { getCoreStyle } from "./cores";
 export { generateTraits, getRarityColor, getRarityLabel } from "./traits";
 export { SeededRandom, simplex2, fbm } from "./noise";
 export type { ColorPalette } from "./palette";
 export type { BackgroundStyle } from "./backgrounds";
-export type { CoreStyle } from "./cores";
 export type { RarityTier, AgentTraits, Trait } from "./traits";
 export type { GenerateArtParams, ArtResult, ArtMetadata } from "./engine";

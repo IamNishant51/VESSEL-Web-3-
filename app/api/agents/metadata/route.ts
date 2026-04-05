@@ -58,7 +58,6 @@ export async function GET(request: Request) {
     { trait_type: "Archetype", value: artResult.traits.archetype },
     { trait_type: "Energy", value: artResult.traits.energy },
     { trait_type: "Background", value: artResult.backgroundStyle },
-    { trait_type: "Core", value: artResult.coreStyle },
     { trait_type: "Risk Level", value: riskLevel },
     { trait_type: "Tool Count", value: toolCount },
     ...artResult.traits.traits.map((trait) => ({
