@@ -1026,10 +1026,14 @@ export function AgentRunnerChat({ agent }: Props) {
               <button
                 onClick={() => void handleSendMessage()}
                 disabled={isLoading || !input.trim()}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#171819] text-white transition-all duration-150 hover:bg-[#111111] disabled:opacity-30 disabled:hover:bg-[#171819] sm:h-9 sm:w-9"
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#171819] text-white transition-all duration-150 hover:bg-[#111111] sm:h-9 sm:w-9 ${
+                  isLoading ? "animate-pulse ring-2 ring-cyan-500/30" : "disabled:opacity-30 disabled:hover:bg-[#171819]"
+                }`}
               >
                 {isLoading ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin sm:h-4 sm:w-4" />
+                  <div className="flex items-center gap-1">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin sm:h-4 sm:w-4" />
+                  </div>
                 ) : (
                   <Send className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 )}
