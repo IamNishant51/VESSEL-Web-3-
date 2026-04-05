@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -27,6 +28,7 @@ export function LandingNavigation({
   forceLight = false,
   forceDark = false
 }: LandingNavigationProps) {
+  const pathname = usePathname();
   const [isNavOnDark, setIsNavOnDark] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -97,14 +99,19 @@ export function LandingNavigation({
                 isNavOnDark ? "text-white" : "text-black"
               }`}
             >
-              {navLinks.map((link) =>
-                link.external ? (
+              {navLinks.map((link) => {
+                const isActive = pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href + "/"));
+                return link.external ? (
                   <a
                     key={link.href}
                     href={link.href}
                     target="_blank"
                     rel="noreferrer"
-                    className="relative opacity-90 transition-all duration-200 hover:-translate-y-0.5 hover:opacity-65 after:absolute after:-bottom-1 after:left-0 after:h-px after:w-0 after:bg-current after:transition-all after:duration-200 hover:after:w-full"
+                    className={`relative transition-all duration-200 hover:-translate-y-0.5 after:absolute after:-bottom-1 after:left-0 after:h-px after:bg-current after:transition-all after:duration-200 ${
+                      isActive
+                        ? "opacity-100 after:w-full"
+                        : "opacity-90 hover:opacity-65 after:w-0 hover:after:w-full"
+                    }`}
                   >
                     {link.label}
                   </a>
@@ -112,12 +119,16 @@ export function LandingNavigation({
                   <Link
                     key={link.href}
                     href={link.href}
-                    className="relative opacity-90 transition-all duration-200 hover:-translate-y-0.5 hover:opacity-65 after:absolute after:-bottom-1 after:left-0 after:h-px after:w-0 after:bg-current after:transition-all after:duration-200 hover:after:w-full"
+                    className={`relative transition-all duration-200 hover:-translate-y-0.5 after:absolute after:-bottom-1 after:left-0 after:h-px after:bg-current after:transition-all after:duration-200 ${
+                      isActive
+                        ? "opacity-100 after:w-full"
+                        : "opacity-90 hover:opacity-65 after:w-0 hover:after:w-full"
+                    }`}
                   >
                     {link.label}
                   </Link>
-                ),
-              )}
+                );
+              })}
             </nav>
             <WalletConnectButton />
           </div>
@@ -145,18 +156,27 @@ export function LandingNavigation({
               isNavOnDark ? "bg-black/80 border-white/10" : "bg-white/90 border-black/10"
             }`}>
               <nav className="flex flex-col gap-1">
-                {navLinks.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className={`rounded-lg px-4 py-3 text-xs font-medium tracking-[0.14em] transition-colors ${
-                      isNavOnDark ? "text-white hover:bg-white/10" : "text-black hover:bg-black/5"
-                    }`}
-                  >
-                    {link.label}
-                  </Link>
-                ))}
+                {navLinks.map((link) => {
+                  const isActive = pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href + "/"));
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={`rounded-lg px-4 py-3 text-xs font-medium tracking-[0.14em] transition-colors ${
+                        isNavOnDark
+                          ? isActive
+                            ? "bg-white/10 text-white"
+                            : "text-white/70 hover:bg-white/10"
+                          : isActive
+                            ? "bg-black/5 text-black"
+                            : "text-black/70 hover:bg-black/5"
+                      }`}
+                    >
+                      {link.label}
+                    </Link>
+                  );
+                })}
                 <div className="mt-3 border-t border-white/10 pt-3">
                   <WalletConnectButton className="!w-full" />
                 </div>
