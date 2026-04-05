@@ -2,6 +2,11 @@
 
 import { memo } from "react";
 
+let elementId = 0;
+function nextKey(): string {
+  return `msg-${elementId++}`;
+}
+
 function parseContent(content: string): React.ReactNode {
   const lines = content.split("\n");
   const elements: React.ReactNode[] = [];
@@ -12,7 +17,7 @@ function parseContent(content: string): React.ReactNode {
 
     if (line.match(/^###\s+/)) {
       elements.push(
-        <h3 key={i} className="mt-4 mb-2 text-[15px] font-semibold text-black/90">
+        <h3 key={nextKey()} className="mt-4 mb-2 text-[15px] font-semibold text-black/90">
           {line.replace(/^###\s+/, "")}
         </h3>
       );
@@ -22,7 +27,7 @@ function parseContent(content: string): React.ReactNode {
 
     if (line.match(/^##\s+/)) {
       elements.push(
-        <h2 key={i} className="mt-5 mb-2 text-[17px] font-semibold text-black/90">
+        <h2 key={nextKey()} className="mt-5 mb-2 text-[17px] font-semibold text-black/90">
           {line.replace(/^##\s+/, "")}
         </h2>
       );
@@ -32,7 +37,7 @@ function parseContent(content: string): React.ReactNode {
 
     if (line.match(/^#\s+/)) {
       elements.push(
-        <h1 key={i} className="mt-5 mb-2 text-[19px] font-bold text-black">
+        <h1 key={nextKey()} className="mt-5 mb-2 text-[19px] font-bold text-black">
           {line.replace(/^#\s+/, "")}
         </h1>
       );
@@ -47,7 +52,7 @@ function parseContent(content: string): React.ReactNode {
         const match = lines[i].match(/^(\d+)\)[\s •]+(.+)/);
         if (match) {
           items.push(
-            <div key={i} className="flex items-start gap-2 py-1">
+            <div key={nextKey()} className="flex items-start gap-2 py-1">
               <span className="shrink-0 flex h-5 w-5 items-center justify-center rounded-full bg-[#171819] text-[10px] font-medium text-white">
                 {match[1]}
               </span>
@@ -64,7 +69,7 @@ function parseContent(content: string): React.ReactNode {
           break;
         }
       }
-      elements.push(<div key={i}>{items}</div>);
+      elements.push(<div key={nextKey()}>{items}</div>);
       continue;
     }
 
@@ -75,7 +80,7 @@ function parseContent(content: string): React.ReactNode {
         const match = lines[i].match(/^[•\-\*]\s+(.+)/);
         if (match) {
           items.push(
-            <div key={i} className="flex items-start gap-2 py-1">
+            <div key={nextKey()} className="flex items-start gap-2 py-1">
               <span className="mt-1.5 shrink-0 h-1.5 w-1.5 rounded-full bg-[#171819]" />
               <span className="text-[13px] leading-[1.6] text-black/80">
                 {parseInline(match[1])}
@@ -90,7 +95,7 @@ function parseContent(content: string): React.ReactNode {
           break;
         }
       }
-      elements.push(<div key={i}>{items}</div>);
+      elements.push(<div key={nextKey()}>{items}</div>);
       continue;
     }
 
@@ -103,7 +108,7 @@ function parseContent(content: string): React.ReactNode {
       }
       elements.push(
         <pre
-          key={i}
+          key={nextKey()}
           className="my-3 overflow-x-auto rounded-lg bg-[#171819] px-4 py-3 text-[12px] leading-[1.5] text-gray-200 font-mono"
         >
           {codeLines.join("\n")}
@@ -116,14 +121,14 @@ function parseContent(content: string): React.ReactNode {
     if (line.trim()) {
       elements.push(
         <p
-          key={i}
+          key={nextKey()}
           className="text-[13px] leading-[1.65] text-black/80 sm:text-[14px] sm:leading-[1.7]"
         >
           {parseInline(line)}
         </p>
       );
     } else {
-      elements.push(<div key={i} className="h-2" />);
+      elements.push(<div key={nextKey()} className="h-2" />);
     }
     i++;
   }
@@ -134,13 +139,13 @@ function parseContent(content: string): React.ReactNode {
 function parseInline(text: string): React.ReactNode {
   const parts: React.ReactNode[] = [];
   let remaining = text;
-  let key = 0;
+  let partId = 0;
 
   while (remaining) {
     const boldMatch = remaining.match(/^\*\*(.+?)\*\*/);
     if (boldMatch) {
       parts.push(
-        <strong key={key++} className="font-semibold text-black">
+        <strong key={`inline-${partId++}`} className="font-semibold text-black">
           {boldMatch[1]}
         </strong>
       );
@@ -151,7 +156,7 @@ function parseInline(text: string): React.ReactNode {
     const italicMatch = remaining.match(/^\*(.+?)\*/);
     if (italicMatch) {
       parts.push(
-        <em key={key++} className="italic text-black/70">
+        <em key={`inline-${partId++}`} className="italic text-black/70">
           {italicMatch[1]}
         </em>
       );
@@ -163,7 +168,7 @@ function parseInline(text: string): React.ReactNode {
     if (codeMatch) {
       parts.push(
         <code
-          key={key++}
+          key={`inline-${partId++}`}
           className="rounded bg-[#171819]/8 px-1.5 py-0.5 text-[12px] font-mono text-[#171819]/80"
         >
           {codeMatch[1]}
@@ -177,7 +182,7 @@ function parseInline(text: string): React.ReactNode {
     if (linkMatch) {
       parts.push(
         <a
-          key={key++}
+          key={`inline-${partId++}`}
           href={linkMatch[2]}
           target="_blank"
           rel="noopener noreferrer"
@@ -192,7 +197,7 @@ function parseInline(text: string): React.ReactNode {
 
     const emojiMatch = remaining.match(/^(💰|✅|❌|⚠️|📊|🚀|💡|🔔|📈|📉|🔒|🔓|💎|🔥|⭐|✨|🎯|💸|🏦|📋)/);
     if (emojiMatch) {
-      parts.push(<span key={key++}>{emojiMatch[1]}</span>);
+      parts.push(<span key={`inline-${partId++}`}>{emojiMatch[1]}</span>);
       remaining = remaining.slice(emojiMatch[0].length);
       continue;
     }
