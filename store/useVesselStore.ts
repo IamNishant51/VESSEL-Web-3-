@@ -498,14 +498,19 @@ export const useVesselStore = create<VesselStore>()(
       },
     }),
     {
-      name: "vessel-store-v2",
-      version: 2,
+      name: "vessel-store-v3",
+      version: 3,
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
-        usersAgents: state.usersAgents,
-        marketplaceListings: state.marketplaceListings,
+        usersAgents: state.usersAgents.slice(0, 100),
+        marketplaceListings: state.marketplaceListings.slice(0, 200),
         agentStats: state.agentStats,
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.cleanupExpiredRentals();
+        }
+      },
     },
   ),
 );

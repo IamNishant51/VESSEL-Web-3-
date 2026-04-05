@@ -41,7 +41,16 @@ const SUPPORTED_PRICE_ASSETS: Record<string, { id: string; symbol: string; label
   tether: { id: "tether", symbol: "USDT", label: "Tether" },
 };
 
+// In-memory price cache (5 minute TTL)
+const priceCache = new Map<string, { data: SolPriceQuote | AssetPriceQuote | null; expiresAt: number }>();
+const PRICE_CACHE_TTL_MS = 5 * 60 * 1000;
+
 async function fetchSolPriceUsd(): Promise<SolPriceQuote | null> {
+  const cached = priceCache.get("SOL");
+  if (cached && Date.now() < cached.expiresAt) {
+    return cached.data as SolPriceQuote | null;
+  }
+
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 4500);
 
@@ -68,7 +77,9 @@ async function fetchSolPriceUsd(): Promise<SolPriceQuote | null> {
       ? new Date((lastUpdatedUnix as number) * 1000)
       : new Date();
 
-    return { symbol: "SOL", usd: Number(usd), updatedAt };
+    const result = { symbol: "SOL" as const, usd: Number(usd), updatedAt };
+    priceCache.set("SOL", { data: result, expiresAt: Date.now() + PRICE_CACHE_TTL_MS });
+    return result;
   } catch {
     return null;
   } finally {
@@ -96,6 +107,11 @@ async function fetchAssetPriceUsd(symbol: string): Promise<AssetPriceQuote | nul
     return { symbol: "USD", usd: 1, updatedAt: new Date() };
   }
 
+  const cached = priceCache.get(symbol);
+  if (cached && Date.now() < cached.expiresAt) {
+    return cached.data as AssetPriceQuote | null;
+  }
+
   const asset = Object.values(SUPPORTED_PRICE_ASSETS).find((item) => item.symbol === symbol);
   if (!asset) return null;
 
@@ -119,7 +135,9 @@ async function fetchAssetPriceUsd(symbol: string): Promise<AssetPriceQuote | nul
       ? new Date((lastUpdatedUnix as number) * 1000)
       : new Date();
 
-    return { symbol, usd: Number(usd), updatedAt };
+    const result = { symbol, usd: Number(usd), updatedAt };
+    priceCache.set(symbol, { data: result, expiresAt: Date.now() + PRICE_CACHE_TTL_MS });
+    return result;
   } catch {
     return null;
   } finally {

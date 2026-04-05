@@ -197,17 +197,23 @@ export default function Home() {
   }, [listings]);
 
   useEffect(() => {
+    let ticking = false;
     const updateNavTheme = () => {
-      const probeY = window.scrollY + 56;
-      const darkSections = [forgeSectionRef.current, orchestraSectionRef.current].filter(Boolean) as HTMLElement[];
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const probeY = window.scrollY + 56;
+        const darkSections = [forgeSectionRef.current, orchestraSectionRef.current].filter(Boolean) as HTMLElement[];
 
-      const isDarkNow = darkSections.some((section) => {
-        const start = section.offsetTop;
-        const end = start + section.offsetHeight;
-        return probeY >= start && probeY <= end;
+        const isDarkNow = darkSections.some((section) => {
+          const start = section.offsetTop;
+          const end = start + section.offsetHeight;
+          return probeY >= start && probeY <= end;
+        });
+
+        setIsNavOnDark(isDarkNow);
+        ticking = false;
       });
-
-      setIsNavOnDark(isDarkNow);
     };
 
     updateNavTheme();

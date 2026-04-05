@@ -2,6 +2,7 @@
 
 import type { AgentPayment, OrchestrationResult } from "@/types/agent";
 import { useVesselStore } from "@/store/useVesselStore";
+import { useMemo, useRef } from "react";
 
 export type MarketplaceCompatState = {
   agents: import("@/types/agent").Agent[];
@@ -25,49 +26,49 @@ export type MarketplaceCompatState = {
   cleanupExpiredRentals: () => void;
 };
 
-type Selector<T> = (state: MarketplaceCompatState) => T;
-
-const compatMethods = {
-  addAgent: (s: ReturnType<typeof useVesselStore.getState>) => s.addAgent,
-  updateAgent: (s: ReturnType<typeof useVesselStore.getState>) => s.updateAgent,
-  deleteAgent: (s: ReturnType<typeof useVesselStore.getState>) => s.deleteAgent,
-  incrementAgentStats: (s: ReturnType<typeof useVesselStore.getState>) => s.incrementAgentStats,
-  debitTreasuryForToolCall: (s: ReturnType<typeof useVesselStore.getState>) => s.debitTreasuryForToolCall,
-  orchestrateAgents: (s: ReturnType<typeof useVesselStore.getState>) => s.orchestrateAgents,
-  addListing: (s: ReturnType<typeof useVesselStore.getState>) => s.addListing,
-  removeListing: (s: ReturnType<typeof useVesselStore.getState>) => s.removeListing,
-  buyAgent: (s: ReturnType<typeof useVesselStore.getState>) => s.buyAgent,
-  rentAgent: (s: ReturnType<typeof useVesselStore.getState>) => s.rentAgent,
-  buyAgentWithSettlementTx: (s: ReturnType<typeof useVesselStore.getState>) => s.buyAgentWithSettlementTx,
-  rentAgentWithSettlementTx: (s: ReturnType<typeof useVesselStore.getState>) => s.rentAgentWithSettlementTx,
-  getListings: (s: ReturnType<typeof useVesselStore.getState>) => s.getListings,
-  getListingById: (s: ReturnType<typeof useVesselStore.getState>) => s.getListingById,
-  getAgentById: (s: ReturnType<typeof useVesselStore.getState>) => s.getAgentById,
-  getMyListings: (s: ReturnType<typeof useVesselStore.getState>) => s.getMyListings,
-  cleanupExpiredRentals: (s: ReturnType<typeof useVesselStore.getState>) => s.cleanupExpiredRentals,
-};
-
-function buildCompat(state: ReturnType<typeof useVesselStore.getState>): MarketplaceCompatState {
+// Stable reference for methods (they never change)
+const stableMethods = (() => {
+  const s = useVesselStore.getState();
   return {
-    agents: state.usersAgents,
-    listings: state.marketplaceListings,
-    ...Object.fromEntries(
-      Object.entries(compatMethods).map(([key, fn]) => [key, fn(state)])
-    ) as Omit<MarketplaceCompatState, "agents" | "listings">,
+    addAgent: s.addAgent,
+    updateAgent: s.updateAgent,
+    deleteAgent: s.deleteAgent,
+    incrementAgentStats: s.incrementAgentStats,
+    debitTreasuryForToolCall: s.debitTreasuryForToolCall,
+    orchestrateAgents: s.orchestrateAgents,
+    addListing: s.addListing,
+    removeListing: s.removeListing,
+    buyAgent: s.buyAgent,
+    rentAgent: s.rentAgent,
+    buyAgentWithSettlementTx: s.buyAgentWithSettlementTx,
+    rentAgentWithSettlementTx: s.rentAgentWithSettlementTx,
+    getListings: s.getListings,
+    getListingById: s.getListingById,
+    getAgentById: s.getAgentById,
+    getMyListings: s.getMyListings,
+    cleanupExpiredRentals: s.cleanupExpiredRentals,
   };
-}
+})();
 
 export function useMarketplace(): MarketplaceCompatState;
-export function useMarketplace<T>(selector: Selector<T>): T;
-export function useMarketplace<T>(selector?: Selector<T>) {
+export function useMarketplace<T>(selector: (state: MarketplaceCompatState) => T): T;
+export function useMarketplace<T>(selector?: (state: MarketplaceCompatState) => T) {
   const agents = useVesselStore((s) => s.usersAgents);
   const listings = useVesselStore((s) => s.marketplaceListings);
 
+  // Memoize the compat object so it only changes when data changes
+  const compat = useMemo<MarketplaceCompatState>(
+    () => ({
+      agents,
+      listings,
+      ...stableMethods,
+    }),
+    [agents, listings],
+  );
+
   if (!selector) {
-    const state = useVesselStore.getState();
-    return buildCompat(state) as MarketplaceCompatState;
+    return compat as unknown as MarketplaceCompatState;
   }
 
-  const compat = buildCompat(useVesselStore.getState());
-  return selector({ ...compat, agents, listings });
+  return selector(compat);
 }

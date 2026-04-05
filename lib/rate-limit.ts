@@ -9,6 +9,8 @@ type Bucket = {
 };
 
 const buckets = new Map<string, Bucket>();
+const MAX_BUCKETS = 50000;
+const CLEANUP_THRESHOLD = 2;
 
 function nowMs() {
   return Date.now();
@@ -20,6 +22,21 @@ export type RateLimitResult = {
   retryAfterSeconds: number;
 };
 
+function cleanupExpiredBuckets(now: number): void {
+  if (buckets.size < MAX_BUCKETS) return;
+
+  const cutoff = now - CLEANUP_THRESHOLD * 60000;
+  let deleted = 0;
+
+  for (const [key, bucket] of buckets.entries()) {
+    if (bucket.resetAt < cutoff) {
+      buckets.delete(key);
+      deleted++;
+      if (deleted > 10000) break;
+    }
+  }
+}
+
 export function checkRateLimit(key: string, options: RateLimitOptions): RateLimitResult {
   const now = nowMs();
   const existing = buckets.get(key);
@@ -29,6 +46,8 @@ export function checkRateLimit(key: string, options: RateLimitOptions): RateLimi
       count: 1,
       resetAt: now + options.windowMs,
     });
+
+    cleanupExpiredBuckets(now);
 
     return {
       allowed: true,
