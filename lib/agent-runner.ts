@@ -438,6 +438,22 @@ export async function runAgent(
       compact.includes("action plan") ||
       compact.includes("acation plan") ||
       (compact.includes("plan") && (compact.includes("today") || compact.includes("week") || compact.includes("weekly")));
+    const asksPortfolio =
+      compact.includes("portfolio") ||
+      compact.includes("holdings") ||
+      compact.includes("assets") ||
+      compact.includes("my positions");
+    const asksStrategy =
+      compact.includes("strategy") ||
+      compact.includes("suggest") ||
+      compact.includes("recommend") ||
+      compact.includes("advice") ||
+      compact.includes("what should i");
+    const asksRisk =
+      compact.includes("risk") ||
+      compact.includes("safe") ||
+      compact.includes("danger") ||
+      compact.includes("volatile");
 
     let toolUsed: string | undefined;
     let mockResponse = "";
@@ -581,6 +597,20 @@ export async function runAgent(
       const actionText = allowedActions.length > 0 ? allowedActions.map((action) => `${action} operations`).join(", ") : "strategy and market analysis";
       const toolText = agentTools.length > 0 ? agentTools.join(", ") : "none configured";
       mockResponse = `I'm ${agent.name}, an autonomous Solana agent. I can help with: ${actionText}. I can also do advisory tasks like SOL market snapshots, top opportunities, and budget/risk plans. Tools currently configured: ${toolText}.`;
+    } else if (asksPortfolio) {
+      shouldPreferDeterministicReply = true;
+      actionType = "portfolio overview";
+      mockResponse = `Your portfolio overview:\n- Risk level: ${agent.riskLevel}\n- Max per transaction: ${agent.maxSolPerTx ?? 0.5} SOL\n- Daily budget: $${agent.dailyBudgetUsdc ?? 100} USDC\n- Treasury: ${(agent.treasuryBalance ?? 0).toFixed(3)} USDC\n- Actions completed: ${(agent.totalActions ?? 0).toLocaleString()}\n\nConnect your wallet to see live on-chain holdings.`;
+    } else if (asksStrategy) {
+      shouldPreferDeterministicReply = true;
+      actionType = "strategy suggestion";
+      const budget = agent.dailyBudgetUsdc ?? 100;
+      const maxTx = agent.maxSolPerTx ?? 0.5;
+      mockResponse = `Based on your ${agent.riskLevel} profile, here's my recommendation:\n1) Start with ${Math.round(budget * 0.3)} USDC (${Math.round(30)}% of daily budget)\n2) Split into 2-3 entries of max ${maxTx} SOL each\n3) Keep ${Math.round(budget * 0.7)} USDC as reserve\n4) Monitor for 24h before adding more\n5) Set stop-loss at -3% if conditions worsen`;
+    } else if (asksRisk) {
+      shouldPreferDeterministicReply = true;
+      actionType = "risk assessment";
+      mockResponse = `Risk assessment for your ${agent.riskLevel} profile:\n- Max exposure per trade: ${agent.maxSolPerTx ?? 0.5} SOL\n- Daily spending cap: $${agent.dailyBudgetUsdc ?? 100} USDC\n- Recommended position sizing: 10-15% of treasury per trade\n- Always keep 40%+ in stable reserves\n- Never chase pumps, wait for pullbacks`;
     } else {
       actionType = "analyze and respond";
       mockResponse = `I can help with ${(agent.allowedActions ?? []).join(", ") || "Solana operations"}. If you want execution, tell me an exact action like "swap 0.01 SOL to USDC" or "stake 0.01 SOL".`;
@@ -645,10 +675,50 @@ type ReasoningInput = {
   context?: { lastAssistantMessage?: string; lastUserMessage?: string };
 };
 
+// Response cache to avoid repeated LLM calls for similar messages
+const responseCache = new Map<string, { response: string; expiresAt: number }>();
+const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
+const MAX_CACHE_SIZE = 500;
+
+function hashMessage(message: string): string {
+  let hash = 5381;
+  const normalized = message.toLowerCase().replace(/[^a-z0-9\s]/g, "").trim();
+  for (let i = 0; i < normalized.length; i++) {
+    hash = ((hash << 5) + hash) ^ normalized.charCodeAt(i);
+    hash = hash >>> 0;
+  }
+  return hash.toString(36);
+}
+
+function getCachedResponse(message: string): string | null {
+  const key = hashMessage(message);
+  const cached = responseCache.get(key);
+  if (cached && Date.now() < cached.expiresAt) {
+    return cached.response;
+  }
+  if (cached) responseCache.delete(key);
+  return null;
+}
+
+function cacheResponse(message: string, response: string): void {
+  if (responseCache.size >= MAX_CACHE_SIZE) {
+    const oldestKey = responseCache.keys().next().value;
+    if (oldestKey) responseCache.delete(oldestKey);
+  }
+  responseCache.set(hashMessage(message), {
+    response,
+    expiresAt: Date.now() + CACHE_TTL_MS,
+  });
+}
+
 async function generateReasoningResponse(input: ReasoningInput): Promise<string | null> {
   if (!process.env.GROQ_API_KEY) {
     return null;
   }
+
+  // Check cache first
+  const cached = getCachedResponse(input.userMessage);
+  if (cached) return cached;
 
   try {
     const toolContext = input.toolUsed
@@ -660,11 +730,15 @@ async function generateReasoningResponse(input: ReasoningInput): Promise<string 
       system: input.systemPrompt,
       prompt: `${toolContext}\nPrevious assistant message: ${input.context?.lastAssistantMessage ?? "n/a"}\nPrevious user message: ${input.context?.lastUserMessage ?? "n/a"}\nUser message: ${input.userMessage}\nAllowed actions: ${(input.allowedActions ?? []).join(", ")}`,
       temperature: 0.3,
-      maxTokens: 220,
+      maxTokens: 150, // Reduced from 220 to save costs
     });
 
     const trimmed = text.trim();
-    return trimmed.length > 0 ? trimmed : null;
+    if (trimmed.length > 0) {
+      cacheResponse(input.userMessage, trimmed);
+      return trimmed;
+    }
+    return null;
   } catch {
     return null;
   }
