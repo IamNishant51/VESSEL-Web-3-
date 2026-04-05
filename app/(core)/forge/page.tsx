@@ -58,6 +58,7 @@ export default function ForgePage() {
   const isBraveWallet = (wallet?.adapter?.name || "").toLowerCase().includes("brave");
   const isSolflareWallet = (wallet?.adapter?.name || "").toLowerCase().includes("solflare");
   const { addAgent } = useAgent();
+  const { usersAgents } = useVesselStore();
   const hasHydrated = useStoreHydrated();
   const router = useRouter();
 
@@ -228,7 +229,6 @@ export default function ForgePage() {
     }
     
     // Check for duplicate agent names (senior web3 engineer approach)
-    const { usersAgents } = useVesselStore();
     const normalizedName = draft.name.trim().toLowerCase();
     if (usersAgents.some((agent: Agent) => agent.name.trim().toLowerCase() === normalizedName)) {
       toast.error(`An agent named "${draft.name}" already exists. Agent names must be unique.`);
