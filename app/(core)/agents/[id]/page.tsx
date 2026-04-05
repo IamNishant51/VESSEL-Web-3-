@@ -245,7 +245,7 @@ export default function AgentDetailPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
-              className="h-full overflow-y-auto bg-[#fafbfb]"
+              className="h-full overflow-y-auto bg-white"
             >
               <div className="mx-auto max-w-[800px] p-6">
                 <div className="mb-6">
