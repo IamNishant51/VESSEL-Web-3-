@@ -10,7 +10,7 @@ import {
   type AgentTraits,
   type ColorPalette,
 } from "@/lib/generative-art";
-import { getCyberpunkAvatar } from "@/lib/cyberpunk-avatars";
+import { getCyberpunkAgentSVG } from "@/lib/agent-avatar";
 
 type VisualInput = Pick<Agent, "id" | "name" | "mintAddress">;
 
@@ -192,12 +192,13 @@ export function getAgentVisualLabel(input: VisualInput): string {
 }
 
 /**
- * Get artwork URL for an agent - returns premium cyberpunk character avatar
+ * Get artwork URL for an agent - returns premium cyberpunk cNFT SVG
  * Same agent always gets the same avatar (deterministic based on agent ID)
  */
 export function getAgentArtworkUrl(input: VisualInput, size = 1024): string {
   void size;
-  return getCyberpunkAvatar(input.id);
+  const svg = getCyberpunkAgentSVG(input.id);
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }
 
 /**
