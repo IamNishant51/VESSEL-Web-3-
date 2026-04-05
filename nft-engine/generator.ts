@@ -68,6 +68,7 @@ function deriveFinalRarity(selection: TraitSelection): { tier: RarityTier; score
     rarityScore(selection.body.rarity) +
     rarityScore(selection.clothing.rarity) +
     rarityScore(selection.eyes.rarity) +
+    rarityScore(selection.hair.rarity) +
     rarityScore(selection.headgear.rarity) +
     rarityScore(selection.accessories.rarity) +
     rarityScore(selection.effects.rarity);
@@ -86,6 +87,7 @@ function traitSummary(selection: TraitSelection): Array<{ trait_type: string; va
     { trait_type: "Body", value: selection.body.name },
     { trait_type: "Clothing", value: selection.clothing.name },
     { trait_type: "Eyes", value: selection.eyes.name },
+    { trait_type: "Hair", value: selection.hair.name },
     { trait_type: "Headgear", value: selection.headgear.name },
     { trait_type: "Accessories", value: selection.accessories.name },
     { trait_type: "Effects", value: selection.effects.name },
@@ -122,6 +124,8 @@ function layerFolderName(layer: LayerName): string {
       return "clothing";
     case "eyes":
       return "eyes";
+    case "hair":
+      return "hair";
     case "headgear":
       return "headgear";
     case "accessories":
@@ -143,21 +147,25 @@ async function generateTraitAssetsInternal(options: GenerationOptions): Promise<
     await ensureDir(path.join(options.traitsRoot, layerFolderName(layer)));
   }
 
-  for (const trait of TRAIT_LIBRARY) {
-    const target = traitPngPath(options.traitsRoot, trait);
-    const temp = path.join(tempRoot, `${trait.layer}-${trait.id}.png`);
-    await renderSvgToPng(trait.svg, temp, CANVAS_SIZE);
-    await enhanceTraitPng(temp, target, {
-      seed: hashString(`${trait.layer}:${trait.id}`),
-      isBackground: trait.layer === "background",
-      size: CANVAS_SIZE,
-    });
+  for (const layer of LAYER_ORDER) {
+    for (const trait of traitsForLayer(layer)) {
+      const target = traitPngPath(options.traitsRoot, trait);
+      const temp = path.join(tempRoot, `${trait.layer}-${trait.id}.png`);
+      await renderSvgToPng(trait.svg, temp, CANVAS_SIZE);
+      await enhanceTraitPng(temp, target, {
+        seed: hashString(`${trait.layer}:${trait.id}`),
+        isBackground: trait.layer === "background",
+        size: CANVAS_SIZE,
+      });
+    }
   }
+
+  const totalTraits = LAYER_ORDER.reduce((sum, layer) => sum + traitsForLayer(layer).length, 0);
 
   await writeJson(path.join(options.traitsRoot, "traits-manifest.json"), {
     generatedAt: new Date().toISOString(),
     canvasSize: CANVAS_SIZE,
-    totalTraits: TRAIT_LIBRARY.length,
+    totalTraits,
     layers: LAYER_ORDER.map((layer) => ({
       layer,
       folder: layerFolderName(layer),
@@ -199,6 +207,7 @@ async function generateOne(
       body,
       clothing: pickCompatibleTrait(rng, traitsForLayer("clothing"), family),
       eyes: pickCompatibleTrait(rng, traitsForLayer("eyes"), family),
+      hair: pickCompatibleTrait(rng, traitsForLayer("hair"), family),
       headgear: pickCompatibleTrait(rng, traitsForLayer("headgear"), family),
       accessories: pickCompatibleTrait(rng, traitsForLayer("accessories"), family),
       effects: pickCompatibleTrait(rng, traitsForLayer("effects"), family),
@@ -212,6 +221,7 @@ async function generateOne(
         body: traitPngPath(options.traitsRoot, selection.body),
         clothing: traitPngPath(options.traitsRoot, selection.clothing),
         eyes: traitPngPath(options.traitsRoot, selection.eyes),
+        hair: traitPngPath(options.traitsRoot, selection.hair),
         headgear: traitPngPath(options.traitsRoot, selection.headgear),
         accessories: traitPngPath(options.traitsRoot, selection.accessories),
         effects: traitPngPath(options.traitsRoot, selection.effects),

@@ -7,6 +7,7 @@ export type LayerName =
   | "body"
   | "clothing"
   | "eyes"
+  | "hair"
   | "headgear"
   | "accessories"
   | "effects";
@@ -81,6 +82,101 @@ function wrapSvg(content: string, background = false): string {
             <feMergeNode in="SourceGraphic"/>
           </feMerge>
         </filter>
+        <filter id="heavyGlow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="16" result="blur"/>
+          <feMerge>
+            <feMergeNode in="blur"/>
+            <feMergeNode in="blur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+        <filter id="blurSmall">
+          <feGaussianBlur stdDeviation="3"/>
+        </filter>
+        <radialGradient id="eyeGradCyan" cx="50%" cy="40%" r="60%">
+          <stop offset="0%" stop-color="#ffffff"/>
+          <stop offset="20%" stop-color="#85ffff"/>
+          <stop offset="60%" stop-color="#00c9ff"/>
+          <stop offset="100%" stop-color="#0066aa"/>
+        </radialGradient>
+        <radialGradient id="eyeGradRose" cx="50%" cy="40%" r="60%">
+          <stop offset="0%" stop-color="#ffffff"/>
+          <stop offset="20%" stop-color="#ff8ea0"/>
+          <stop offset="60%" stop-color="#ff4d6d"/>
+          <stop offset="100%" stop-color="#aa1133"/>
+        </radialGradient>
+        <radialGradient id="eyeGradPurple" cx="50%" cy="40%" r="60%">
+          <stop offset="0%" stop-color="#ffffff"/>
+          <stop offset="20%" stop-color="#d4a5ff"/>
+          <stop offset="60%" stop-color="#9b59b6"/>
+          <stop offset="100%" stop-color="#5b2c6f"/>
+        </radialGradient>
+        <radialGradient id="eyeGradGold" cx="50%" cy="40%" r="60%">
+          <stop offset="0%" stop-color="#ffffff"/>
+          <stop offset="20%" stop-color="#ffd700"/>
+          <stop offset="60%" stop-color="#f39c12"/>
+          <stop offset="100%" stop-color="#a67c00"/>
+        </radialGradient>
+        <radialGradient id="eyeGradEmerald" cx="50%" cy="40%" r="60%">
+          <stop offset="0%" stop-color="#ffffff"/>
+          <stop offset="20%" stop-color="#6effb5"/>
+          <stop offset="60%" stop-color="#00c853"/>
+          <stop offset="100%" stop-color="#006622"/>
+        </radialGradient>
+        <radialGradient id="skinGrad" cx="50%" cy="35%" r="65%">
+          <stop offset="0%" stop-color="#ffe8d6"/>
+          <stop offset="50%" stop-color="#f5c5a3"/>
+          <stop offset="100%" stop-color="#d4a07a"/>
+        </radialGradient>
+        <radialGradient id="skinCool" cx="50%" cy="35%" r="65%">
+          <stop offset="0%" stop-color="#e8d8f0"/>
+          <stop offset="50%" stop-color="#c8a8d8"/>
+          <stop offset="100%" stop-color="#a080b8"/>
+        </radialGradient>
+        <radialGradient id="skinWarm" cx="50%" cy="35%" r="65%">
+          <stop offset="0%" stop-color="#ffe0c0"/>
+          <stop offset="50%" stop-color="#f0b890"/>
+          <stop offset="100%" stop-color="#d09060"/>
+        </radialGradient>
+        <radialGradient id="bgGlow" cx="50%" cy="45%" r="55%">
+          <stop offset="0%" stop-color="#ffffff" stop-opacity="0.12"/>
+          <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="hairGradBlue" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#4fc3f7"/>
+          <stop offset="50%" stop-color="#0288d1"/>
+          <stop offset="100%" stop-color="#01579b"/>
+        </linearGradient>
+        <linearGradient id="hairGradPink" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#f8bbd0"/>
+          <stop offset="50%" stop-color="#e91e63"/>
+          <stop offset="100%" stop-color="#880e4f"/>
+        </linearGradient>
+        <linearGradient id="hairGradPurple" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#ce93d8"/>
+          <stop offset="50%" stop-color="#9c27b0"/>
+          <stop offset="100%" stop-color="#4a148c"/>
+        </linearGradient>
+        <linearGradient id="hairGradSilver" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#ffffff"/>
+          <stop offset="50%" stop-color="#b0bec5"/>
+          <stop offset="100%" stop-color="#546e7a"/>
+        </linearGradient>
+        <linearGradient id="hairGradRed" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#ff8a80"/>
+          <stop offset="50%" stop-color="#d32f2f"/>
+          <stop offset="100%" stop-color="#b71c1c"/>
+        </linearGradient>
+        <linearGradient id="hairGradGold" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#fff9c4"/>
+          <stop offset="50%" stop-color="#fdd835"/>
+          <stop offset="100%" stop-color="#f57f17"/>
+        </linearGradient>
+        <linearGradient id="hairGradGreen" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#b9f6ca"/>
+          <stop offset="50%" stop-color="#00c853"/>
+          <stop offset="100%" stop-color="#1b5e20"/>
+        </linearGradient>
       </defs>
       ${background ? "" : '<rect width="1024" height="1024" fill="transparent"/>'}
       ${content}
@@ -96,15 +192,21 @@ const BACKGROUNDS: TraitDefinition[] = [
     rarity: "common",
     weight: 24,
     svg: wrapSvg(`
-      <rect width="1024" height="1024" fill="#0b1020"/>
-      <polygon points="0,1024 250,340 420,340 250,1024" fill="#182643"/>
-      <polygon points="1024,1024 780,340 610,340 780,1024" fill="#182643"/>
-      <rect x="452" y="280" width="120" height="560" rx="8" fill="#111d35"/>
-      <rect x="470" y="320" width="84" height="120" fill="#0ec2ff" opacity="0.45"/>
-      <rect x="470" y="500" width="84" height="120" fill="#ff4d6d" opacity="0.45"/>
-      <line x1="0" y1="740" x2="1024" y2="740" stroke="#47c0ff" stroke-width="3" opacity="0.45"/>
-      <line x1="0" y1="820" x2="1024" y2="820" stroke="#ff6488" stroke-width="2" opacity="0.35"/>
-      <circle cx="512" cy="350" r="220" fill="#0ec2ff" opacity="0.08"/>
+      <rect width="1024" height="1024" fill="#0a0e1a"/>
+      <rect x="0" y="0" width="280" height="1024" fill="#0f1628"/>
+      <rect x="744" y="0" width="280" height="1024" fill="#0f1628"/>
+      <rect x="280" y="200" width="464" height="824" fill="#0d1220"/>
+      <rect x="300" y="220" width="180" height="240" rx="4" fill="#0ec2ff" opacity="0.15"/>
+      <rect x="544" y="220" width="180" height="240" rx="4" fill="#ff4d6d" opacity="0.15"/>
+      <rect x="300" y="480" width="180" height="200" rx="4" fill="#ff4d6d" opacity="0.1"/>
+      <rect x="544" y="480" width="180" height="200" rx="4" fill="#0ec2ff" opacity="0.1"/>
+      <line x1="0" y1="780" x2="1024" y2="780" stroke="#0ec2ff" stroke-width="2" opacity="0.3"/>
+      <line x1="0" y1="820" x2="1024" y2="820" stroke="#ff4d6d" stroke-width="1" opacity="0.2"/>
+      <circle cx="512" cy="400" r="280" fill="url(#bgGlow)"/>
+      <rect x="60" y="100" width="8" height="180" fill="#1a2240"/>
+      <circle cx="64" cy="90" r="14" fill="#0ec2ff" opacity="0.6" filter="url(#softGlow)"/>
+      <rect x="956" y="150" width="8" height="160" fill="#1a2240"/>
+      <circle cx="960" cy="140" r="12" fill="#ff4d6d" opacity="0.5" filter="url(#softGlow)"/>
     `, true),
   },
   {
@@ -114,14 +216,20 @@ const BACKGROUNDS: TraitDefinition[] = [
     rarity: "common",
     weight: 22,
     svg: wrapSvg(`
-      <rect width="1024" height="1024" fill="#11141e"/>
-      <ellipse cx="512" cy="470" rx="420" ry="330" fill="#1d2538"/>
-      <ellipse cx="512" cy="470" rx="340" ry="250" fill="#0e1728"/>
-      <rect x="220" y="640" width="584" height="220" rx="24" fill="#1a2236"/>
-      <rect x="240" y="670" width="544" height="36" fill="#2e4365"/>
-      <rect x="240" y="730" width="544" height="18" fill="#86d7ff" opacity="0.45"/>
-      <line x1="170" y1="470" x2="854" y2="470" stroke="#8bcfff" stroke-width="2" opacity="0.25"/>
-      <line x1="220" y1="530" x2="804" y2="530" stroke="#8bcfff" stroke-width="2" opacity="0.25"/>
+      <rect width="1024" height="1024" fill="#0e1118"/>
+      <ellipse cx="512" cy="480" rx="440" ry="350" fill="#141c2c"/>
+      <ellipse cx="512" cy="480" rx="360" ry="270" fill="#0c1320"/>
+      <rect x="200" y="660" width="624" height="200" rx="20" fill="#162030"/>
+      <rect x="220" y="690" width="584" height="30" fill="#2a3f5e"/>
+      <rect x="220" y="740" width="584" height="14" fill="#0ec2ff" opacity="0.3"/>
+      <line x1="160" y1="480" x2="864" y2="480" stroke="#8bcfff" stroke-width="1" opacity="0.15"/>
+      <line x1="200" y1="540" x2="824" y2="540" stroke="#8bcfff" stroke-width="1" opacity="0.15"/>
+      <circle cx="512" cy="300" r="6" fill="#ffffff" opacity="0.6"/>
+      <circle cx="380" cy="250" r="4" fill="#ffffff" opacity="0.4"/>
+      <circle cx="640" cy="220" r="5" fill="#ffffff" opacity="0.5"/>
+      <circle cx="300" cy="320" r="3" fill="#ffffff" opacity="0.3"/>
+      <circle cx="720" cy="280" r="4" fill="#ffffff" opacity="0.4"/>
+      <circle cx="512" cy="400" r="260" fill="url(#bgGlow)"/>
     `, true),
   },
   {
@@ -131,14 +239,19 @@ const BACKGROUNDS: TraitDefinition[] = [
     rarity: "uncommon",
     weight: 16,
     svg: wrapSvg(`
-      <rect width="1024" height="1024" fill="#120b22"/>
-      <polygon points="0,1024 0,520 190,620 350,1024" fill="#1e1337"/>
-      <polygon points="1024,1024 1024,520 834,620 674,1024" fill="#1e1337"/>
-      <polygon points="220,200 320,420 150,500" fill="#8f6bff" opacity="0.45"/>
-      <polygon points="790,180 900,410 720,500" fill="#8f6bff" opacity="0.45"/>
-      <polygon points="460,120 610,380 420,430" fill="#c4a2ff" opacity="0.55"/>
-      <circle cx="512" cy="550" r="260" fill="#8f6bff" opacity="0.1"/>
-      <line x1="240" y1="780" x2="784" y2="780" stroke="#dcbfff" stroke-width="3" opacity="0.35"/>
+      <rect width="1024" height="1024" fill="#0e0820"/>
+      <polygon points="0,1024 0,500 200,600 360,1024" fill="#1a1030"/>
+      <polygon points="1024,1024 1024,500 824,600 664,1024" fill="#1a1030"/>
+      <polygon points="230,180 340,420 160,500" fill="#8f6bff" opacity="0.35"/>
+      <polygon points="794,160 910,410 730,500" fill="#8f6bff" opacity="0.35"/>
+      <polygon points="470,100 630,380 430,430" fill="#c4a2ff" opacity="0.45"/>
+      <polygon points="350,200 420,350 300,400" fill="#a78bfa" opacity="0.3"/>
+      <polygon points="674,180 740,340 620,390" fill="#a78bfa" opacity="0.3"/>
+      <circle cx="512" cy="520" r="280" fill="#8f6bff" opacity="0.08"/>
+      <line x1="250" y1="780" x2="774" y2="780" stroke="#dcbfff" stroke-width="2" opacity="0.25"/>
+      <circle cx="400" cy="300" r="4" fill="#d4b5ff" opacity="0.6" filter="url(#softGlow)"/>
+      <circle cx="620" cy="260" r="3" fill="#d4b5ff" opacity="0.5" filter="url(#softGlow)"/>
+      <circle cx="512" cy="200" r="5" fill="#e8d0ff" opacity="0.7" filter="url(#softGlow)"/>
     `, true),
   },
   {
@@ -148,14 +261,17 @@ const BACKGROUNDS: TraitDefinition[] = [
     rarity: "uncommon",
     weight: 14,
     svg: wrapSvg(`
-      <rect width="1024" height="1024" fill="#191512"/>
-      <rect x="180" y="240" width="664" height="500" fill="#2a231d"/>
-      <rect x="260" y="180" width="504" height="80" fill="#3a3129"/>
-      <rect x="240" y="320" width="80" height="320" fill="#41362c"/>
-      <rect x="704" y="320" width="80" height="320" fill="#41362c"/>
-      <polygon points="412,740 612,740 668,1024 356,1024" fill="#2f261f"/>
-      <circle cx="512" cy="470" r="140" fill="#c29c68" opacity="0.15"/>
-      <line x1="250" y1="420" x2="770" y2="420" stroke="#c29c68" stroke-width="2" opacity="0.3"/>
+      <rect width="1024" height="1024" fill="#16120e"/>
+      <rect x="160" y="220" width="704" height="520" fill="#242018"/>
+      <rect x="240" y="160" width="544" height="80" fill="#332d22"/>
+      <rect x="220" y="300" width="90" height="340" fill="#3a3228"/>
+      <rect x="714" y="300" width="90" height="340" fill="#3a3228"/>
+      <polygon points="390,740 634,740 690,1024 334,1024" fill="#2a241c"/>
+      <circle cx="512" cy="470" r="160" fill="#c29c68" opacity="0.08"/>
+      <line x1="230" y1="420" x2="794" y2="420" stroke="#c29c68" stroke-width="1" opacity="0.2"/>
+      <circle cx="512" cy="300" r="4" fill="#ffd08a" opacity="0.5" filter="url(#softGlow)"/>
+      <circle cx="400" cy="350" r="3" fill="#ffd08a" opacity="0.4" filter="url(#softGlow)"/>
+      <circle cx="624" cy="350" r="3" fill="#ffd08a" opacity="0.4" filter="url(#softGlow)"/>
     `, true),
   },
   {
@@ -165,14 +281,19 @@ const BACKGROUNDS: TraitDefinition[] = [
     rarity: "rare",
     weight: 10,
     svg: wrapSvg(`
-      <rect width="1024" height="1024" fill="#071423"/>
-      <rect x="128" y="128" width="768" height="768" rx="42" fill="#0f243d"/>
-      <rect x="188" y="188" width="648" height="648" rx="28" fill="#09182a"/>
-      <circle cx="512" cy="512" r="210" fill="none" stroke="#2ed4ff" stroke-width="6" opacity="0.55"/>
-      <circle cx="512" cy="512" r="120" fill="none" stroke="#2ed4ff" stroke-width="3" opacity="0.45"/>
-      <line x1="512" y1="188" x2="512" y2="836" stroke="#2ed4ff" stroke-width="2" opacity="0.4"/>
-      <line x1="188" y1="512" x2="836" y2="512" stroke="#2ed4ff" stroke-width="2" opacity="0.4"/>
-      <rect x="472" y="472" width="80" height="80" fill="#2ed4ff" opacity="0.25"/>
+      <rect width="1024" height="1024" fill="#050e1a"/>
+      <rect x="108" y="108" width="808" height="808" rx="48" fill="#0c1e34"/>
+      <rect x="168" y="168" width="688" height="688" rx="32" fill="#081526"/>
+      <circle cx="512" cy="512" r="230" fill="none" stroke="#2ed4ff" stroke-width="4" opacity="0.4"/>
+      <circle cx="512" cy="512" r="140" fill="none" stroke="#2ed4ff" stroke-width="2" opacity="0.3"/>
+      <circle cx="512" cy="512" r="60" fill="#2ed4ff" opacity="0.08"/>
+      <line x1="512" y1="168" x2="512" y2="856" stroke="#2ed4ff" stroke-width="1" opacity="0.25"/>
+      <line x1="168" y1="512" x2="856" y2="512" stroke="#2ed4ff" stroke-width="1" opacity="0.25"/>
+      <rect x="462" y="462" width="100" height="100" rx="8" fill="#2ed4ff" opacity="0.12"/>
+      <circle cx="300" cy="300" r="3" fill="#2ed4ff" opacity="0.5" filter="url(#softGlow)"/>
+      <circle cx="724" cy="300" r="3" fill="#2ed4ff" opacity="0.5" filter="url(#softGlow)"/>
+      <circle cx="300" cy="724" r="3" fill="#2ed4ff" opacity="0.5" filter="url(#softGlow)"/>
+      <circle cx="724" cy="724" r="3" fill="#2ed4ff" opacity="0.5" filter="url(#softGlow)"/>
     `, true),
   },
   {
@@ -182,13 +303,15 @@ const BACKGROUNDS: TraitDefinition[] = [
     rarity: "rare",
     weight: 8,
     svg: wrapSvg(`
-      <rect width="1024" height="1024" fill="#1b202d"/>
-      <rect x="0" y="760" width="1024" height="264" fill="#101722"/>
-      <polygon points="120,760 220,420 320,760" fill="#2b384f"/>
-      <polygon points="704,760 804,380 904,760" fill="#2b384f"/>
-      <polyline points="220,250 310,420 250,420 360,620" fill="none" stroke="#b9dcff" stroke-width="5" opacity="0.8"/>
-      <polyline points="760,200 690,390 760,390 650,620" fill="none" stroke="#b9dcff" stroke-width="5" opacity="0.8"/>
-      <circle cx="512" cy="370" r="210" fill="#9bc9ff" opacity="0.08"/>
+      <rect width="1024" height="1024" fill="#181e2a"/>
+      <rect x="0" y="760" width="1024" height="264" fill="#0e141e"/>
+      <polygon points="100,760 200,400 300,760" fill="#283548"/>
+      <polygon points="724,760 824,360 924,760" fill="#283548"/>
+      <polyline points="200,230 290,400 230,400 340,620" fill="none" stroke="#b9dcff" stroke-width="4" opacity="0.6"/>
+      <polyline points="780,180 710,370 780,370 670,620" fill="none" stroke="#b9dcff" stroke-width="4" opacity="0.6"/>
+      <circle cx="512" cy="350" r="220" fill="#9bc9ff" opacity="0.06"/>
+      <line x1="0" y1="200" x2="1024" y2="200" stroke="#ffffff" stroke-width="1" opacity="0.08"/>
+      <line x1="0" y1="280" x2="1024" y2="280" stroke="#ffffff" stroke-width="1" opacity="0.05"/>
     `, true),
   },
   {
@@ -200,11 +323,14 @@ const BACKGROUNDS: TraitDefinition[] = [
     svg: wrapSvg(`
       <rect width="1024" height="1024" fill="#2a1c13"/>
       <rect x="0" y="660" width="1024" height="364" fill="#4a3222"/>
-      <polygon points="420,180 604,180 650,780 374,780" fill="#1c1611"/>
-      <polygon points="220,660 340,480 390,660" fill="#5f4330"/>
-      <polygon points="720,660 804,470 860,660" fill="#5f4330"/>
-      <circle cx="512" cy="300" r="140" fill="#ffbe73" opacity="0.3"/>
-      <line x1="120" y1="760" x2="904" y2="760" stroke="#dca36f" stroke-width="3" opacity="0.45"/>
+      <polygon points="400,160 624,160 670,780 354,780" fill="#1c1611"/>
+      <polygon points="200,660 320,460 370,660" fill="#5f4330"/>
+      <polygon points="720,660 824,450 880,660" fill="#5f4330"/>
+      <circle cx="512" cy="280" r="160" fill="#ffbe73" opacity="0.2"/>
+      <circle cx="512" cy="280" r="80" fill="#ffd699" opacity="0.15"/>
+      <line x1="100" y1="760" x2="924" y2="760" stroke="#dca36f" stroke-width="2" opacity="0.3"/>
+      <circle cx="350" cy="500" r="3" fill="#ffd699" opacity="0.4" filter="url(#softGlow)"/>
+      <circle cx="674" cy="480" r="3" fill="#ffd699" opacity="0.4" filter="url(#softGlow)"/>
     `, true),
   },
   {
@@ -216,11 +342,16 @@ const BACKGROUNDS: TraitDefinition[] = [
     svg: wrapSvg(`
       <rect width="1024" height="1024" fill="#061728"/>
       <rect x="0" y="680" width="1024" height="344" fill="#dcefff"/>
-      <rect x="170" y="340" width="684" height="260" rx="28" fill="#314d6a"/>
-      <rect x="220" y="390" width="584" height="50" fill="#89c9ff" opacity="0.6"/>
-      <rect x="220" y="470" width="584" height="24" fill="#b8e2ff" opacity="0.75"/>
-      <circle cx="512" cy="230" r="110" fill="#9ad8ff" opacity="0.2"/>
-      <line x1="140" y1="740" x2="884" y2="740" stroke="#8ac8ff" stroke-width="4" opacity="0.5"/>
+      <rect x="150" y="320" width="724" height="280" rx="32" fill="#2a4460"/>
+      <rect x="200" y="370" width="624" height="50" fill="#89c9ff" opacity="0.5"/>
+      <rect x="200" y="440" width="624" height="20" fill="#b8e2ff" opacity="0.6"/>
+      <circle cx="512" cy="200" r="130" fill="#9ad8ff" opacity="0.15"/>
+      <line x1="120" y1="740" x2="904" y2="740" stroke="#8ac8ff" stroke-width="3" opacity="0.4"/>
+      <circle cx="300" cy="150" r="4" fill="#ffffff" opacity="0.6"/>
+      <circle cx="512" cy="100" r="5" fill="#ffffff" opacity="0.7"/>
+      <circle cx="724" cy="130" r="3" fill="#ffffff" opacity="0.5"/>
+      <circle cx="400" cy="180" r="3" fill="#ffffff" opacity="0.4"/>
+      <circle cx="624" cy="160" r="4" fill="#ffffff" opacity="0.5"/>
     `, true),
   },
 ];
@@ -235,10 +366,13 @@ const BODIES: TraitDefinition[] = [
     family: "humanoid",
     families: ["humanoid"],
     svg: wrapSvg(`
-      <path d="M340 850 C355 665 430 520 512 470 C594 520 669 665 684 850 Z" fill="url(#metalBlue)" opacity="0.95"/>
-      <path d="M430 520 C455 460 485 425 512 420 C539 425 569 460 594 520" fill="none" stroke="#dff8ff" stroke-width="8" opacity="0.55"/>
-      <rect x="430" y="640" width="164" height="120" rx="24" fill="#0f2f52" opacity="0.85"/>
-      <circle cx="512" cy="702" r="28" fill="#71dcff" opacity="0.8"/>
+      <path d="M512 380 C460 380 420 420 410 480 C400 540 410 580 430 620 C440 640 460 660 512 660 C564 660 584 640 594 620 C614 580 624 540 614 480 C604 420 564 380 512 380 Z" fill="url(#skinGrad)" opacity="0.95"/>
+      <path d="M430 520 C455 460 485 425 512 420 C539 425 569 460 594 520" fill="none" stroke="#f5d0b0" stroke-width="6" opacity="0.4"/>
+      <path d="M370 620 C380 680 400 780 420 850 L604 850 C624 780 644 680 654 620 C620 640 580 660 512 660 C444 660 404 640 370 620 Z" fill="url(#metalBlue)" opacity="0.9"/>
+      <rect x="440" y="680" width="144" height="100" rx="20" fill="#0f2f52" opacity="0.8"/>
+      <circle cx="512" cy="730" r="24" fill="#71dcff" opacity="0.7" filter="url(#softGlow)"/>
+      <path d="M370 620 C350 640 340 700 350 760 C360 800 380 830 400 850" fill="none" stroke="#5aa0d0" stroke-width="8" opacity="0.6" stroke-linecap="round"/>
+      <path d="M654 620 C674 640 684 700 674 760 C664 800 644 830 624 850" fill="none" stroke="#5aa0d0" stroke-width="8" opacity="0.6" stroke-linecap="round"/>
     `),
   },
   {
@@ -250,7 +384,7 @@ const BODIES: TraitDefinition[] = [
     family: "canine",
     families: ["canine"],
     svg: wrapSvg(`
-      <path d="M320 850 C350 665 420 530 505 500 C580 520 654 655 706 850 Z" fill="url(#metalBlue)" opacity="0.94"/>
+      <path d="M340 850 C370 665 440 530 505 500 C580 520 654 655 706 850 Z" fill="url(#metalBlue)" opacity="0.94"/>
       <path d="M380 560 C430 520 460 470 506 460 C560 470 605 520 650 560" fill="none" stroke="#b7efff" stroke-width="7" opacity="0.55"/>
       <ellipse cx="500" cy="702" rx="48" ry="62" fill="#16395d" opacity="0.82"/>
       <ellipse cx="575" cy="706" rx="42" ry="52" fill="#16395d" opacity="0.82"/>
@@ -355,12 +489,112 @@ const BODIES: TraitDefinition[] = [
 
 const EYES: TraitDefinition[] = [
   {
+    id: "anime-cyan",
+    name: "Cyan Gaze",
+    layer: "eyes",
+    rarity: "common",
+    weight: 22,
+    families: ["humanoid", "feline", "spirit", "rabbit"],
+    svg: wrapSvg(`
+      <ellipse cx="456" cy="516" rx="32" ry="22" fill="url(#eyeGradCyan)" opacity="0.95"/>
+      <ellipse cx="568" cy="516" rx="32" ry="22" fill="url(#eyeGradCyan)" opacity="0.95"/>
+      <ellipse cx="456" cy="516" rx="18" ry="12" fill="#000000" opacity="0.3"/>
+      <ellipse cx="568" cy="516" rx="18" ry="12" fill="#000000" opacity="0.3"/>
+      <circle cx="446" cy="508" r="6" fill="#ffffff" opacity="0.9"/>
+      <circle cx="558" cy="508" r="6" fill="#ffffff" opacity="0.9"/>
+      <circle cx="464" cy="522" r="3" fill="#ffffff" opacity="0.5"/>
+      <circle cx="576" cy="522" r="3" fill="#ffffff" opacity="0.5"/>
+      <path d="M424 516 C440 490 472 490 488 516" stroke="#1a1a2e" stroke-width="4" fill="none" opacity="0.7" stroke-linecap="round"/>
+      <path d="M536 516 C552 490 584 490 600 516" stroke="#1a1a2e" stroke-width="4" fill="none" opacity="0.7" stroke-linecap="round"/>
+    `),
+  },
+  {
+    id: "anime-rose",
+    name: "Rose Gaze",
+    layer: "eyes",
+    rarity: "common",
+    weight: 18,
+    families: ["humanoid", "feline", "spirit", "rabbit"],
+    svg: wrapSvg(`
+      <ellipse cx="456" cy="516" rx="32" ry="22" fill="url(#eyeGradRose)" opacity="0.95"/>
+      <ellipse cx="568" cy="516" rx="32" ry="22" fill="url(#eyeGradRose)" opacity="0.95"/>
+      <ellipse cx="456" cy="516" rx="18" ry="12" fill="#000000" opacity="0.3"/>
+      <ellipse cx="568" cy="516" rx="18" ry="12" fill="#000000" opacity="0.3"/>
+      <circle cx="446" cy="508" r="6" fill="#ffffff" opacity="0.9"/>
+      <circle cx="558" cy="508" r="6" fill="#ffffff" opacity="0.9"/>
+      <circle cx="464" cy="522" r="3" fill="#ffffff" opacity="0.5"/>
+      <circle cx="576" cy="522" r="3" fill="#ffffff" opacity="0.5"/>
+      <path d="M424 516 C440 490 472 490 488 516" stroke="#1a1a2e" stroke-width="4" fill="none" opacity="0.7" stroke-linecap="round"/>
+      <path d="M536 516 C552 490 584 490 600 516" stroke="#1a1a2e" stroke-width="4" fill="none" opacity="0.7" stroke-linecap="round"/>
+    `),
+  },
+  {
+    id: "anime-purple",
+    name: "Purple Gaze",
+    layer: "eyes",
+    rarity: "uncommon",
+    weight: 14,
+    families: ["humanoid", "feline", "spirit", "rabbit"],
+    svg: wrapSvg(`
+      <ellipse cx="456" cy="516" rx="32" ry="22" fill="url(#eyeGradPurple)" opacity="0.95"/>
+      <ellipse cx="568" cy="516" rx="32" ry="22" fill="url(#eyeGradPurple)" opacity="0.95"/>
+      <ellipse cx="456" cy="516" rx="18" ry="12" fill="#000000" opacity="0.3"/>
+      <ellipse cx="568" cy="516" rx="18" ry="12" fill="#000000" opacity="0.3"/>
+      <circle cx="446" cy="508" r="6" fill="#ffffff" opacity="0.9"/>
+      <circle cx="558" cy="508" r="6" fill="#ffffff" opacity="0.9"/>
+      <circle cx="464" cy="522" r="3" fill="#ffffff" opacity="0.5"/>
+      <circle cx="576" cy="522" r="3" fill="#ffffff" opacity="0.5"/>
+      <path d="M424 516 C440 490 472 490 488 516" stroke="#1a1a2e" stroke-width="4" fill="none" opacity="0.7" stroke-linecap="round"/>
+      <path d="M536 516 C552 490 584 490 600 516" stroke="#1a1a2e" stroke-width="4" fill="none" opacity="0.7" stroke-linecap="round"/>
+    `),
+  },
+  {
+    id: "anime-gold",
+    name: "Gold Gaze",
+    layer: "eyes",
+    rarity: "rare",
+    weight: 10,
+    families: ["humanoid", "feline", "dragon", "spirit"],
+    svg: wrapSvg(`
+      <ellipse cx="456" cy="516" rx="32" ry="22" fill="url(#eyeGradGold)" opacity="0.95"/>
+      <ellipse cx="568" cy="516" rx="32" ry="22" fill="url(#eyeGradGold)" opacity="0.95"/>
+      <ellipse cx="456" cy="516" rx="18" ry="12" fill="#000000" opacity="0.3"/>
+      <ellipse cx="568" cy="516" rx="18" ry="12" fill="#000000" opacity="0.3"/>
+      <circle cx="446" cy="508" r="6" fill="#ffffff" opacity="0.9"/>
+      <circle cx="558" cy="508" r="6" fill="#ffffff" opacity="0.9"/>
+      <circle cx="464" cy="522" r="3" fill="#ffffff" opacity="0.5"/>
+      <circle cx="576" cy="522" r="3" fill="#ffffff" opacity="0.5"/>
+      <path d="M424 516 C440 490 472 490 488 516" stroke="#1a1a2e" stroke-width="4" fill="none" opacity="0.7" stroke-linecap="round"/>
+      <path d="M536 516 C552 490 584 490 600 516" stroke="#1a1a2e" stroke-width="4" fill="none" opacity="0.7" stroke-linecap="round"/>
+    `),
+  },
+  {
+    id: "anime-emerald",
+    name: "Emerald Gaze",
+    layer: "eyes",
+    rarity: "epic",
+    weight: 6,
+    families: ["humanoid", "feline", "spirit", "rabbit"],
+    svg: wrapSvg(`
+      <ellipse cx="456" cy="516" rx="32" ry="22" fill="url(#eyeGradEmerald)" opacity="0.95"/>
+      <ellipse cx="568" cy="516" rx="32" ry="22" fill="url(#eyeGradEmerald)" opacity="0.95"/>
+      <ellipse cx="456" cy="516" rx="18" ry="12" fill="#000000" opacity="0.3"/>
+      <ellipse cx="568" cy="516" rx="18" ry="12" fill="#000000" opacity="0.3"/>
+      <circle cx="446" cy="508" r="6" fill="#ffffff" opacity="0.9"/>
+      <circle cx="558" cy="508" r="6" fill="#ffffff" opacity="0.9"/>
+      <circle cx="464" cy="522" r="3" fill="#ffffff" opacity="0.5"/>
+      <circle cx="576" cy="522" r="3" fill="#ffffff" opacity="0.5"/>
+      <path d="M424 516 C440 490 472 490 488 516" stroke="#1a1a2e" stroke-width="4" fill="none" opacity="0.7" stroke-linecap="round"/>
+      <path d="M536 516 C552 490 584 490 600 516" stroke="#1a1a2e" stroke-width="4" fill="none" opacity="0.7" stroke-linecap="round"/>
+    `),
+  },
+  {
     id: "dual-slit",
     name: "Dual Slit",
     layer: "eyes",
     rarity: "common",
-    weight: 22,
-    families: ["universal"],
+    weight: 18,
+    families: ["mech", "canine", "dragon"],
     svg: wrapSvg(`
       <ellipse cx="456" cy="516" rx="30" ry="16" fill="url(#glowCyan)" opacity="0.95" filter="url(#softGlow)"/>
       <ellipse cx="568" cy="516" rx="30" ry="16" fill="url(#glowCyan)" opacity="0.95" filter="url(#softGlow)"/>
@@ -373,8 +607,8 @@ const EYES: TraitDefinition[] = [
     name: "Tri Visor",
     layer: "eyes",
     rarity: "common",
-    weight: 18,
-    families: ["universal"],
+    weight: 14,
+    families: ["mech", "canine", "dragon"],
     svg: wrapSvg(`
       <rect x="410" y="494" width="204" height="42" rx="18" fill="#12243d" opacity="0.9"/>
       <circle cx="450" cy="515" r="12" fill="url(#glowRose)" opacity="0.9" filter="url(#softGlow)"/>
@@ -387,7 +621,7 @@ const EYES: TraitDefinition[] = [
     name: "Mono Orb",
     layer: "eyes",
     rarity: "uncommon",
-    weight: 14,
+    weight: 10,
     families: ["mech", "avian", "dragon"],
     svg: wrapSvg(`
       <circle cx="512" cy="515" r="42" fill="#0e1f35" opacity="0.9"/>
@@ -400,7 +634,7 @@ const EYES: TraitDefinition[] = [
     name: "Runic Ring",
     layer: "eyes",
     rarity: "rare",
-    weight: 10,
+    weight: 8,
     families: ["spirit", "humanoid", "feline"],
     svg: wrapSvg(`
       <circle cx="512" cy="515" r="78" fill="none" stroke="#d7a5ff" stroke-width="6" opacity="0.7" filter="url(#softGlow)"/>
@@ -415,7 +649,7 @@ const EYES: TraitDefinition[] = [
     name: "Predator Tilt",
     layer: "eyes",
     rarity: "uncommon",
-    weight: 14,
+    weight: 10,
     families: ["canine", "feline", "dragon"],
     svg: wrapSvg(`
       <path d="M420 516 C445 486 480 494 492 516 C480 538 445 546 420 516 Z" fill="url(#glowLime)" opacity="0.86" filter="url(#softGlow)"/>
@@ -455,6 +689,118 @@ const EYES: TraitDefinition[] = [
       <circle cx="478" cy="520" r="10" fill="#fff" opacity="0.85"/>
       <circle cx="546" cy="520" r="10" fill="#fff" opacity="0.85"/>
       <circle cx="512" cy="474" r="18" fill="#dca8ff" opacity="0.5" filter="url(#softGlow)"/>
+    `),
+  },
+];
+
+const HAIR: TraitDefinition[] = [
+  {
+    id: "none",
+    name: "None",
+    layer: "headgear",
+    rarity: "common",
+    weight: 20,
+    families: ["universal"],
+    svg: wrapSvg(""),
+  },
+  {
+    id: "spiky-blue",
+    name: "Spiky Blue",
+    layer: "headgear",
+    rarity: "common",
+    weight: 16,
+    families: ["humanoid"],
+    svg: wrapSvg(`
+      <path d="M380 420 L360 320 L400 380 L420 280 L450 360 L480 260 L512 340 L544 260 L574 360 L604 280 L624 380 L664 320 L644 420 C620 440 580 460 512 460 C444 460 404 440 380 420 Z" fill="url(#hairGradBlue)" opacity="0.92"/>
+      <path d="M420 380 L440 300 L470 360 L512 280 L554 360 L584 300 L604 380" fill="none" stroke="#81d4fa" stroke-width="2" opacity="0.4"/>
+      <circle cx="480" cy="320" r="4" fill="#ffffff" opacity="0.3"/>
+      <circle cx="544" cy="300" r="3" fill="#ffffff" opacity="0.25"/>
+    `),
+  },
+  {
+    id: "long-pink",
+    name: "Long Pink",
+    layer: "headgear",
+    rarity: "common",
+    weight: 14,
+    families: ["humanoid", "feline", "spirit"],
+    svg: wrapSvg(`
+      <path d="M370 440 C370 360 420 300 512 280 C604 300 654 360 654 440 C654 500 640 580 620 660 C600 740 580 800 560 850 L520 850 C540 800 560 740 570 660 C580 580 590 500 590 440 C590 380 560 340 512 330 C464 340 434 380 434 440 C434 500 444 580 454 660 C464 740 484 800 504 850 L464 850 C444 800 424 740 404 660 C384 580 370 500 370 440 Z" fill="url(#hairGradPink)" opacity="0.9"/>
+      <path d="M400 400 C420 360 460 340 512 330 C564 340 604 360 624 400" fill="none" stroke="#f8bbd0" stroke-width="3" opacity="0.4"/>
+      <circle cx="440" cy="380" r="4" fill="#ffffff" opacity="0.25"/>
+      <circle cx="584" cy="380" r="4" fill="#ffffff" opacity="0.25"/>
+    `),
+  },
+  {
+    id: "short-silver",
+    name: "Short Silver",
+    layer: "headgear",
+    rarity: "uncommon",
+    weight: 12,
+    families: ["humanoid", "mech", "spirit"],
+    svg: wrapSvg(`
+      <path d="M370 440 C370 360 420 300 512 280 C604 300 654 360 654 440 C654 480 640 520 620 560 C600 580 580 600 560 600 L540 580 C560 560 580 540 590 500 C600 460 610 420 610 440 C610 380 570 340 512 330 C454 340 414 380 414 440 C414 420 424 460 434 500 C444 540 464 560 484 580 L464 600 C444 600 424 580 404 560 C384 520 370 480 370 440 Z" fill="url(#hairGradSilver)" opacity="0.92"/>
+      <path d="M400 400 C420 360 460 340 512 330 C564 340 604 360 624 400" fill="none" stroke="#e0e0e0" stroke-width="2" opacity="0.4"/>
+      <path d="M440 350 L460 320 L480 340 L512 310 L544 340 L564 320 L584 350" fill="none" stroke="#ffffff" stroke-width="1" opacity="0.3"/>
+    `),
+  },
+  {
+    id: "twin-tails",
+    name: "Twin Tails",
+    layer: "headgear",
+    rarity: "rare",
+    weight: 8,
+    families: ["humanoid", "feline", "rabbit"],
+    svg: wrapSvg(`
+      <path d="M370 440 C370 360 420 300 512 280 C604 300 654 360 654 440 C654 480 640 520 620 560 C600 580 580 600 560 600 L540 580 C560 560 580 540 590 500 C600 460 610 420 610 440 C610 380 570 340 512 330 C454 340 414 380 414 440 C414 420 424 460 434 500 C444 540 464 560 484 580 L464 600 C444 600 424 580 404 560 C384 520 370 480 370 440 Z" fill="url(#hairGradPurple)" opacity="0.9"/>
+      <path d="M380 440 C360 460 340 520 320 600 C300 680 280 760 260 820 L300 820 C320 760 340 680 360 600 C380 520 400 460 400 440 Z" fill="url(#hairGradPurple)" opacity="0.85"/>
+      <path d="M644 440 C664 460 684 520 704 600 C724 680 744 760 764 820 L724 820 C704 760 684 680 664 600 C644 520 624 460 624 440 Z" fill="url(#hairGradPurple)" opacity="0.85"/>
+      <circle cx="380" cy="440" r="12" fill="#ce93d8" opacity="0.7"/>
+      <circle cx="644" cy="440" r="12" fill="#ce93d8" opacity="0.7"/>
+      <path d="M400 400 C420 360 460 340 512 330 C564 340 604 360 624 400" fill="none" stroke="#e1bee7" stroke-width="2" opacity="0.4"/>
+    `),
+  },
+  {
+    id: "wild-red",
+    name: "Wild Red",
+    layer: "headgear",
+    rarity: "uncommon",
+    weight: 10,
+    families: ["humanoid", "dragon", "feline"],
+    svg: wrapSvg(`
+      <path d="M360 440 C350 360 400 280 512 260 C624 280 674 360 664 440 C664 480 650 520 630 560 C610 580 590 600 570 600 L550 580 C570 560 590 540 600 500 C610 460 620 420 620 440 C620 380 580 320 512 310 C444 320 404 380 404 440 C404 420 414 460 424 500 C434 540 454 560 474 580 L454 600 C434 600 414 580 394 560 C374 520 360 480 360 440 Z" fill="url(#hairGradRed)" opacity="0.92"/>
+      <path d="M400 360 L420 300 L440 340 L480 280 L512 320 L544 280 L584 340 L604 300 L624 360" fill="none" stroke="#ff8a80" stroke-width="2" opacity="0.4"/>
+      <path d="M440 320 L460 260 L480 300 L512 240 L544 300 L564 260 L584 320" fill="url(#hairGradRed)" opacity="0.7"/>
+    `),
+  },
+  {
+    id: "ponytail-gold",
+    name: "Ponytail Gold",
+    layer: "headgear",
+    rarity: "rare",
+    weight: 6,
+    families: ["humanoid", "feline", "spirit"],
+    svg: wrapSvg(`
+      <path d="M370 440 C370 360 420 300 512 280 C604 300 654 360 654 440 C654 480 640 520 620 560 C600 580 580 600 560 600 L540 580 C560 560 580 540 590 500 C600 460 610 420 610 440 C610 380 570 340 512 330 C454 340 414 380 414 440 C414 420 424 460 434 500 C444 540 464 560 484 580 L464 600 C444 600 424 580 404 560 C384 520 370 480 370 440 Z" fill="url(#hairGradGold)" opacity="0.9"/>
+      <path d="M512 300 C540 280 560 300 580 340 C600 380 620 440 640 520 C660 600 680 680 700 760 L660 760 C640 680 620 600 600 520 C580 440 560 380 540 340 C520 300 500 280 512 300 Z" fill="url(#hairGradGold)" opacity="0.85"/>
+      <circle cx="512" cy="300" r="14" fill="#fdd835" opacity="0.7"/>
+      <path d="M400 400 C420 360 460 340 512 330 C564 340 604 360 624 400" fill="none" stroke="#fff9c4" stroke-width="2" opacity="0.4"/>
+    `),
+  },
+  {
+    id: "bob-green",
+    name: "Bob Green",
+    layer: "headgear",
+    rarity: "epic",
+    weight: 4,
+    families: ["humanoid", "feline", "rabbit"],
+    svg: wrapSvg(`
+      <path d="M370 440 C370 360 420 300 512 280 C604 300 654 360 654 440 C654 480 640 520 620 560 C600 580 580 600 560 600 L540 580 C560 560 580 540 590 500 C600 460 610 420 610 440 C610 380 570 340 512 330 C454 340 414 380 414 440 C414 420 424 460 434 500 C444 540 464 560 484 580 L464 600 C444 600 424 580 404 560 C384 520 370 480 370 440 Z" fill="url(#hairGradGreen)" opacity="0.92"/>
+      <path d="M370 440 C360 460 350 500 340 540 C330 580 320 620 310 660 L350 660 C360 620 370 580 380 540 C390 500 400 460 400 440 Z" fill="url(#hairGradGreen)" opacity="0.8"/>
+      <path d="M654 440 C664 460 674 500 684 540 C694 580 704 620 714 660 L674 660 C664 620 654 580 644 540 C634 500 624 460 624 440 Z" fill="url(#hairGradGreen)" opacity="0.8"/>
+      <path d="M400 400 C420 360 460 340 512 330 C564 340 604 360 624 400" fill="none" stroke="#b9f6ca" stroke-width="2" opacity="0.4"/>
+      <circle cx="440" cy="380" r="3" fill="#ffffff" opacity="0.25"/>
+      <circle cx="584" cy="380" r="3" fill="#ffffff" opacity="0.25"/>
     `),
   },
 ];
@@ -597,296 +943,251 @@ const CLOTHING: TraitDefinition[] = [
     families: ["humanoid", "spirit", "feline"],
     svg: wrapSvg(`
       <path d="M330 850 C354 760 430 652 512 628 C594 652 670 760 694 850 Z" fill="#2d1f46" opacity="0.94"/>
-      <path d="M388 642 L512 840 L636 642" fill="none" stroke="#f1ceff" stroke-width="8" opacity="0.65"/>
-      <line x1="400" y1="712" x2="624" y2="712" stroke="#d6a4ff" stroke-width="5" opacity="0.55"/>
-      <rect x="462" y="694" width="100" height="26" rx="13" fill="#ffd6ff" opacity="0.62"/>
+      <path d="M430 660 C470 640 554 640 594 660" stroke="#d4a5ff" stroke-width="4" opacity="0.6" fill="none"/>
+      <path d="M512 628 L512 850" stroke="#c89bff" stroke-width="3" opacity="0.5"/>
+      <circle cx="512" cy="700" r="16" fill="#d4a5ff" opacity="0.5" filter="url(#softGlow)"/>
     `),
   },
   {
-    id: "pilot-suit",
-    name: "Pilot Suit",
-    layer: "clothing",
-    rarity: "uncommon",
-    weight: 14,
-    families: ["avian", "humanoid", "rabbit"],
-    svg: wrapSvg(`
-      <path d="M348 850 C368 742 424 646 512 624 C600 646 656 742 676 850 Z" fill="#17314f" opacity="0.94"/>
-      <rect x="434" y="652" width="156" height="186" rx="28" fill="#264f7b" opacity="0.82"/>
-      <line x1="512" y1="632" x2="512" y2="850" stroke="#8ad7ff" stroke-width="5" opacity="0.72"/>
-      <circle cx="512" cy="706" r="22" fill="#e5f8ff" opacity="0.75"/>
-    `),
-  },
-  {
-    id: "monk-robe",
-    name: "Monk Robe",
+    id: "stealth-suit",
+    name: "Stealth Suit",
     layer: "clothing",
     rarity: "rare",
     weight: 10,
-    families: ["spirit", "dragon", "avian"],
+    families: ["humanoid", "mech", "feline"],
     svg: wrapSvg(`
-      <path d="M320 850 C348 728 428 648 512 640 C596 648 676 728 704 850 Z" fill="#3b2d22" opacity="0.95"/>
-      <path d="M376 688 C446 664 578 664 648 688" fill="none" stroke="#c9a57a" stroke-width="7" opacity="0.6"/>
-      <rect x="440" y="728" width="144" height="30" rx="15" fill="url(#clothGold)" opacity="0.8"/>
-      <line x1="512" y1="640" x2="512" y2="850" stroke="#e5c79d" stroke-width="4" opacity="0.56"/>
+      <path d="M350 850 C370 750 430 640 512 620 C594 640 654 750 674 850 Z" fill="#0a0f18" opacity="0.96"/>
+      <path d="M400 680 C440 660 584 660 624 680" stroke="#1a3050" stroke-width="3" opacity="0.6" fill="none"/>
+      <path d="M420 720 C460 700 564 700 604 720" stroke="#1a3050" stroke-width="3" opacity="0.6" fill="none"/>
+      <path d="M440 760 C480 740 544 740 584 760" stroke="#1a3050" stroke-width="3" opacity="0.6" fill="none"/>
+      <circle cx="512" cy="680" r="8" fill="#0ec2ff" opacity="0.5" filter="url(#softGlow)"/>
     `),
   },
   {
-    id: "hazard-jacket",
-    name: "Hazard Jacket",
+    id: "energy-robe",
+    name: "Energy Robe",
     layer: "clothing",
     rarity: "epic",
     weight: 6,
-    families: ["mech", "canine", "humanoid"],
+    families: ["spirit", "dragon", "avian"],
     svg: wrapSvg(`
-      <path d="M344 850 C364 736 424 650 512 624 C600 650 660 736 680 850 Z" fill="#2f2f12" opacity="0.96"/>
-      <line x1="392" y1="684" x2="632" y2="684" stroke="#ffe86e" stroke-width="8" opacity="0.78"/>
-      <line x1="392" y1="736" x2="632" y2="736" stroke="#ffe86e" stroke-width="8" opacity="0.78"/>
-      <rect x="470" y="652" width="84" height="178" rx="18" fill="#4f4f22" opacity="0.9"/>
+      <path d="M320 850 C340 740 420 630 512 610 C604 630 684 740 704 850 Z" fill="#1a0a30" opacity="0.9"/>
+      <path d="M380 680 C440 660 584 660 644 680" stroke="#a855f7" stroke-width="4" opacity="0.5" fill="none" filter="url(#softGlow)"/>
+      <path d="M400 720 C460 700 564 700 624 720" stroke="#a855f7" stroke-width="3" opacity="0.4" fill="none" filter="url(#softGlow)"/>
+      <circle cx="512" cy="680" r="20" fill="#a855f7" opacity="0.3" filter="url(#heavyGlow)"/>
+      <circle cx="512" cy="680" r="8" fill="#d8b4fe" opacity="0.6"/>
     `),
   },
   {
-    id: "royal-cape",
-    name: "Royal Cape",
+    id: "cyber-vest",
+    name: "Cyber Vest",
     layer: "clothing",
     rarity: "legendary",
     weight: 2,
-    families: ["universal"],
+    families: ["humanoid", "mech", "canine"],
     svg: wrapSvg(`
-      <path d="M306 850 C340 722 416 646 512 626 C608 646 684 722 718 850 Z" fill="#24133b" opacity="0.95"/>
-      <path d="M360 690 C430 646 594 646 664 690" fill="none" stroke="#ffd7ff" stroke-width="8" opacity="0.66"/>
-      <rect x="440" y="660" width="144" height="34" rx="17" fill="url(#clothGold)" opacity="0.86"/>
-      <circle cx="512" cy="678" r="12" fill="#ffffff" opacity="0.9"/>
+      <path d="M340 850 C360 750 420 640 512 620 C604 640 664 750 684 850 Z" fill="#1a2a40" opacity="0.96"/>
+      <rect x="400" y="660" width="224" height="30" rx="6" fill="#2a4a6a" opacity="0.7"/>
+      <rect x="420" y="700" width="184" height="20" rx="4" fill="#3a6a8a" opacity="0.5"/>
+      <rect x="440" y="730" width="144" height="16" rx="4" fill="#4a8aaa" opacity="0.4"/>
+      <circle cx="460" cy="675" r="6" fill="#0ec2ff" opacity="0.7" filter="url(#softGlow)"/>
+      <circle cx="512" cy="675" r="6" fill="#0ec2ff" opacity="0.7" filter="url(#softGlow)"/>
+      <circle cx="564" cy="675" r="6" fill="#0ec2ff" opacity="0.7" filter="url(#softGlow)"/>
+      <path d="M512 620 L512 850" stroke="#0ec2ff" stroke-width="2" opacity="0.3"/>
     `),
   },
 ];
 
 const ACCESSORIES: TraitDefinition[] = [
   {
-    id: "neck-ring",
-    name: "Neck Ring",
+    id: "none",
+    name: "None",
     layer: "accessories",
     rarity: "common",
-    weight: 20,
+    weight: 30,
     families: ["universal"],
-    svg: wrapSvg(`
-      <ellipse cx="512" cy="804" rx="66" ry="32" fill="none" stroke="#91e9ff" stroke-width="7" opacity="0.78" filter="url(#softGlow)"/>
-      <circle cx="512" cy="804" r="10" fill="#ffffff" opacity="0.86"/>
-    `),
+    svg: wrapSvg(""),
   },
   {
-    id: "chain-grid",
-    name: "Chain Grid",
-    layer: "accessories",
-    rarity: "common",
-    weight: 18,
-    families: ["universal"],
-    svg: wrapSvg(`
-      <path d="M408 742 C452 714 572 714 616 742" fill="none" stroke="#ffd8a1" stroke-width="6" opacity="0.72"/>
-      <circle cx="438" cy="738" r="8" fill="#fff1d8" opacity="0.8"/>
-      <circle cx="474" cy="726" r="8" fill="#fff1d8" opacity="0.8"/>
-      <circle cx="512" cy="722" r="8" fill="#fff1d8" opacity="0.8"/>
-      <circle cx="550" cy="726" r="8" fill="#fff1d8" opacity="0.8"/>
-      <circle cx="586" cy="738" r="8" fill="#fff1d8" opacity="0.8"/>
-    `),
-  },
-  {
-    id: "shoulder-drones",
-    name: "Shoulder Drones",
+    id: "energy-blade",
+    name: "Energy Blade",
     layer: "accessories",
     rarity: "uncommon",
     weight: 14,
-    families: ["mech", "avian", "humanoid"],
+    families: ["humanoid", "mech", "dragon"],
     svg: wrapSvg(`
-      <circle cx="390" cy="642" r="34" fill="#1c3356" opacity="0.86"/>
-      <circle cx="634" cy="642" r="34" fill="#1c3356" opacity="0.86"/>
-      <circle cx="390" cy="642" r="12" fill="#9fe8ff" opacity="0.88" filter="url(#softGlow)"/>
-      <circle cx="634" cy="642" r="12" fill="#9fe8ff" opacity="0.88" filter="url(#softGlow)"/>
-      <line x1="424" y1="642" x2="600" y2="642" stroke="#7bd3ff" stroke-width="3" opacity="0.55"/>
+      <path d="M680 700 L720 500 L730 480 L740 500 L700 700 Z" fill="#0ec2ff" opacity="0.7" filter="url(#softGlow)"/>
+      <path d="M690 680 L720 520 L730 500 L725 520 L700 680 Z" fill="#ffffff" opacity="0.5"/>
+      <rect x="670" y="700" width="40" height="12" rx="4" fill="#2a3a50"/>
     `),
   },
   {
-    id: "ear-comms",
-    name: "Ear Comms",
-    layer: "accessories",
-    rarity: "uncommon",
-    weight: 14,
-    families: ["canine", "feline", "rabbit", "humanoid"],
-    svg: wrapSvg(`
-      <rect x="356" y="480" width="36" height="102" rx="12" fill="#223e63" opacity="0.9"/>
-      <rect x="632" y="480" width="36" height="102" rx="12" fill="#223e63" opacity="0.9"/>
-      <circle cx="374" cy="530" r="14" fill="#8ce4ff" opacity="0.84"/>
-      <circle cx="650" cy="530" r="14" fill="#8ce4ff" opacity="0.84"/>
-    `),
-  },
-  {
-    id: "chest-insignia",
-    name: "Chest Insignia",
+    id: "holo-shield",
+    name: "Holo Shield",
     layer: "accessories",
     rarity: "rare",
     weight: 10,
-    families: ["universal"],
+    families: ["humanoid", "mech", "spirit"],
     svg: wrapSvg(`
-      <polygon points="512,646 564,682 544,748 480,748 460,682" fill="#ffd374" opacity="0.85" filter="url(#softGlow)"/>
-      <polygon points="512,670 538,688 528,726 496,726 486,688" fill="#fff4ce" opacity="0.92"/>
+      <ellipse cx="340" cy="680" rx="60" ry="80" fill="none" stroke="#0ec2ff" stroke-width="4" opacity="0.5" filter="url(#softGlow)"/>
+      <ellipse cx="340" cy="680" rx="50" ry="70" fill="#0ec2ff" opacity="0.1"/>
+      <path d="M300 620 L340 580 L380 620 L380 740 L340 780 L300 740 Z" fill="none" stroke="#0ec2ff" stroke-width="2" opacity="0.3"/>
     `),
   },
   {
-    id: "dual-katana-hilts",
-    name: "Dual Katana Hilts",
+    id: "data-orb",
+    name: "Data Orb",
     layer: "accessories",
     rarity: "epic",
     weight: 6,
-    families: ["dragon", "humanoid", "spirit"],
+    families: ["spirit", "avian", "rabbit"],
     svg: wrapSvg(`
-      <rect x="366" y="688" width="24" height="180" rx="8" fill="#d9f1ff" opacity="0.8" transform="rotate(-24 378 778)"/>
-      <rect x="634" y="688" width="24" height="180" rx="8" fill="#ffd2ea" opacity="0.8" transform="rotate(24 646 778)"/>
-      <rect x="362" y="764" width="32" height="26" rx="8" fill="#0f1f36" opacity="0.9" transform="rotate(-24 378 777)"/>
-      <rect x="630" y="764" width="32" height="26" rx="8" fill="#0f1f36" opacity="0.9" transform="rotate(24 646 777)"/>
+      <circle cx="700" cy="600" r="40" fill="#a855f7" opacity="0.3" filter="url(#heavyGlow)"/>
+      <circle cx="700" cy="600" r="28" fill="#a855f7" opacity="0.4"/>
+      <circle cx="700" cy="600" r="16" fill="#d8b4fe" opacity="0.6"/>
+      <circle cx="690" cy="590" r="6" fill="#ffffff" opacity="0.7"/>
+      <circle cx="710" cy="610" r="4" fill="#ffffff" opacity="0.4"/>
+    `),
+  },
+  {
+    id: "plasma-whip",
+    name: "Plasma Whip",
+    layer: "accessories",
+    rarity: "legendary",
+    weight: 2,
+    families: ["feline", "dragon", "humanoid"],
+    svg: wrapSvg(`
+      <path d="M680 700 C720 680 760 620 780 540 C790 500 800 460 820 420" fill="none" stroke="#ff4d6d" stroke-width="4" opacity="0.7" filter="url(#softGlow)"/>
+      <path d="M680 700 C720 680 760 620 780 540 C790 500 800 460 820 420" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.5"/>
+      <circle cx="820" cy="420" r="8" fill="#ff4d6d" opacity="0.8" filter="url(#softGlow)"/>
+      <rect x="670" y="700" width="20" height="10" rx="3" fill="#3a1a20"/>
     `),
   },
 ];
 
 const EFFECTS: TraitDefinition[] = [
   {
-    id: "ember-rain",
-    name: "Ember Rain",
+    id: "none",
+    name: "None",
     layer: "effects",
     rarity: "common",
-    weight: 18,
+    weight: 30,
     families: ["universal"],
-    svg: wrapSvg(`
-      <circle cx="380" cy="290" r="6" fill="#ff9a7f" opacity="0.58"/>
-      <circle cx="450" cy="360" r="5" fill="#ff9a7f" opacity="0.58"/>
-      <circle cx="520" cy="280" r="7" fill="#ff9a7f" opacity="0.58"/>
-      <circle cx="590" cy="350" r="5" fill="#ff9a7f" opacity="0.58"/>
-      <circle cx="660" cy="290" r="6" fill="#ff9a7f" opacity="0.58"/>
-      <line x1="388" y1="300" x2="370" y2="336" stroke="#ffbd9f" stroke-width="2" opacity="0.5"/>
-      <line x1="528" y1="292" x2="506" y2="338" stroke="#ffbd9f" stroke-width="2" opacity="0.5"/>
-      <line x1="668" y1="302" x2="646" y2="348" stroke="#ffbd9f" stroke-width="2" opacity="0.5"/>
-    `),
+    svg: wrapSvg(""),
   },
   {
-    id: "circuit-aura",
-    name: "Circuit Aura",
-    layer: "effects",
-    rarity: "common",
-    weight: 18,
-    families: ["universal"],
-    svg: wrapSvg(`
-      <ellipse cx="512" cy="560" rx="290" ry="356" fill="none" stroke="#78dfff" stroke-width="4" opacity="0.25"/>
-      <ellipse cx="512" cy="560" rx="240" ry="306" fill="none" stroke="#78dfff" stroke-width="3" opacity="0.23"/>
-      <line x1="232" y1="560" x2="792" y2="560" stroke="#78dfff" stroke-width="2" opacity="0.22"/>
-      <line x1="512" y1="214" x2="512" y2="906" stroke="#78dfff" stroke-width="2" opacity="0.22"/>
-    `),
-  },
-  {
-    id: "glitch-shards",
-    name: "Glitch Shards",
+    id: "aura-cyan",
+    name: "Cyan Aura",
     layer: "effects",
     rarity: "uncommon",
     weight: 14,
     families: ["universal"],
     svg: wrapSvg(`
-      <polygon points="280,300 330,360 250,390" fill="#74f0ff" opacity="0.34"/>
-      <polygon points="720,320 780,370 700,410" fill="#74f0ff" opacity="0.34"/>
-      <polygon points="320,640 370,700 290,740" fill="#ff7cc6" opacity="0.34"/>
-      <polygon points="700,660 760,710 680,750" fill="#ff7cc6" opacity="0.34"/>
-      <polygon points="500,220 560,280 480,320" fill="#a2ffbe" opacity="0.3"/>
+      <ellipse cx="512" cy="580" rx="200" ry="260" fill="#0ec2ff" opacity="0.06" filter="url(#heavyGlow)"/>
+      <ellipse cx="512" cy="580" rx="160" ry="220" fill="#0ec2ff" opacity="0.08" filter="url(#softGlow)"/>
+      <circle cx="400" cy="450" r="3" fill="#0ec2ff" opacity="0.6" filter="url(#softGlow)"/>
+      <circle cx="624" cy="480" r="2" fill="#0ec2ff" opacity="0.5" filter="url(#softGlow)"/>
+      <circle cx="480" cy="700" r="3" fill="#0ec2ff" opacity="0.4" filter="url(#softGlow)"/>
+      <circle cx="560" cy="380" r="2" fill="#0ec2ff" opacity="0.5" filter="url(#softGlow)"/>
     `),
   },
   {
-    id: "halo-rays",
-    name: "Halo Rays",
+    id: "aura-rose",
+    name: "Rose Aura",
+    layer: "effects",
+    rarity: "uncommon",
+    weight: 14,
+    families: ["universal"],
+    svg: wrapSvg(`
+      <ellipse cx="512" cy="580" rx="200" ry="260" fill="#ff4d6d" opacity="0.06" filter="url(#heavyGlow)"/>
+      <ellipse cx="512" cy="580" rx="160" ry="220" fill="#ff4d6d" opacity="0.08" filter="url(#softGlow)"/>
+      <circle cx="420" cy="420" r="3" fill="#ff4d6d" opacity="0.6" filter="url(#softGlow)"/>
+      <circle cx="604" cy="500" r="2" fill="#ff4d6d" opacity="0.5" filter="url(#softGlow)"/>
+      <circle cx="500" cy="720" r="3" fill="#ff4d6d" opacity="0.4" filter="url(#softGlow)"/>
+      <circle cx="540" cy="360" r="2" fill="#ff4d6d" opacity="0.5" filter="url(#softGlow)"/>
+    `),
+  },
+  {
+    id: "aura-purple",
+    name: "Purple Aura",
     layer: "effects",
     rarity: "rare",
     weight: 10,
-    families: ["spirit", "avian", "humanoid"],
+    families: ["universal"],
     svg: wrapSvg(`
-      <line x1="512" y1="180" x2="512" y2="980" stroke="#fff4bf" stroke-width="2" opacity="0.15"/>
-      <line x1="120" y1="560" x2="904" y2="560" stroke="#fff4bf" stroke-width="2" opacity="0.15"/>
-      <line x1="220" y1="268" x2="804" y2="852" stroke="#fff4bf" stroke-width="2" opacity="0.15"/>
-      <line x1="804" y1="268" x2="220" y2="852" stroke="#fff4bf" stroke-width="2" opacity="0.15"/>
-      <circle cx="512" cy="560" r="250" fill="none" stroke="#fff4bf" stroke-width="3" opacity="0.2"/>
+      <ellipse cx="512" cy="580" rx="220" ry="280" fill="#a855f7" opacity="0.06" filter="url(#heavyGlow)"/>
+      <ellipse cx="512" cy="580" rx="180" ry="240" fill="#a855f7" opacity="0.08" filter="url(#softGlow)"/>
+      <circle cx="380" cy="440" r="4" fill="#a855f7" opacity="0.6" filter="url(#softGlow)"/>
+      <circle cx="644" cy="460" r="3" fill="#a855f7" opacity="0.5" filter="url(#softGlow)"/>
+      <circle cx="460" cy="740" r="3" fill="#a855f7" opacity="0.4" filter="url(#softGlow)"/>
+      <circle cx="580" cy="340" r="3" fill="#a855f7" opacity="0.5" filter="url(#softGlow)"/>
+      <circle cx="512" cy="300" r="4" fill="#d8b4fe" opacity="0.6" filter="url(#softGlow)"/>
     `),
   },
   {
-    id: "smoke-veil",
-    name: "Smoke Veil",
+    id: "lightning-arc",
+    name: "Lightning Arc",
     layer: "effects",
     rarity: "epic",
     weight: 6,
-    families: ["dragon", "spirit", "canine"],
+    families: ["universal"],
     svg: wrapSvg(`
-      <ellipse cx="412" cy="730" rx="120" ry="64" fill="#d0d7ff" opacity="0.12"/>
-      <ellipse cx="610" cy="760" rx="140" ry="70" fill="#d0d7ff" opacity="0.12"/>
-      <ellipse cx="500" cy="820" rx="180" ry="82" fill="#d0d7ff" opacity="0.12"/>
-      <path d="M330 740 C380 690 450 700 500 740 C550 780 620 790 690 760" fill="none" stroke="#dfe4ff" stroke-width="5" opacity="0.24"/>
+      <polyline points="380,400 420,380 400,350 440,320 420,290 460,260" fill="none" stroke="#0ec2ff" stroke-width="3" opacity="0.7" filter="url(#softGlow)"/>
+      <polyline points="644,420 604,400 624,370 584,340 604,310 564,280" fill="none" stroke="#0ec2ff" stroke-width="3" opacity="0.7" filter="url(#softGlow)"/>
+      <polyline points="380,400 420,380 400,350 440,320 420,290 460,260" fill="none" stroke="#ffffff" stroke-width="1" opacity="0.5"/>
+      <polyline points="644,420 604,400 624,370 584,340 604,310 564,280" fill="none" stroke="#ffffff" stroke-width="1" opacity="0.5"/>
+      <circle cx="460" cy="260" r="6" fill="#0ec2ff" opacity="0.8" filter="url(#softGlow)"/>
+      <circle cx="564" cy="280" r="6" fill="#0ec2ff" opacity="0.8" filter="url(#softGlow)"/>
     `),
   },
   {
-    id: "lightning-loop",
-    name: "Lightning Loop",
+    id: "void-echo",
+    name: "Void Echo",
     layer: "effects",
     rarity: "legendary",
     weight: 2,
-    families: ["mech", "dragon", "universal"],
+    families: ["universal"],
     svg: wrapSvg(`
-      <polyline points="348,320 420,440 390,440 470,590 438,590 522,750" fill="none" stroke="#8ae1ff" stroke-width="6" opacity="0.72" filter="url(#softGlow)"/>
-      <polyline points="676,320 604,440 634,440 554,590 586,590 502,750" fill="none" stroke="#ffb3e2" stroke-width="6" opacity="0.72" filter="url(#softGlow)"/>
-      <circle cx="512" cy="560" r="280" fill="none" stroke="#9ce6ff" stroke-width="2" opacity="0.25"/>
+      <ellipse cx="512" cy="580" rx="240" ry="300" fill="#000000" opacity="0.15" filter="url(#heavyGlow)"/>
+      <ellipse cx="512" cy="580" rx="200" ry="260" fill="none" stroke="#a855f7" stroke-width="2" opacity="0.3" filter="url(#softGlow)"/>
+      <ellipse cx="512" cy="580" rx="160" ry="220" fill="none" stroke="#d8b4fe" stroke-width="1" opacity="0.2"/>
+      <circle cx="400" cy="400" r="4" fill="#d8b4fe" opacity="0.7" filter="url(#softGlow)"/>
+      <circle cx="624" cy="420" r="3" fill="#d8b4fe" opacity="0.6" filter="url(#softGlow)"/>
+      <circle cx="460" cy="760" r="4" fill="#d8b4fe" opacity="0.5" filter="url(#softGlow)"/>
+      <circle cx="580" cy="320" r="3" fill="#d8b4fe" opacity="0.6" filter="url(#softGlow)"/>
+      <circle cx="512" cy="280" r="5" fill="#ffffff" opacity="0.8" filter="url(#softGlow)"/>
     `),
   },
 ];
 
-export const TRAIT_LIBRARY: TraitDefinition[] = [
-  ...BACKGROUNDS,
-  ...BODIES,
-  ...CLOTHING,
-  ...EYES,
-  ...HEADGEAR,
-  ...ACCESSORIES,
-  ...EFFECTS,
-];
+export const COLLECTION_NAME = "Vessel Agent Souls";
+export const COLLECTION_DESCRIPTION = "Autonomous AI agents with unique cyberpunk identities on Solana.";
 
-export const LAYER_ORDER: LayerName[] = [
-  "background",
-  "body",
-  "clothing",
-  "eyes",
-  "headgear",
-  "accessories",
-  "effects",
-];
+export const TRAIT_LIBRARY: Record<LayerName, TraitDefinition[]> = {
+  background: BACKGROUNDS,
+  body: BODIES,
+  clothing: CLOTHING,
+  eyes: EYES,
+  hair: HAIR,
+  headgear: HEADGEAR,
+  accessories: ACCESSORIES,
+  effects: EFFECTS,
+};
 
-export const COLLECTION_NAME = "Vessel Cyber Sentients";
-export const COLLECTION_DESCRIPTION = "Premium two-phase cNFT collection generated from handcrafted trait PNG layers.";
+export const LAYER_ORDER: LayerName[] = ["background", "body", "clothing", "eyes", "hair", "headgear", "accessories", "effects"];
 
 export function traitsForLayer(layer: LayerName): TraitDefinition[] {
-  return TRAIT_LIBRARY.filter((trait) => trait.layer === layer);
-}
-
-export function traitOutputPath(rootDir: string, trait: TraitDefinition): string {
-  return path.join(rootDir, trait.layer, `${trait.id}.png`);
+  return TRAIT_LIBRARY[layer] ?? [];
 }
 
 export function isTraitCompatible(trait: TraitDefinition, family: CharacterFamily): boolean {
   if (!trait.families || trait.families.length === 0) {
-    return true;
+    return trait.family === family || trait.family === undefined;
   }
   return trait.families.includes("universal") || trait.families.includes(family);
 }
 
-export function rarityScore(rarity: RarityTier): number {
-  switch (rarity) {
-    case "common":
-      return 1;
-    case "uncommon":
-      return 2;
-    case "rare":
-      return 3;
-    case "epic":
-      return 4;
-    case "legendary":
-      return 5;
-  }
+export function rarityScore(tier: RarityTier): number {
+  const scores: Record<RarityTier, number> = { common: 1, uncommon: 2, rare: 3, epic: 4, legendary: 5 };
+  return scores[tier] ?? 1;
 }
