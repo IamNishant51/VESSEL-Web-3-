@@ -1,71 +1,199 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useMemo } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Float } from "@react-three/drei";
+import { Float, MeshDistortMaterial, Sphere } from "@react-three/drei";
 import * as THREE from "three";
+import { SeededRandom } from "@/lib/generative-art/noise";
 
-type OrbProps = {
+type ParticleFieldProps = {
+  count: number;
   color: string;
-  geometry: "icosahedron" | "octahedron";
+  spread: number;
+  seed: number;
 };
 
-function Orb({ color, geometry }: OrbProps) {
+function ParticleField({ count, color, spread, seed }: ParticleFieldProps) {
+  const meshRef = useRef<THREE.Points>(null);
+  const rng = new SeededRandom(seed);
+
+  const positions = useMemo(() => {
+    const pos = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      pos[i * 3] = rng.nextFloat(-spread, spread);
+      pos[i * 3 + 1] = rng.nextFloat(-spread, spread);
+      pos[i * 3 + 2] = rng.nextFloat(-spread, spread);
+    }
+    return pos;
+  }, [count, spread, seed, rng]);
+
+  useFrame((_, delta) => {
+    if (!meshRef.current) return;
+    meshRef.current.rotation.y += delta * 0.05;
+    meshRef.current.rotation.x += delta * 0.02;
+  });
+
+  return (
+    <points ref={meshRef}>
+      <bufferGeometry>
+        <bufferAttribute
+          attach="attributes-position"
+          args={[positions, 3]}
+          count={count}
+        />
+      </bufferGeometry>
+      <pointsMaterial
+        size={0.03}
+        color={color}
+        transparent
+        opacity={0.6}
+        sizeAttenuation
+        blending={THREE.AdditiveBlending}
+      />
+    </points>
+  );
+}
+
+type EnergyRingProps = {
+  radius: number;
+  color: string;
+  tilt: number;
+  speed: number;
+};
+
+function EnergyRing({ radius, color, tilt, speed }: EnergyRingProps) {
   const meshRef = useRef<THREE.Mesh>(null);
 
   useFrame((_, delta) => {
-    if (!meshRef.current) {
-      return;
-    }
+    if (!meshRef.current) return;
+    meshRef.current.rotation.z += delta * speed;
+  });
 
-    meshRef.current.rotation.y += delta * 0.55;
-    meshRef.current.rotation.x += delta * 0.2;
+  return (
+    <mesh ref={meshRef} rotation={[tilt, 0, 0]}>
+      <torusGeometry args={[radius, 0.01, 8, 64]} />
+      <meshStandardMaterial
+        color={color}
+        emissive={color}
+        emissiveIntensity={0.8}
+        transparent
+        opacity={0.5}
+        blending={THREE.AdditiveBlending}
+      />
+    </mesh>
+  );
+}
+
+type SoulOrbProps = {
+  color: string;
+  accentColor: string;
+  distort: number;
+  speed: number;
+  seed: number;
+};
+
+function SoulOrb({ color, accentColor, distort, speed, seed }: SoulOrbProps) {
+  const meshRef = useRef<THREE.Mesh>(null);
+  const rng = new SeededRandom(seed);
+
+  useFrame((_, delta) => {
+    if (!meshRef.current) return;
+    meshRef.current.rotation.y += delta * speed * 0.5;
+    meshRef.current.rotation.x += delta * speed * 0.2;
   });
 
   return (
     <Float speed={2.2} rotationIntensity={0.7} floatIntensity={1.1}>
-      <mesh ref={meshRef}>
-        {geometry === "icosahedron" ? (
-          <icosahedronGeometry args={[1, 1]} />
-        ) : (
-          <octahedronGeometry args={[1.1, 0]} />
-        )}
-        <meshStandardMaterial
+      <Sphere ref={meshRef} args={[1, 64, 64]}>
+        <MeshDistortMaterial
           color={color}
+          attach="material"
+          distort={distort}
+          speed={speed * 2}
+          roughness={0.2}
           metalness={0.8}
-          roughness={0.22}
-          emissive={"#111111"}
-          emissiveIntensity={0.4}
+          emissive={accentColor}
+          emissiveIntensity={0.3}
         />
-      </mesh>
+      </Sphere>
     </Float>
   );
 }
 
 type AgentAvatar3DProps = {
   accentColor?: string;
+  primaryColor?: string;
   variant?: "orb" | "halo" | "prism";
+  seed?: number;
+  size?: number;
 };
 
 export function AgentAvatar3D({
   accentColor = "#14F195",
+  primaryColor = "#171819",
   variant = "orb",
+  seed = 42,
+  size = 112,
 }: AgentAvatar3DProps) {
-  const geometry = variant === "prism" ? "octahedron" : "icosahedron";
+  const particleCount = useMemo(() => {
+    const r = new SeededRandom(seed);
+    return r.nextInt(50, 150);
+  }, [seed]);
+  const ringCount = useMemo(() => {
+    const r = new SeededRandom(seed);
+    return r.nextInt(2, 4);
+  }, [seed]);
+  const distort = useMemo(() => {
+    const r = new SeededRandom(seed);
+    return r.nextFloat(0.2, 0.6);
+  }, [seed]);
+  const speed = useMemo(() => {
+    const r = new SeededRandom(seed);
+    return r.nextFloat(0.3, 0.8);
+  }, [seed]);
+
+  const rings = useMemo(() => {
+    const r = new SeededRandom(seed);
+    return Array.from({ length: ringCount }, (_, i) => ({
+      radius: 1.3 + i * 0.3,
+      color: i % 2 === 0 ? accentColor : primaryColor,
+      tilt: r.nextFloat(-0.5, 0.5),
+      speed: r.nextFloat(0.2, 0.6) * (i % 2 === 0 ? 1 : -1),
+    }));
+  }, [ringCount, accentColor, primaryColor, seed]);
 
   return (
     <div
-      className={`h-28 w-full rounded-xl border border-white/10 ${
-        variant === "halo"
-          ? "bg-[radial-gradient(circle_at_50%_40%,rgba(20,241,149,0.18),rgba(0,0,0,0.3))]"
-          : "bg-gradient-to-br from-white/[0.08] to-black/20"
-      }`}
+      className="rounded-xl overflow-hidden border border-white/10"
+      style={{ width: size, height: size }}
     >
-      <Canvas camera={{ position: [0, 0, 3.2], fov: 44 }}>
-        <ambientLight intensity={0.55} />
+      <Canvas
+        camera={{ position: [0, 0, 3.5], fov: 44 }}
+        style={{ background: "transparent" }}
+      >
+        <ambientLight intensity={0.4} />
         <directionalLight position={[2, 2, 2]} intensity={1.2} color={accentColor} />
-        <pointLight position={[-1.5, -2, 2]} intensity={0.8} color="#9945FF" />
-        <Orb color={accentColor} geometry={geometry} />
+        <pointLight position={[-2, -1, 2]} intensity={0.6} color={primaryColor} />
+        <pointLight position={[0, 2, -1]} intensity={0.4} color="#9945FF" />
+
+        <SoulOrb
+          color={primaryColor}
+          accentColor={accentColor}
+          distort={distort}
+          speed={speed}
+          seed={seed}
+        />
+
+        {rings.map((ring, i) => (
+          <EnergyRing key={i} {...ring} />
+        ))}
+
+        <ParticleField
+          count={particleCount}
+          color={accentColor}
+          spread={2.5}
+          seed={seed + 1000}
+        />
       </Canvas>
     </div>
   );

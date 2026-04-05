@@ -7,10 +7,15 @@ import { MPL_BUBBLEGUM_PROGRAM_ID } from "@metaplex-foundation/mpl-bubblegum";
 
 import { solanaRpcUrl } from "@/lib/solana";
 import type { ForgeDraft } from "@/types/agent";
+import type { Adapter } from "@solana/wallet-adapter-base";
 
 type MintInput = {
   owner: string;
   draft: ForgeDraft;
+  walletAdapter?: Adapter;
+  metadataUri?: string;
+  merkleTreeAddress?: string;
+  collectionMintAddress?: string;
 };
 
 export type MintResult = {
@@ -20,6 +25,7 @@ export type MintResult = {
   estimatedCostSol: string;
   simulated: boolean;
   agentName?: string;
+  explorerUrl?: string;
 };
 
 export async function mintAgentSoulCnft({ owner, draft }: MintInput): Promise<MintResult> {

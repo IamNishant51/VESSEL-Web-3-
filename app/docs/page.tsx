@@ -6,63 +6,6 @@ import { ArrowRight, BookText, Braces, Cpu, Rocket, Shield, Terminal } from "luc
 
 import { AppShell } from "@/components/layout/app-shell";
 
-type DocSection = {
-  id: string;
-  title: string;
-  body: string;
-};
-
-const docSections: DocSection[] = [
-  {
-    id: "introduction",
-    title: "Introduction to Vessel Engine",
-    body:
-      "Vessel is the orchestration layer for Solana-native AI agents. It lets you define identity, attach tool capabilities, and run policy-aware actions with deterministic execution traces.",
-  },
-  {
-    id: "getting-started",
-    title: "Getting Started",
-    body:
-      "To build with Vessel, install the SDK, connect a wallet, then create your first forge draft. Once minted, your agent can be listed, rented, or executed from Dashboard and Orchestra.",
-  },
-  {
-    id: "installation",
-    title: "Installation",
-    body:
-      "Use the command below to install the SDK and scaffold your first agent orchestration project.",
-  },
-  {
-    id: "key-principles",
-    title: "Key Principles",
-    body:
-      "Vessel is built around sovereign identity, constrained execution, and verifiable settlements so every action remains accountable and reproducible.",
-  },
-  {
-    id: "quick-start",
-    title: "Quick Start",
-    body:
-      "Create a forge draft, set risk policy, mint agent identity, and run your first constrained execution in under ten minutes.",
-  },
-  {
-    id: "api-reference",
-    title: "API Reference",
-    body:
-      "Core endpoints include agent creation, tool invocation, and execution traces for replay-safe orchestration workflows.",
-  },
-  {
-    id: "architecture",
-    title: "Architecture",
-    body:
-      "Vessel runtime is composed of planner, policy engine, tool router, and settlement monitor connected through signed action envelopes.",
-  },
-  {
-    id: "security",
-    title: "Security",
-    body:
-      "Policy verification, wallet identity boundaries, and deterministic action scopes ensure secure autonomous execution by default.",
-  },
-];
-
 const sideMenu = [
   { label: "Documentation", icon: BookText, href: "#introduction" },
   { label: "Quick Start", icon: Rocket, href: "#quick-start" },

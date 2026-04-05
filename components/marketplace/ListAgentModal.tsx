@@ -1,14 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog } from "@/components/ui/dialog";
-import { useMarketplace } from "@/hooks/useMarketplace";
+import { useVesselStore } from "@/store/useVesselStore";
 import type { Agent } from "@/types/agent";
 
 type Props = {
@@ -16,9 +15,18 @@ type Props = {
   isOpen: boolean;
   onClose: () => void;
   ownerAddress: string;
+  instantListOnSelect?: boolean;
+  onListed?: (agentId: string) => void;
 };
 
-export function ListAgentModal({ agents, isOpen, onClose, ownerAddress }: Props) {
+export function ListAgentModal({
+  agents,
+  isOpen,
+  onClose,
+  ownerAddress,
+  instantListOnSelect = false,
+  onListed,
+}: Props) {
   const [step, setStep] = useState<"select" | "details">("select");
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [price, setPrice] = useState("1.5");
@@ -27,13 +35,75 @@ export function ListAgentModal({ agents, isOpen, onClose, ownerAddress }: Props)
   const [isRental, setIsRental] = useState(false);
   const [isListing, setIsListing] = useState(false);
 
-  const { addListing } = useMarketplace();
+  const addListing = useVesselStore((state) => state.addListing);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
   const availableAgents = agents.filter((agent) => !agent.listed && !agent.isRental);
 
+  const resetState = () => {
+    setStep("select");
+    setSelectedAgent(null);
+    setPrice("1.5");
+    setCurrency("SOL");
+    setDurationDays("7");
+    setIsRental(false);
+  };
+
+  const performListing = async (agentToList: Agent) => {
+    setIsListing(true);
+    try {
+      const priceNum = parseFloat(price);
+      if (!Number.isFinite(priceNum) || priceNum <= 0) {
+        toast.error("Price must be greater than 0");
+        return;
+      }
+
+      const parsedDays = Number(durationDays);
+      const safeDurationDays = Number.isFinite(parsedDays) && parsedDays > 0 ? parsedDays : 7;
+
+      addListing(
+        {
+          ...agentToList,
+          seller: ownerAddress,
+          listed: true,
+        },
+        priceNum,
+        currency,
+        isRental,
+        safeDurationDays
+      );
+
+      toast.success(`${agentToList.name} listed for ${price} ${currency}${isRental ? ` for ${safeDurationDays} days` : ""}!`);
+      onListed?.(agentToList.id);
+      resetState();
+      onClose();
+    } catch {
+      toast.error("Failed to list agent");
+    } finally {
+      setIsListing(false);
+    }
+  };
+
   const handleSelectAgent = (agent: Agent) => {
+    if (instantListOnSelect) {
+      void performListing(agent);
+      return;
+    }
+
     setSelectedAgent(agent);
     setStep("details");
   };
@@ -44,58 +114,27 @@ export function ListAgentModal({ agents, isOpen, onClose, ownerAddress }: Props)
       return;
     }
 
-    setIsListing(true);
-    try {
-      // Simulate listing on marketplace
-      const priceNum = parseFloat(price);
-      if (priceNum <= 0) {
-        toast.error("Price must be greater than 0");
-        setIsListing(false);
-        return;
-      }
-
-      const parsedDays = Number(durationDays);
-      const safeDurationDays = Number.isFinite(parsedDays) && parsedDays > 0 ? parsedDays : 7;
-
-      addListing(
-        {
-          ...selectedAgent,
-          seller: ownerAddress,
-          listed: true,
-        },
-        priceNum,
-        currency,
-        isRental,
-        safeDurationDays
-      );
-
-      toast.success(`${selectedAgent.name} listed for ${price} ${currency}${isRental ? ` for ${safeDurationDays} days` : ""}!`);
-
-      // Reset and close
-      setStep("select");
-      setSelectedAgent(null);
-      setPrice("1.5");
-      setCurrency("SOL");
-      setDurationDays("7");
-      setIsRental(false);
-      onClose();
-    } catch {
-      toast.error("Failed to list agent");
-    } finally {
-      setIsListing(false);
-    }
+    await performListing(selectedAgent);
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-        >
-          <Card className="w-full max-w-md border-white/10 bg-[#111111]">
+    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true">
+      <button
+        onClick={() => {
+          resetState();
+          onClose();
+        }}
+        className="absolute inset-0 h-full w-full cursor-pointer bg-black/50 backdrop-blur-sm"
+        aria-label="Close listing modal"
+      />
+
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        className="absolute inset-0 z-[51] flex items-center justify-center p-4"
+      >
+        <Card className="relative w-full max-w-md border-white/10 bg-[#111111]">
             <CardHeader>
               <CardTitle className="text-white">
                 {step === "select" ? "List Your Agent" : "Set Price"}
@@ -117,16 +156,17 @@ export function ListAgentModal({ agents, isOpen, onClose, ownerAddress }: Props)
                       </p>
                     ) : (
                       availableAgents.map((agent) => (
-                        <div
+                        <button
                           key={agent.id}
                           onClick={() => handleSelectAgent(agent)}
-                          className="p-3 rounded-lg border border-white/10 bg-[#0A0A0A] cursor-pointer hover:border-[#14F195]/40 hover:bg-[#0A0A0A]/80 transition-all"
+                          disabled={isListing}
+                          className="w-full p-3 rounded-lg border border-white/10 bg-[#0A0A0A] text-left cursor-pointer hover:border-[#14F195]/40 hover:bg-[#0A0A0A]/80 transition-all disabled:opacity-60"
                         >
                           <h4 className="font-semibold text-white">{agent.name}</h4>
                           <p className="text-xs text-zinc-400 mt-1 line-clamp-1">
                             {agent.personality}
                           </p>
-                        </div>
+                        </button>
                       ))
                     )}
                   </motion.div>
@@ -216,6 +256,7 @@ export function ListAgentModal({ agents, isOpen, onClose, ownerAddress }: Props)
                     if (step === "details") {
                       setStep("select");
                     } else {
+                      resetState();
                       onClose();
                     }
                   }}
@@ -242,9 +283,18 @@ export function ListAgentModal({ agents, isOpen, onClose, ownerAddress }: Props)
                 )}
               </div>
             </CardContent>
-          </Card>
-        </motion.div>
-      </div>
-    </Dialog>
+          <button
+            onClick={() => {
+              resetState();
+              onClose();
+            }}
+            className="absolute right-3 top-3 rounded-md border border-white/15 px-2 py-1 text-xs text-zinc-300 hover:bg-white/10"
+            aria-label="Close"
+          >
+            Close
+          </button>
+        </Card>
+      </motion.div>
+    </div>
   );
 }

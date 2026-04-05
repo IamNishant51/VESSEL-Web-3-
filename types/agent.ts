@@ -3,8 +3,10 @@ export type Agent = {
   name: string;
   personality: string;
   owner: string;
+  treasuryBalance?: number;
   reputation?: number;
   totalActions?: number;
+  earnings?: number;
   lastActionAt?: string;
   mintAddress?: string;
   createdAt?: string;
@@ -24,12 +26,44 @@ export type Agent = {
   isRental?: boolean;
 };
 
+export type AgentStats = {
+  reputation: number;
+  totalActions: number;
+  earnings: number;
+};
+
+export type AgentPayment = {
+  amount: number;
+  currency: "USDC";
+  fromAgentId: string;
+  to: string;
+  transactionSignature: string;
+  explorerUrl: string;
+};
+
+export type OrchestrationStep = {
+  fromAgentId: string;
+  toAgentId: string;
+  message: string;
+  response: string;
+  payment: AgentPayment;
+};
+
+export type OrchestrationResult = {
+  success: boolean;
+  steps: OrchestrationStep[];
+  finalMessage: string;
+  error?: string;
+};
+
 export type ChatMessage = {
   id: string;
-  role: "user" | "assistant";
+  role: "user" | "assistant" | "system";
   content: string;
   timestamp: number;
   transactionSignature?: string;
+  explorerUrl?: string;
+  payment?: AgentPayment;
   isStreaming?: boolean;
 };
 
@@ -38,13 +72,43 @@ export type RunAgentRequest = {
   userMessage: string;
   userPublicKey?: string;
   agent?: Agent;
+  context?: {
+    lastAssistantMessage?: string;
+    lastUserMessage?: string;
+  };
+};
+
+export type AgentToolExecution = {
+  name: string;
+  status: "pending" | "running" | "success" | "failed";
+  details?: Record<string, unknown>;
+};
+
+export type AgentReasoningStep = {
+  type: "perception" | "reasoning" | "planning" | "tool_selection" | "validation" | "execution" | "reflection";
+  content: string;
+};
+
+export type AgentPlanStep = {
+  id: string;
+  description: string;
+  status: "pending" | "running" | "done" | "failed";
+  tool?: string;
 };
 
 export type RunAgentResponse = {
   message: string;
+  success?: boolean;
   transactionSignature?: string;
+  explorerUrl?: string;
   toolUsed?: string;
+  payment?: AgentPayment;
+  errorCode?: string;
   error?: string;
+  reasoningSteps?: AgentReasoningStep[];
+  planSteps?: AgentPlanStep[];
+  toolExecution?: AgentToolExecution;
+  agentState?: "idle" | "thinking" | "planning" | "executing" | "waiting_approval" | "error";
 };
 
 export type ToolCategory =

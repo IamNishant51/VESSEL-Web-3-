@@ -1,0 +1,214 @@
+import type { Agent } from "@/types/agent";
+import {
+  generateAgentArt,
+  generateAgentPreview,
+  generateAgentSVG,
+  getAgentVisualSummary,
+  getRarityColor,
+  getRarityLabel,
+  type ArtResult,
+  type AgentTraits,
+  type ColorPalette,
+} from "@/lib/generative-art";
+
+type VisualInput = Pick<Agent, "id" | "name" | "mintAddress">;
+
+function hashText(value: string): number {
+  let hash = 0;
+  for (let i = 0; i < value.length; i += 1) {
+    hash = (hash * 31 + value.charCodeAt(i)) >>> 0;
+  }
+  return hash;
+}
+
+function normalize(input: VisualInput): string {
+  return `${input.id || ""}|${input.name || ""}|${input.mintAddress || ""}`;
+}
+
+export function getAgentVisualSeed(input: VisualInput): number {
+  return hashText(normalize(input));
+}
+
+/**
+ * Generate full 2048x2048 artwork for an agent
+ * Returns data URL + metadata
+ */
+export function generateAgentArtwork(
+  input: VisualInput,
+  personality: string = "",
+  riskLevel: string = "Balanced",
+  toolCount: number = 0
+): ArtResult {
+  const seed = getAgentVisualSeed(input);
+  return generateAgentArt({
+    seed,
+    name: input.name || "Agent",
+    personality,
+    riskLevel,
+    toolCount,
+    size: 2048,
+  });
+}
+
+/**
+ * Generate 512x512 preview for cards/lists
+ */
+export function generateAgentPreviewImage(
+  input: VisualInput,
+  personality: string = "",
+  riskLevel: string = "Balanced",
+  toolCount: number = 0
+): string {
+  const seed = getAgentVisualSeed(input);
+  return generateAgentPreview({
+    seed,
+    name: input.name || "Agent",
+    personality,
+    riskLevel,
+    toolCount,
+    size: 512,
+  });
+}
+
+/**
+ * Generate SVG for fast loading placeholders
+ */
+export function generateAgentPreviewSVG(
+  input: VisualInput,
+  personality: string = "",
+  riskLevel: string = "Balanced",
+  toolCount: number = 0
+): string {
+  const seed = getAgentVisualSeed(input);
+  return generateAgentSVG({
+    seed,
+    name: input.name || "Agent",
+    personality,
+    riskLevel,
+    toolCount,
+  });
+}
+
+/**
+ * Get visual summary without generating image
+ */
+export function getAgentVisualSummaryData(
+  input: VisualInput,
+  personality: string = "",
+  riskLevel: string = "Balanced",
+  toolCount: number = 0
+) {
+  const seed = getAgentVisualSeed(input);
+  return getAgentVisualSummary({
+    seed,
+    name: input.name || "Agent",
+    personality,
+    riskLevel,
+    toolCount,
+  });
+}
+
+/**
+ * Get rarity info for display
+ */
+export function getAgentRarityInfo(
+  input: VisualInput,
+  personality: string = "",
+  riskLevel: string = "Balanced",
+  toolCount: number = 0
+): { color: string; label: string; traits: AgentTraits } {
+  const seed = getAgentVisualSeed(input);
+  const traits = generateAgentArt({
+    seed,
+    name: input.name || "Agent",
+    personality,
+    riskLevel,
+    toolCount,
+  }).traits;
+
+  return {
+    color: getRarityColor(traits.rarity),
+    label: getRarityLabel(traits.rarity),
+    traits,
+  };
+}
+
+/**
+ * Get CSS gradient for agent card background
+ */
+export function getAgentCardGradient(
+  input: VisualInput,
+  personality: string = "",
+  riskLevel: string = "Balanced",
+  toolCount: number = 0
+): string {
+  const seed = getAgentVisualSeed(input);
+  const summary = getAgentVisualSummary({
+    seed,
+    name: input.name || "Agent",
+    personality,
+    riskLevel,
+    toolCount,
+  });
+  return summary.gradientCSS;
+}
+
+/**
+ * Get color palette for agent
+ */
+export function getAgentPalette(
+  input: VisualInput,
+  personality: string = "",
+  riskLevel: string = "Balanced",
+  toolCount: number = 0
+): ColorPalette {
+  const seed = getAgentVisualSeed(input);
+  const summary = getAgentVisualSummary({
+    seed,
+    name: input.name || "Agent",
+    personality,
+    riskLevel,
+    toolCount,
+  });
+  return summary.palette;
+}
+
+/**
+ * Get visual label (2-letter initials)
+ */
+export function getAgentVisualLabel(input: VisualInput): string {
+  const clean = (input.name || "AGENT").replace(/[^a-zA-Z0-9\s]/g, " ").trim();
+  const words = clean.split(/\s+/).filter(Boolean);
+
+  let label = "AG";
+  if (words.length >= 2) {
+    label = `${words[0][0]}${words[1][0]}`;
+  } else if (words.length === 1) {
+    label = words[0].slice(0, 2);
+  }
+
+  return label.toUpperCase();
+}
+
+/**
+ * Backwards compatible: get artwork URL (now returns SVG data URI)
+ */
+export function getAgentArtworkUrl(input: VisualInput, size = 1024): string {
+  void size;
+  const svg = generateAgentPreviewSVG(input);
+  return `data:image/svg+xml;base64,${btoa(svg)}`;
+}
+
+/**
+ * Backwards compatible aliases
+ */
+export function getAgentCoverGradientClass(input: VisualInput): string {
+  void input;
+  return `bg-gradient-to-br`;
+}
+
+export function getAgentIconBackgroundClass(input: VisualInput): string {
+  const seed = getAgentVisualSeed(input);
+  const backgrounds = ["bg-zinc-900", "bg-zinc-800", "bg-gray-900", "bg-neutral-900"];
+  return backgrounds[seed % backgrounds.length];
+}

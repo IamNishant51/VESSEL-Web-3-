@@ -3,18 +3,20 @@
 import { useMemo } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 
-import { useMarketplace } from "@/hooks/useMarketplace";
+import { useMarketplace, type MarketplaceCompatState } from "@/hooks/useMarketplace";
 import type { Agent } from "@/types/agent";
 
 export function useAgent() {
   const { publicKey } = useWallet();
-  const store = useMarketplace();
+  const store: MarketplaceCompatState = useMarketplace();
   const allAgents = store.agents;
   const addAgent = store.addAgent;
   const updateAgent = store.updateAgent;
   const deleteAgent = store.deleteAgent;
   const incrementAgentStats = store.incrementAgentStats;
   const getAgentById = store.getAgentById;
+  const debitTreasuryForToolCall = store.debitTreasuryForToolCall;
+  const orchestrateAgents = store.orchestrateAgents;
 
   const ownerAddress = publicKey?.toBase58();
   
@@ -47,6 +49,8 @@ export function useAgent() {
     updateAgent,
     deleteAgent,
     incrementAgentStats,
+    debitTreasuryForToolCall,
+    orchestrateAgents,
     getAgent,
     getAgentById,
     isLoading: false,

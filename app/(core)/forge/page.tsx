@@ -7,6 +7,7 @@ import {
   Bot,
   CircleDollarSign,
   Hammer,
+  Loader2,
   Rocket,
   ShieldCheck,
   Sparkles,
@@ -18,7 +19,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { useAgent } from "@/hooks/useAgent";
-import { mintAgentSoulCnft } from "@/lib/metaplex";
+import { solanaRpcUrl } from "@/lib/solana";
 import type { ForgeTool } from "@/types/agent";
 import { initialForgeDraft } from "@/types/agent";
 
@@ -34,11 +35,24 @@ export default function ForgePage() {
   const [tools, setTools] = useState<ForgeTool[]>([]);
   const [loadingTools, setLoadingTools] = useState(true);
   const [isMinting, setIsMinting] = useState(false);
+  const [isDeploying, setIsDeploying] = useState(false);
   const [mintAddress, setMintAddress] = useState<string | null>(null);
   const [mintSignature, setMintSignature] = useState<string | null>(null);
+  const [mintPreflight, setMintPreflight] = useState<{
+    ready: boolean;
+    loading: boolean;
+    checks: Array<{ name: string; ok: boolean; detail: string }>;
+    config: { merkleTree: string | null; collectionMint: string | null };
+  }>({ ready: false, loading: true, checks: [], config: { merkleTree: null, collectionMint: null } });
   const [customAction, setCustomAction] = useState("");
+  const [activeStep, setActiveStep] = useState(0);
+  const buttonFeedbackClass = "transform-gpu transition-all duration-150 active:scale-[0.97] active:brightness-[0.97]";
 
-  const { publicKey } = useWallet();
+  const isDevMode = process.env.NEXT_PUBLIC_DEV_MODE === "true";
+
+  const { publicKey, wallet } = useWallet();
+  const isBraveWallet = (wallet?.adapter?.name || "").toLowerCase().includes("brave");
+  const isSolflareWallet = (wallet?.adapter?.name || "").toLowerCase().includes("solflare");
   const { addAgent } = useAgent();
   const router = useRouter();
 
@@ -57,6 +71,69 @@ export default function ForgePage() {
     }
 
     void loadTools();
+  }, []);
+
+  useEffect(() => {
+    const loadMintPreflight = async () => {
+      setMintPreflight((prev) => ({ ...prev, loading: true }));
+      try {
+        const response = await fetch("/api/agents/mint-preflight", { cache: "no-store" });
+        const data = (await response.json()) as {
+          ready?: boolean;
+          checks?: Array<{ name: string; ok: boolean; detail: string }>;
+          config?: { merkleTree?: string | null; collectionMint?: string | null };
+        };
+
+        setMintPreflight({
+          ready: !!data.ready,
+          loading: false,
+          checks: Array.isArray(data.checks) ? data.checks : [],
+          config: {
+            merkleTree: data.config?.merkleTree ?? null,
+            collectionMint: data.config?.collectionMint ?? null,
+          },
+        });
+      } catch {
+        setMintPreflight({
+          ready: false,
+          loading: false,
+          checks: [{ name: "mint_preflight", ok: false, detail: "Failed to load mint preflight status." }],
+          config: { merkleTree: null, collectionMint: null },
+        });
+      }
+    };
+
+    void loadMintPreflight();
+  }, []);
+
+  useEffect(() => {
+    const sectionIds = ["section-identity", "section-tools", "section-economy", "section-deployment"];
+    const observers: IntersectionObserver[] = [];
+
+    const observerOptions = {
+      root: null,
+      rootMargin: "-50% 0px -50% 0px",
+      threshold: 0,
+    };
+
+    sectionIds.forEach((id, index) => {
+      const element = document.getElementById(id);
+      if (element) {
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              setActiveStep(index);
+            }
+          });
+        }, observerOptions);
+        observer.observe(element);
+        observers.push(observer);
+      }
+    });
+
+    return () => {
+      observers.forEach((observer) => observer.disconnect());
+    };
   }, []);
 
   const selectedToolNames = useMemo(() => {
@@ -117,6 +194,21 @@ export default function ForgePage() {
       return;
     }
 
+    if (!wallet?.adapter) {
+      toast.error("No wallet adapter found. Reconnect your wallet and retry.");
+      return;
+    }
+
+    if (!isDevMode && isBraveWallet) {
+      toast.error("Brave Wallet cannot mint this Bubblegum cNFT reliably. Switch to Phantom or Solflare for minting.");
+      return;
+    }
+
+    if (!isDevMode && !mintPreflight.ready) {
+      toast.error("Mint preflight checks are not passing. Fix configuration errors before minting.");
+      return;
+    }
+
     if (!draft.name.trim() || !draft.personality.trim()) {
       toast.error("Add agent name and behavioral directives first.");
       return;
@@ -127,11 +219,42 @@ export default function ForgePage() {
       return;
     }
 
+    if (!isDevMode) {
+      try {
+        const { Connection, PublicKey } = await import("@solana/web3.js");
+        const connection = new Connection(solanaRpcUrl, "confirmed");
+        const balance = await connection.getBalance(new PublicKey(publicKey.toBase58()));
+        const solBalance = balance / 1_000_000_000;
+
+        if (solBalance < 0.01) {
+          toast.error(
+            `Insufficient SOL balance. You have ${solBalance.toFixed(4)} SOL. ` +
+            `Minting requires ~0.002 SOL for gas. Fund your wallet at ${solanaRpcUrl.includes("devnet") ? "https://solfaucet.com" : "an exchange"} and retry.`
+          );
+          return;
+        }
+      } catch {
+        toast.error("Could not check wallet balance. Please retry.");
+        return;
+      }
+    }
+
     try {
       setIsMinting(true);
+
+      const metadataRef = `${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
+      const metadataName = encodeURIComponent(draft.name.trim().slice(0, 40) || "Vessel Agent Soul");
+      const metadataTagline = encodeURIComponent((draft.tagline || "Give Your Ideas a Soul").slice(0, 72));
+      const metadataUri = `${window.location.origin}/api/agents/metadata?id=${encodeURIComponent(metadataRef)}&name=${metadataName}&tagline=${metadataTagline}`;
+      const { mintAgentSoulCnft } = await import("@/lib/metaplex");
+
       const result = await mintAgentSoulCnft({
         owner: publicKey.toBase58(),
         draft,
+        walletAdapter: wallet.adapter,
+        metadataUri,
+        merkleTreeAddress: mintPreflight.config.merkleTree ?? process.env.NEXT_PUBLIC_BUBBLEGUM_MERKLE_TREE ?? undefined,
+        collectionMintAddress: mintPreflight.config.collectionMint ?? process.env.NEXT_PUBLIC_BUBBLEGUM_COLLECTION_MINT ?? undefined,
       });
 
       setMintAddress(result.mintAddress);
@@ -146,6 +269,8 @@ export default function ForgePage() {
         owner: publicKey.toBase58(),
         mintAddress: result.mintAddress,
         createdAt: new Date().toISOString(),
+        treasuryBalance: 10,
+        earnings: 0,
         tagline: draft.tagline,
         tools: draft.tools,
         maxSolPerTx: draft.maxSolPerTx,
@@ -155,129 +280,226 @@ export default function ForgePage() {
         systemPrompt,
       });
 
-      toast.success("Agent Soul minted successfully on devnet.");
-    } catch {
-      toast.error("Mint failed. Please retry.");
+      toast.success(`Agent Soul minted successfully${isDevMode ? " (dev mode — no on-chain transaction)" : ` on-chain. ${result.explorerUrl ?? "Simulation complete"}`}`);
+    } catch (error) {
+      const message = (() => {
+        if (error instanceof Error) {
+          return error.message;
+        }
+        if (error && typeof error === "object") {
+          try {
+            const raw = JSON.stringify(error);
+            if (raw && raw !== "{}") {
+              return raw;
+            }
+          } catch {
+            // ignore JSON serialization failure
+          }
+        }
+        return "Unknown mint error";
+      })();
+      const walletName = wallet?.adapter?.name || "current wallet";
+      const isBlockhash = message.toLowerCase().includes("blockhash");
+      const isBalance = message.toLowerCase().includes("insufficient") || message.toLowerCase().includes("balance");
+      const isNetworkMismatch =
+        message.toLowerCase().includes("network") &&
+        message.toLowerCase().includes("mainnet") &&
+        message.toLowerCase().includes("devnet");
+      const isBrave = walletName.toLowerCase().includes("brave");
+      const isSolflare = walletName.toLowerCase().includes("solflare");
+
+      let hint = "";
+      if (isBlockhash) {
+        hint = " Blockhash expired. Ensure your wallet is on Solana Devnet and retry immediately.";
+      }
+      if (isNetworkMismatch) {
+        hint = " Your wallet is on mainnet while VESSEL mint uses devnet. Switch wallet network to Devnet and retry.";
+      }
+      if (isBalance) {
+        hint = ` Your wallet has insufficient SOL for gas. Fund at ${solanaRpcUrl.includes("devnet") ? "https://solfaucet.com" : "an exchange"} and retry.`;
+      }
+      if (isBrave && isBlockhash) {
+        hint += " Brave Wallet has known issues with cNFT minting. Try Phantom or Solflare instead.";
+      }
+      if (isSolflare && isNetworkMismatch) {
+        hint += " In Solflare, open Settings -> Network and select Devnet.";
+      }
+      if (isSolflare && (isBlockhash || message.toLowerCase().includes("simulation failed"))) {
+        hint += " In Solflare popup, check \"I trust this site\" before approving when balance changes show as Unknown.";
+      }
+
+      toast.error(`Mint failed: ${message}.${hint}`);
+      const logError = error instanceof Error
+        ? {
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+            cause: (error as Error & { cause?: unknown }).cause,
+          }
+        : error;
+      // Use warn so Next dev overlay does not treat handled mint failures as app crashes.
+      console.warn("Forge mint failed", { wallet: walletName, error: logError });
     } finally {
       setIsMinting(false);
     }
   }
 
-  function handleDeploy() {
+  async function handleDeploy() {
     if (!mintAddress) {
       toast.info("Mint first, then deploy from dashboard orchestration.");
       return;
     }
 
+    setIsDeploying(true);
+    await new Promise((resolve) => setTimeout(resolve, 260));
     router.push("/dashboard");
   }
 
   return (
-    <div className="-mx-4 -mt-8 min-h-screen bg-[#f5f5f6] px-4 pb-16 pt-6 text-[#161718] sm:-mx-6 sm:px-6">
-      <div className="mx-auto grid w-full max-w-[1320px] grid-cols-1 gap-12 lg:grid-cols-[300px_minmax(0,1fr)]">
-        <aside className="lg:sticky lg:top-24 lg:h-fit">
-          <p className="text-[10px] font-semibold tracking-[0.2em] text-[#0c6f73]">FORGE MODULE</p>
-          <h1 className="mt-2 max-w-[240px] text-[46px] font-semibold leading-[0.92] tracking-[-0.03em] text-[#1b1d1e]">
-            AGENT
+    <div className="-mx-4 -mt-8 min-h-screen bg-[#f5f5f6] px-4 pb-10 pt-6 text-[#161718] sm:-mx-6 sm:px-6 lg:pt-8">
+      <div className="mx-auto grid w-full max-w-[1320px] grid-cols-1 gap-16 lg:grid-cols-[320px_minmax(0,1fr)]">
+        <aside className="hidden lg:block lg:sticky lg:top-24 lg:h-fit">
+          <div className="mb-8 flex items-center gap-2">
+            <span className="inline-block rounded-full bg-[#171819]/5 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#171819]/60">Forge Module</span>
+            {isDevMode && (
+              <span className="inline-block rounded-full bg-amber-500/10 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.15em] text-amber-600 ring-1 ring-amber-500/20">Dev Mode</span>
+            )}
+          </div>
+          <h1 className="mb-6 text-5xl font-bold leading-[0.9] tracking-tight text-[#171819]">
+            Agent
             <br />
-            CREATOR
+            Creator
           </h1>
 
-          <div className="mt-8 space-y-2">
+          <nav className="mb-8 space-y-1">
             {moduleItems.map((item, index) => {
               const Icon = item.icon;
-              const isActive = index === 0;
+              const isActive = index === activeStep;
+              const sectionId = `section-${item.id}`;
               return (
                 <button
                   key={item.id}
-                  className={`flex w-full items-center gap-2 rounded-md border px-3 py-2 text-left text-[11px] font-semibold tracking-[0.08em] transition-colors ${
+                  onClick={() => {
+                    setActiveStep(index);
+                    document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }}
+                  className={`${buttonFeedbackClass} flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-all duration-200 ${
                     isActive
-                      ? "border-[#0b7d82]/30 bg-white text-[#0b7d82]"
-                      : "border-transparent text-black/55 hover:border-black/10 hover:bg-white/70"
+                      ? "bg-[#171819] text-white shadow-lg"
+                      : "text-[#171819]/50 hover:bg-[#171819]/5 hover:text-[#171819]"
                   }`}
                 >
-                  <Icon className="h-3.5 w-3.5" />
-                  {item.label}
+                  <span className={`flex h-6 w-6 items-center justify-center rounded-md text-xs font-bold ${
+                    isActive ? "bg-white/20" : "bg-[#171819]/10"
+                  }`}>
+                    {index + 1}
+                  </span>
+                  <span className="text-sm font-medium">{item.label}</span>
+                  <Icon className={`ml-auto h-4 w-4 ${isActive ? "text-white/70" : "text-[#171819]/30"}`} />
                 </button>
               );
             })}
-          </div>
+          </nav>
 
-          <div className="mt-8 rounded-md border border-black/8 bg-white/60 p-3 text-[11px] leading-relaxed text-black/55">
-            You are initializing a Solana-native autonomous agent. These entities possess unique private keys and the ability to execute on-chain logic.
+          <div className="rounded-xl border border-black/10 bg-white p-5 shadow-[0_1px_0_rgba(0,0,0,0.03)]">
+            <div className="mb-2 flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-[#171819]" />
+              <span className="text-xs font-semibold text-[#171819]/40 uppercase tracking-[0.1em]">Info</span>
+            </div>
+            <p className="text-sm leading-relaxed text-[#171819]/60">
+              You are initializing a Solana-native autonomous agent. These entities possess unique private keys and the ability to execute on-chain logic.
+            </p>
           </div>
         </aside>
 
-        <main className="space-y-14 lg:pl-2">
-          <section className="space-y-4">
-            <h2 className="text-[38px] font-semibold tracking-[-0.025em] text-black">1. Name &amp; Personality</h2>
-            <p className="text-[15px] text-black/65">
-              Define the core essence of your agent. This data will be etched into its neural metadata.
-            </p>
+        <main className="space-y-20 lg:pl-2">
+          <section id="section-identity" className="space-y-8">
+            <div className="space-y-3">
+              <div className="inline-flex items-center gap-2">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#171819] text-xs font-bold text-white">1</span>
+                <span className="text-xs font-medium uppercase tracking-[0.2em] text-[#171819]/50">Step One</span>
+              </div>
+              <h2 className="text-5xl font-bold tracking-tight text-[#171819]">Name &amp; Personality</h2>
+              <p className="max-w-xl text-lg text-[#171819]/60 leading-relaxed">
+                Define the core essence of your agent. This data will be etched into its neural metadata.
+              </p>
+            </div>
 
-            <div className="grid gap-4">
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-semibold tracking-[0.16em] text-black/55">AGENT DESIGNATION</label>
+            <div className="grid gap-6">
+              <div className="group space-y-2">
+                <label className="block text-xs font-semibold uppercase tracking-[0.15em] text-[#171819]/50">Agent Designation</label>
                 <input
                   value={draft.name}
                   onChange={(event) => updateDraft({ name: event.target.value })}
                   placeholder="e.g. SOL-ARBITER-01"
-                  className="h-12 w-full rounded-[2px] border border-[#c2d9da] bg-white px-4 text-[15px] text-black outline-none transition focus:border-[#0b7d82]"
+                  className="w-full rounded-lg border-2 border-[#e5e5e5] bg-white px-5 py-4 text-lg font-medium text-[#171819] placeholder:text-[#171819]/30 transition focus:border-[#171819] focus:outline-none focus:ring-4 focus:ring-[#171819]/10"
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-semibold tracking-[0.16em] text-black/55">THE SOUL TAGLINE</label>
+              <div className="group space-y-2">
+                <label className="block text-xs font-semibold uppercase tracking-[0.15em] text-[#171819]/50">The Soul Tagline</label>
                 <input
                   value={draft.tagline}
                   onChange={(event) => updateDraft({ tagline: event.target.value })}
-                  placeholder="One sentence that defines its purpose..."
-                  className="h-12 w-full rounded-[2px] border border-[#cfd6d7] bg-white px-4 text-[15px] text-black outline-none transition focus:border-[#0b7d82]"
+                  placeholder="Give Your Ideas a Soul"
+                  className="w-full rounded-lg border-2 border-[#e5e5e5] bg-white px-5 py-4 text-lg font-medium text-[#171819] placeholder:text-[#171819]/30 transition focus:border-[#171819] focus:outline-none focus:ring-4 focus:ring-[#171819]/10"
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-semibold tracking-[0.16em] text-black/55">BEHAVIORAL DIRECTIVES</label>
+              <div className="group space-y-2">
+                <label className="block text-xs font-semibold uppercase tracking-[0.15em] text-[#171819]/50">Behavioral Directives</label>
                 <textarea
                   value={draft.personality}
                   onChange={(event) => updateDraft({ personality: event.target.value })}
                   placeholder="Describe how your agent should think, speak, and prioritize tasks. Use natural language to guide its logic..."
-                  className="min-h-36 w-full rounded-[2px] border border-[#cfd6d7] bg-white px-4 py-3 text-[14px] text-black outline-none transition focus:border-[#0b7d82]"
+                  className="min-h-[140px] w-full rounded-lg border-2 border-[#e5e5e5] bg-white px-5 py-4 text-base text-[#171819] placeholder:text-[#171819]/30 transition focus:border-[#171819] focus:outline-none focus:ring-4 focus:ring-[#171819]/10 resize-none"
                 />
               </div>
             </div>
           </section>
 
-          <section className="space-y-4">
-            <h2 className="text-[38px] font-semibold tracking-[-0.025em] text-black">2. Tools &amp; Capabilities</h2>
-            <p className="text-[15px] text-black/65">Select the permissioned modules your agent can interact with.</p>
+          <section id="section-tools" className="space-y-8">
+            <div className="space-y-3">
+              <div className="inline-flex items-center gap-2">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#171819] text-xs font-bold text-white">2</span>
+                <span className="text-xs font-medium uppercase tracking-[0.2em] text-[#171819]/50">Step Two</span>
+              </div>
+              <h2 className="text-5xl font-bold tracking-tight text-[#171819]">Tools &amp; Capabilities</h2>
+              <p className="max-w-xl text-lg text-[#171819]/60 leading-relaxed">
+                Select the permissioned modules your agent can interact with.
+              </p>
+            </div>
 
             {loadingTools ? (
-              <div className="rounded-md border border-black/10 bg-white px-4 py-5 text-[14px] text-black/55">Loading tool capabilities...</div>
+              <div className="rounded-xl border-2 border-[#e5e5e5] bg-white px-6 py-8 text-base text-[#171819]/50">Loading tool capabilities...</div>
             ) : (
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-4 sm:grid-cols-2">
                 {featuredTools.map((tool, index) => {
                   const selected = draft.tools.includes(tool.id);
                   return (
                     <button
                       key={tool.id}
                       onClick={() => toggleTool(tool.id)}
-                      className={`relative flex cursor-pointer items-start gap-3 rounded-md border px-4 py-4 text-left transition-colors ${
+                      className={`${buttonFeedbackClass} group relative flex items-start gap-4 rounded-xl border-2 p-5 text-left transition-all duration-200 ${
                         selected
-                          ? "border-[#96c7c9] bg-white"
-                          : "border-transparent bg-[#eef0f1] hover:border-black/10"
+                          ? "border-[#171819] bg-white shadow-lg scale-[1.02]"
+                          : "border-[#e5e5e5] bg-white hover:border-[#171819]/30 hover:shadow-md"
                       }`}
                     >
-                      <span className={`mt-0.5 inline-flex h-7 w-7 items-center justify-center rounded-sm ${selected ? "bg-[#d9eef0]" : "bg-white/70"}`}>
-                        {index % 2 === 0 ? <Hammer className="h-4 w-4 text-[#0b7d82]" /> : <Banknote className="h-4 w-4 text-black/60" />}
+                      <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg transition-colors ${
+                        selected ? "bg-[#171819]" : "bg-[#f5f5f5] group-hover:bg-[#e5e5e5]"
+                      }`}>
+                        {index % 2 === 0 ? <Hammer className={`h-5 w-5 ${selected ? "text-white" : "text-[#171819]/60"}`} /> : <Banknote className={`h-5 w-5 ${selected ? "text-white" : "text-[#171819]/60"}`} />}
                       </span>
-                      <div>
-                        <p className="text-[14px] font-semibold text-black">{tool.name}</p>
-                        <p className="mt-1 text-[12px] text-black/60">{tool.description}</p>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-base font-semibold text-[#171819]">{tool.name}</p>
+                        <p className="mt-1 text-sm text-[#171819]/50">{tool.description}</p>
                       </div>
                       {selected && (
-                        <span className="absolute right-2 top-2 inline-flex h-4 w-4 items-center justify-center rounded-sm bg-[#0b7d82] text-[10px] text-white">
-                          ✓
+                        <span className="absolute right-4 top-4 flex h-6 w-6 items-center justify-center rounded-full bg-[#171819] text-white">
+                          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
                         </span>
                       )}
                     </button>
@@ -287,41 +509,52 @@ export default function ForgePage() {
             )}
           </section>
 
-          <section className="space-y-4">
-            <h2 className="text-[38px] font-semibold tracking-[-0.025em] text-black">3. Spending &amp; Limits</h2>
-            <p className="text-[15px] text-black/65">Establish the safety rails for the agent&apos;s financial autonomy.</p>
+          <section id="section-economy" className="space-y-8">
+            <div className="space-y-3">
+              <div className="inline-flex items-center gap-2">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#171819] text-xs font-bold text-white">3</span>
+                <span className="text-xs font-medium uppercase tracking-[0.2em] text-[#171819]/50">Step Three</span>
+              </div>
+              <h2 className="text-5xl font-bold tracking-tight text-[#171819]">Spending &amp; Limits</h2>
+              <p className="max-w-xl text-lg text-[#171819]/60 leading-relaxed">
+                Establish the safety rails for the agent&apos;s financial autonomy.
+              </p>
+            </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-1.5 rounded-md border border-black/10 bg-[#f2f3f4] p-3">
-                <label className="text-[10px] font-semibold tracking-[0.16em] text-black/55">MAX TRANSACTION [SOL]</label>
+            <div className="grid gap-6 sm:grid-cols-2">
+              <div className="space-y-2">
+                <label className="block text-xs font-semibold uppercase tracking-[0.15em] text-[#171819]/50">Max Transaction [SOL]</label>
                 <input
                   type="number"
                   value={draft.maxSolPerTx}
                   onChange={(event) => updateDraft({ maxSolPerTx: Number(event.target.value) })}
-                  className="h-10 w-full rounded-[2px] border border-transparent bg-white px-3 text-[14px] text-black outline-none focus:border-[#0b7d82]"
+                  className="w-full rounded-lg border-2 border-[#e5e5e5] bg-white px-5 py-4 text-lg font-semibold text-[#171819] transition focus:border-[#171819] focus:outline-none focus:ring-4 focus:ring-[#171819]/10"
                 />
               </div>
 
-              <div className="space-y-1.5 rounded-md border border-black/10 bg-[#f2f3f4] p-3">
-                <label className="text-[10px] font-semibold tracking-[0.16em] text-black/55">WEEKLY BUDGET [SOL]</label>
+              <div className="space-y-2">
+                <label className="block text-xs font-semibold uppercase tracking-[0.15em] text-[#171819]/50">Weekly Budget [SOL]</label>
                 <input
                   type="number"
                   value={draft.weeklyBudgetUsdc}
                   onChange={(event) => updateDraft({ weeklyBudgetUsdc: Number(event.target.value) })}
-                  className="h-10 w-full rounded-[2px] border border-transparent bg-white px-3 text-[14px] text-black outline-none focus:border-[#0b7d82]"
+                  className="w-full rounded-lg border-2 border-[#e5e5e5] bg-white px-5 py-4 text-lg font-semibold text-[#171819] transition focus:border-[#171819] focus:outline-none focus:ring-4 focus:ring-[#171819]/10"
                 />
               </div>
             </div>
 
-            <div className="rounded-md border border-black/10 bg-[#f2f3f4] p-4">
-              <p className="text-[10px] font-semibold tracking-[0.16em] text-black/55">ALLOWED ACTIONS WHITE-LIST</p>
-              <div className="mt-3 flex flex-wrap items-center gap-2">
+            <div className="rounded-xl border-2 border-[#e5e5e5] bg-white p-6">
+              <div className="mb-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#171819]/50">Allowed Actions White-list</p>
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
                 {draft.allowedActions.map((action) => (
                   <button
                     key={action}
                     onClick={() => toggleAction(action)}
-                    className="rounded-full border border-black/15 bg-white px-3 py-1.5 text-[10px] font-semibold tracking-[0.08em] text-black/70 transition-colors hover:bg-black/5"
+                    className={`${buttonFeedbackClass} inline-flex items-center gap-1.5 rounded-full border-2 border-[#e5e5e5] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-[#171819]/70 transition-all hover:border-[#171819] hover:text-[#171819]`}
                   >
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#14F195]" />
                     {action.replace(/\s+/g, "_").toUpperCase()}
                   </button>
                 ))}
@@ -329,82 +562,203 @@ export default function ForgePage() {
                   <input
                     value={customAction}
                     onChange={(event) => setCustomAction(event.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") addCustomAction(); }}
                     placeholder="custom action"
-                    className="h-7 rounded-full border border-black/15 bg-white px-3 text-[11px] text-black outline-none focus:border-[#0b7d82]"
+                    className="h-10 w-40 rounded-full border-2 border-[#e5e5e5] bg-white px-4 text-xs font-medium text-[#171819] placeholder:text-[#171819]/30 transition focus:border-[#171819] focus:outline-none focus:ring-4 focus:ring-[#171819]/10"
                   />
                   <button
                     onClick={addCustomAction}
-                    className="rounded-full bg-[#0b7d82] px-3 py-1.5 text-[10px] font-semibold tracking-[0.08em] text-white hover:bg-[#08676b]"
+                    className={`${buttonFeedbackClass} inline-flex h-10 items-center gap-1.5 rounded-full bg-[#171819] px-4 text-xs font-semibold uppercase tracking-[0.08em] text-white transition hover:bg-[#111111]`}
                   >
-                    + ADD ACTION
+                    + Add
                   </button>
                 </div>
               </div>
             </div>
           </section>
 
-          <section className="space-y-5 pb-10">
-            <h2 className="text-center text-[40px] font-semibold tracking-[-0.025em] text-black">4. Final Verification</h2>
-            <p className="text-center text-[15px] text-black/65">Review the configuration before deploying to the Solana mainnet.</p>
+          <section id="section-deployment" className="space-y-8">
+            <div className="space-y-3">
+              <div className="inline-flex items-center gap-2">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#171819] text-xs font-bold text-white">4</span>
+                <span className="text-xs font-medium uppercase tracking-[0.2em] text-[#171819]/50">Final Step</span>
+              </div>
+              <h2 className="text-5xl font-bold tracking-tight text-[#171819]">Final Verification</h2>
+              <p className="max-w-xl text-lg text-[#171819]/60 leading-relaxed">
+                Review the configuration before deploying to the Solana mainnet.
+              </p>
+            </div>
 
-            <div className="rounded-xl border border-black/10 bg-white p-4 shadow-[0_6px_18px_rgba(0,0,0,0.05)]">
-              <div className="flex items-center gap-4">
-                <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-md bg-[#101215]">
-                  <Bot className="h-10 w-10 text-[#5fe6ec]" />
+            <div className="overflow-hidden rounded-2xl border border-black/10 bg-white shadow-[0_10px_28px_rgba(0,0,0,0.08)]">
+              <div className="flex flex-col gap-6 p-6 sm:flex-row sm:items-center">
+                <div className="flex h-28 w-28 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#171819] to-[#333333]">
+                  <Bot className="h-12 w-12 text-white" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[26px] font-semibold tracking-[-0.02em] text-black">{draft.name || "SOL-ARBITER-01"}</p>
-                  <p className="mt-1 text-[14px] text-black/65">
-                    {draft.tagline || "Protecting assets through autonomous liquidity-staking optimization."}
+                  <h3 className="text-2xl font-bold tracking-tight text-[#171819]">{draft.name || "SOL-ARBITER-01"}</h3>
+                  <p className="mt-1 text-base text-[#171819]/50">
+                    {draft.tagline || "Give Your Ideas a Soul"}
                   </p>
-                  <div className="mt-2 flex flex-wrap items-center gap-3 text-[10px] font-semibold tracking-[0.08em] text-[#0b7d82]">
-                    <span className="inline-flex items-center gap-1"><ShieldCheck className="h-3 w-3" /> LOGIC: ENABLED</span>
-                    <span className="inline-flex items-center gap-1"><Wallet className="h-3 w-3" /> SAFETY: HIGH</span>
-                    {mintSignature && <span>MINTED: YES</span>}
+                  <div className="mt-3 flex flex-wrap items-center gap-3">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f5f5f5] px-3 py-1.5 text-xs font-semibold text-[#171819]">
+                      <ShieldCheck className="h-3.5 w-3.5" /> LOGIC: ENABLED
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f5f5f5] px-3 py-1.5 text-xs font-semibold text-[#171819]">
+                      <Wallet className="h-3.5 w-3.5" /> SAFETY: HIGH
+                    </span>
+                    {mintSignature && (
+                      <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ${isDevMode ? "bg-amber-500/10 text-amber-600" : "bg-[#14F195]/10 text-[#14F195]"}`}>
+                        {isDevMode ? "MINTED: DEV MODE" : "MINTED: ON-CHAIN"}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
 
-              <div className="mt-3 grid gap-2 text-[12px] text-black/60 sm:grid-cols-2">
-                <p>Tools: {selectedToolNames.join(", ") || "None"}</p>
-                <p>Risk: {draft.riskLevel}</p>
-                <p>Max Tx: {draft.maxSolPerTx} SOL</p>
-                <p>Daily Budget: {draft.dailyBudgetUsdc}</p>
-                {mintAddress && <p className="sm:col-span-2">Mint Address: {mintAddress}</p>}
+              <div className="grid gap-4 border-t border-black/8 bg-[#fcfcfc] p-6 sm:grid-cols-2">
+                <div className="space-y-1">
+                  <p className="text-xs font-medium uppercase tracking-[0.1em] text-[#171819]/40">Tools</p>
+                  <p className="text-sm font-medium text-[#171819]">{selectedToolNames.join(", ") || "None"}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs font-medium uppercase tracking-[0.1em] text-[#171819]/40">Risk Level</p>
+                  <p className="text-sm font-medium text-[#171819]">{draft.riskLevel}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs font-medium uppercase tracking-[0.1em] text-[#171819]/40">Max Transaction</p>
+                  <p className="text-sm font-medium text-[#171819]">{draft.maxSolPerTx} SOL</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs font-medium uppercase tracking-[0.1em] text-[#171819]/40">Daily Budget</p>
+                  <p className="text-sm font-medium text-[#171819]">{draft.dailyBudgetUsdc}</p>
+                </div>
+                {mintAddress && (
+                  <div className="space-y-1 sm:col-span-2">
+                    <p className="text-xs font-medium uppercase tracking-[0.1em] text-[#171819]/40">Mint Address</p>
+                    <p className="break-all text-xs font-mono text-[#171819]/70">{mintAddress}</p>
+                  </div>
+                )}
               </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className={`rounded-xl border p-4 ${mintPreflight.ready ? "border-emerald-200 bg-emerald-50/60" : "border-amber-200 bg-amber-50/70"}`}>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#171819]/60">Mint Preflight</p>
+                <button
+                  onClick={async () => {
+                    setMintPreflight((prev) => ({ ...prev, loading: true }));
+                    try {
+                      const response = await fetch("/api/agents/mint-preflight", { cache: "no-store" });
+                      const data = (await response.json()) as {
+                        ready?: boolean;
+                        checks?: Array<{ name: string; ok: boolean; detail: string }>;
+                        config?: { merkleTree?: string | null; collectionMint?: string | null };
+                      };
+
+                      setMintPreflight({
+                        ready: !!data.ready,
+                        loading: false,
+                        checks: Array.isArray(data.checks) ? data.checks : [],
+                        config: {
+                          merkleTree: data.config?.merkleTree ?? null,
+                          collectionMint: data.config?.collectionMint ?? null,
+                        },
+                      });
+                    } catch {
+                      setMintPreflight({
+                        ready: false,
+                        loading: false,
+                        checks: [{ name: "mint_preflight", ok: false, detail: "Failed to refresh mint preflight status." }],
+                        config: { merkleTree: null, collectionMint: null },
+                      });
+                    }
+                  }}
+                  className="rounded-md border border-black/10 bg-white px-2.5 py-1 text-[11px] font-medium text-[#171819] hover:bg-black/5"
+                >
+                  {mintPreflight.loading ? "Checking..." : "Recheck"}
+                </button>
+              </div>
+
+              <div className="mt-3 space-y-1.5">
+                {mintPreflight.checks.map((check) => (
+                  <div key={check.name} className="flex items-start gap-2 text-xs text-[#171819]/75">
+                    <span className={`mt-0.5 h-2 w-2 rounded-full ${check.ok ? "bg-emerald-600" : "bg-amber-600"}`} />
+                    <span>
+                      {check.name}: {check.detail}
+                    </span>
+                  </div>
+                ))}
+                {mintPreflight.checks.length === 0 && (
+                  <p className="text-xs text-[#171819]/60">No preflight checks returned yet.</p>
+                )}
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              {!isDevMode && isBraveWallet && (
+                <div className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800 sm:col-span-2">
+                  Brave Wallet is detected. For compressed NFT minting, connect Phantom or Solflare to continue.
+                </div>
+              )}
+
+              {!isDevMode && isSolflareWallet && (
+                <div className="rounded-lg border border-sky-300 bg-sky-50 px-3 py-2 text-xs font-medium text-sky-900 sm:col-span-2">
+                  Solflare detected. Ensure wallet network is set to Devnet before minting.
+                </div>
+              )}
+
               <Button
                 onClick={() => void handleMint()}
-                disabled={isMinting}
-                className="h-12 rounded-[2px] border border-black bg-[#1b1d1e] text-[14px] font-semibold text-white hover:bg-black disabled:opacity-60"
+                disabled={isMinting || (!isDevMode && (mintPreflight.loading || !mintPreflight.ready || isBraveWallet))}
+                className={`${buttonFeedbackClass} h-11 gap-2 rounded-lg border border-[#171819] bg-[#171819] px-4 text-sm font-semibold text-white transition hover:bg-[#111111] hover:shadow-md disabled:opacity-60`}
               >
-                <Sparkles className="h-4 w-4" />
-                {isMinting ? "Minting..." : "Mint as Compressed NFT (0.001 SOL)"}
+                <Sparkles className={`h-5 w-5 ${isMinting ? "animate-pulse" : ""}`} />
+                {isMinting
+                  ? "Minting..."
+                  : isDevMode
+                    ? "Mint (Dev Mode — No SOL Required)"
+                    : isBraveWallet
+                      ? "Switch Wallet to Mint"
+                    : mintPreflight.loading
+                      ? "Checking preflight..."
+                      : mintPreflight.ready
+                        ? "Mint as Compressed NFT"
+                        : "Fix preflight to mint"}
               </Button>
 
               <Button
-                onClick={handleDeploy}
-                className="h-12 rounded-[2px] border border-[#0b7d82] bg-[#0b7d82] text-[14px] font-semibold text-white hover:bg-[#08676b]"
+                onClick={() => void handleDeploy()}
+                disabled={isDeploying}
+                className={`${buttonFeedbackClass} h-11 gap-2 rounded-lg border border-black/15 bg-white px-4 text-sm font-semibold text-[#171819] transition hover:border-[#171819] hover:shadow-md disabled:opacity-70`}
               >
-                Deploy to Solana
+                {isDeploying ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    Opening Dashboard...
+                  </>
+                ) : (
+                  <>
+                    Deploy to Solana
+                    <Rocket className="h-5 w-5" />
+                  </>
+                )}
               </Button>
             </div>
           </section>
-
-          <footer className="pb-8 pt-4 text-center">
-            <div className="flex flex-wrap items-center justify-center gap-5 text-[11px] tracking-[0.12em] text-black/55">
-              <a href="/terms" className="transition-colors hover:text-black">TERMS</a>
-              <a href="/privacy" className="transition-colors hover:text-black">PRIVACY</a>
-              <a href="#" className="transition-colors hover:text-black">STATUS</a>
-              <a href="#" className="transition-colors hover:text-black">TWITTER</a>
-              <a href="#" className="transition-colors hover:text-black">DISCORD</a>
-            </div>
-            <p className="mt-4 text-[12px] tracking-[0.08em] text-[#0b7d82]">© 2026 VESSEL ENGINE. ALL RIGHTS RESERVED.</p>
-          </footer>
         </main>
       </div>
+      <footer className="mt-14 border-t border-black/10 pt-6 text-center">
+        <div className="mx-auto max-w-[1320px] px-4 sm:px-6">
+          <div className="flex flex-wrap items-center justify-center gap-5 text-[11px] tracking-[0.12em] text-black/55">
+            <a href="/terms" className="transition-colors hover:text-black">TERMS</a>
+            <a href="/privacy" className="transition-colors hover:text-black">PRIVACY</a>
+            <a href="#" className="transition-colors hover:text-black">STATUS</a>
+            <a href="#" className="transition-colors hover:text-black">TWITTER</a>
+            <a href="#" className="transition-colors hover:text-black">DISCORD</a>
+          </div>
+          <p className="mt-4 pb-6 text-[10px] tracking-[0.12em] text-black/50">© 2026 VESSEL ENGINE. ALL RIGHTS RESERVED.</p>
+        </div>
+      </footer>
     </div>
   );
 }
