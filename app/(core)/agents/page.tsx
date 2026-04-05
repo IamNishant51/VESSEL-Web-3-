@@ -4,7 +4,7 @@ import Image from "next/image";
 import dynamic from "next/dynamic";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Search, ShoppingBag, Bot as BotIcon, Trash2, ExternalLink, X, Wallet, ShieldCheck, Sparkles } from "lucide-react";
+import { Plus, Search, ShoppingBag, Bot as BotIcon, Trash2, ExternalLink, X, Wallet, ShieldCheck, Sparkles, Filter, ChevronRight } from "lucide-react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
@@ -86,11 +86,13 @@ export default function AgentsPage() {
   const { agents, deleteAgent } = useAgent();
   const listings = useVesselStore((state) => state.marketplaceListings);
   const removeListing = useVesselStore((state) => state.removeListing);
+  const getAgentById = useVesselStore((state) => state.getAgentById);
   const router = useRouter();
 
   const [viewMode, setViewMode] = useState<ViewMode>("my-agents");
   const [query, setQuery] = useState("");
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState<CategoryKey>("all");
   const [sortKey, setSortKey] = useState<SortKey>("newest");
   const [isListModalOpen, setIsListModalOpen] = useState(false);
@@ -203,6 +205,10 @@ export default function AgentsPage() {
     setIsDeleting(true);
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
+      const agentToDelete = getAgentById(deleteModal.agentId);
+      if (agentToDelete?.listed) {
+        removeListing(deleteModal.agentId);
+      }
       deleteAgent(deleteModal.agentId);
       toast.success(`${deleteModal.agentName} deleted`);
       setDeleteModal({ isOpen: false, agentId: null, agentName: "" });
@@ -382,7 +388,80 @@ export default function AgentsPage() {
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[250px_minmax(0,1fr)]">
-          <aside className="h-fit border-r border-black/5 pr-0 lg:pr-6">
+          {/* Mobile Filter Toggle */}
+          <div className="lg:hidden">
+            <button
+              onClick={() => setIsMobileFiltersOpen((p) => !p)}
+              className="flex w-full items-center justify-between rounded-[4px] border border-black/10 bg-white px-4 py-2.5 text-[12px] font-semibold text-black/70 transition hover:bg-black/5"
+            >
+              <span className="flex items-center gap-2">
+                <Filter className="h-4 w-4" />
+                FILTERS & SORT
+              </span>
+              <ChevronRight className={`h-4 w-4 transition-transform ${isMobileFiltersOpen ? "rotate-90" : ""}`} />
+            </button>
+            <AnimatePresence>
+              {isMobileFiltersOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden"
+                >
+                  <div className="mt-2 rounded-[4px] border border-black/8 bg-white p-4">
+                    <p className="text-[10px] font-semibold tracking-[0.18em] text-black/58">CATEGORY</p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {categories.map((item) => (
+                        <button
+                          key={item.key}
+                          onClick={() => setActiveCategory(item.key)}
+                          className={`h-7 rounded-[4px] px-2.5 text-[11px] transition-colors ${
+                            activeCategory === item.key
+                              ? "bg-[#e7f3f2] text-[#171819]"
+                              : "bg-transparent text-black/65 hover:bg-black/5"
+                          }`}
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="mt-4">
+                      <p className="text-[10px] font-semibold tracking-[0.18em] text-black/58">SORT BY</p>
+                      <select
+                        value={sortKey}
+                        onChange={(e) => setSortKey(e.target.value as SortKey)}
+                        className="mt-2 h-9 w-full rounded-[4px] border border-black/12 bg-[#f1f2f3] px-3 text-[12px] text-black/75 outline-none focus:border-[#171819]"
+                      >
+                        <option value="newest">Newest</option>
+                        <option value="popularity">Popularity</option>
+                        <option value="reputation">Reputation</option>
+                        <option value="actions">Most Actions</option>
+                      </select>
+                    </div>
+                    {viewMode === "my-agents" && publicKey && (
+                      <div className="mt-4">
+                        <button
+                          onClick={() => openListModal()}
+                          disabled={agents.length === 0}
+                          className="w-full rounded-[4px] bg-[#171819] py-2 text-[11px] font-semibold text-white transition-colors hover:bg-[#111111] disabled:opacity-50"
+                        >
+                          LIST ON MARKETPLACE
+                        </button>
+                        {myListings.length > 0 && (
+                          <p className="mt-2 text-center text-[10px] text-black/55">
+                            {myListings.length} agent{myListings.length !== 1 ? "s" : ""} listed
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          <aside className="hidden h-fit border-r border-black/5 pr-0 lg:block lg:pr-6">
             <p className="text-[11px] font-semibold tracking-[0.18em] text-black/58">FILTERS</p>
             <p className="mt-1 text-[9px] tracking-[0.15em] text-black/35">REFINE SEARCH</p>
 
@@ -542,6 +621,7 @@ export default function AgentsPage() {
                         fill
                         sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
                         className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                        loading="lazy"
                       />
                       <div className="absolute inset-0 bg-[radial-gradient(circle_at_22%_30%,rgba(16,199,204,0.2),transparent_45%)]" />
                       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/45 to-transparent" />

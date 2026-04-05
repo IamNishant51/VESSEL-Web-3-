@@ -165,6 +165,7 @@ export default function MarketplacePage() {
               width={450}
               height={550}
               className="absolute right-[-6px] top-[-8px] h-[230px] w-auto object-contain sm:right-[-10px] sm:top-[-12px] sm:h-[290px]"
+              priority
             />
           </div>
         </section>
@@ -256,6 +257,7 @@ export default function MarketplacePage() {
                         fill
                         sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw"
                         className="h-full w-full object-cover transition-transform duration-300 hover:scale-[1.03]"
+                        loading="lazy"
                       />
                       <div className="absolute right-2 top-2 rounded-full border border-black/10 bg-white px-2 py-0.5 text-[9px] font-semibold tracking-[0.1em] text-black/75">
                         {card.tag}

@@ -259,27 +259,28 @@ export default function MarketplaceDetailPage() {
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
           <Card className="overflow-hidden border-black/10 bg-white">
-            <CardHeader>
-              <div className="flex items-start justify-between">
+            <CardHeader className="px-4 pt-4 sm:px-6">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <CardTitle className="text-[40px] font-semibold leading-[0.95] tracking-[-0.03em] text-black sm:text-[48px]">{listing.name}</CardTitle>
-                  <p className="mt-2 text-[15px] text-black/60">{listing.tagline || "Give Your Ideas a Soul"}</p>
+                  <CardTitle className="text-[28px] font-semibold leading-[0.95] tracking-[-0.03em] text-black sm:text-[40px] lg:text-[48px]">{listing.name}</CardTitle>
+                  <p className="mt-2 text-[13px] text-black/60 sm:text-[15px]">{listing.tagline || "Give Your Ideas a Soul"}</p>
                 </div>
                 {listing.isRental && (
-                  <Badge className="border border-black/10 bg-[#f1f2f3] text-black/75">
+                  <Badge className="shrink-0 border border-black/10 bg-[#f1f2f3] text-black/75">
                     Available for Rental
                   </Badge>
                 )}
               </div>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-6 px-4 pb-6 sm:px-6">
               <div className="overflow-hidden rounded-xl border border-black/10 bg-[#f3f4f6]">
                 <Image
                   src={artworkUrl}
                   alt={`${listing.name} cNFT artwork`}
                   width={1400}
                   height={800}
-                  className="h-[320px] w-full object-cover"
+                  className="h-[200px] w-full object-cover sm:h-[320px]"
+                  priority
                 />
               </div>
 

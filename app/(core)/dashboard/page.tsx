@@ -223,6 +223,7 @@ export default function DashboardPage() {
                         width={48}
                         height={48}
                         className="h-12 w-12 shrink-0 rounded-xl object-cover"
+                        loading="lazy"
                       />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
