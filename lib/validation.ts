@@ -102,6 +102,11 @@ export const dbActionSchema = z.discriminatedUnion("action", [
   saveTransactionSchema,
   bulkSaveAgentsSchema,
   userStatsSchema,
+  z.object({ action: z.literal("fetch-agents"), walletAddress: publicKeySchema.optional() }),
+  z.object({ action: z.literal("fetch-agent-by-id"), agentId: agentIdSchema }),
+  z.object({ action: z.literal("fetch-listings"), seller: publicKeySchema.optional(), includeAll: z.boolean().optional() }),
+  z.object({ action: z.literal("fetch-transactions"), agentId: agentIdSchema.optional(), limit: z.number().min(1).max(200).optional() }),
+  z.object({ action: z.literal("fetch-user-stats"), walletAddress: publicKeySchema }),
 ]);
 
 export type SaveAgentInput = z.infer<typeof saveAgentSchema>;
