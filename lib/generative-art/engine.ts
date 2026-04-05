@@ -9,6 +9,15 @@ import { drawBackground, getBackgroundStyle, type BackgroundStyle } from "./back
 import { drawCyberCharacter, type CharacterConfig } from "./characters";
 import { generateTraits, type AgentTraits } from "./traits";
 
+function escapeSvgText(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
 export interface GenerateArtParams {
   seed: number;
   name: string;
@@ -136,6 +145,24 @@ export function generateAgentSVG(params: GenerateArtParams): string {
 
   const size = 512;
   const rng = new SeededRandom(seed);
+  const backgroundStyle = getBackgroundStyle(seed + 2000);
+  const traitHash = traits.traits.reduce((accumulator, trait) => {
+    let hash = accumulator;
+    const token = `${trait.name}:${trait.value}`;
+    for (let index = 0; index < token.length; index += 1) {
+      hash = (hash * 31 + token.charCodeAt(index)) >>> 0;
+    }
+    return hash;
+  }, seed >>> 0);
+  const compositionMode = traitHash % 4;
+  const floatDuration = 11 + (traitHash % 7);
+  const orbitCount = 2 + Math.min(3, Math.floor(traits.complexity * 3));
+  const ambientCount = 4 + Math.min(8, Math.floor(traits.complexity * 10));
+  const labelColor = riskLevel === "Aggressive" ? "#ff6b6b" : riskLevel === "Conservative" ? "#66ffb0" : palette.primary;
+  const heroName = escapeSvgText((name || "Agent").toUpperCase().slice(0, 28));
+  const heroArchetype = escapeSvgText(traits.archetype.toUpperCase());
+  const heroEnergy = escapeSvgText(traits.energy.toUpperCase());
+  const heroBackground = escapeSvgText(backgroundStyle.toUpperCase());
 
   const defs: string[] = [];
   const elements: string[] = [];
@@ -170,6 +197,34 @@ export function generateAgentSVG(params: GenerateArtParams): string {
     </filter>
   `);
 
+  defs.push(`
+    <style>
+      @keyframes vessel-float {
+        0% { transform: translate3d(0, 0, 0) scale(1); }
+        50% { transform: translate3d(0, -8px, 0) scale(1.015); }
+        100% { transform: translate3d(0, 0, 0) scale(1); }
+      }
+      @keyframes vessel-spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      @keyframes vessel-pulse {
+        0%, 100% { opacity: 0.28; }
+        50% { opacity: 0.85; }
+      }
+      @keyframes vessel-drift {
+        0% { transform: translate(-3px, 4px); }
+        50% { transform: translate(4px, -4px); }
+        100% { transform: translate(-3px, 4px); }
+      }
+      .float { animation: vessel-float ${floatDuration}s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+      .spin { animation: vessel-spin ${Math.max(12, 24 - traits.complexity * 8)}s linear infinite; transform-box: fill-box; transform-origin: center; }
+      .pulse { animation: vessel-pulse ${6 + (traitHash % 4)}s ease-in-out infinite; }
+      .drift { animation: vessel-drift ${8 + (traitHash % 5)}s ease-in-out infinite; }
+      .flicker { animation: vessel-pulse 2.8s steps(2, end) infinite; }
+    </style>
+  `);
+
   // Background
   elements.push(`<rect width="${size}" height="${size}" fill="url(#${bgGradId})"/>`);
 
@@ -179,18 +234,78 @@ export function generateAgentSVG(params: GenerateArtParams): string {
   </pattern>`);
   elements.push(`<rect width="${size}" height="${size}" fill="url(#grid-${seed})"/>`);
 
+  // Ambient motion layers
+  for (let i = 0; i < orbitCount; i += 1) {
+    const radius = size * (0.18 + i * 0.06 + rng.nextFloat(-0.01, 0.01));
+    const stroke = i % 3 === 0 ? palette.primary : i % 3 === 1 ? palette.secondary : palette.accent;
+    elements.push(
+      `<circle cx="${size / 2}" cy="${size / 2}" r="${radius}" fill="none" stroke="${stroke}" stroke-width="${1 + i * 0.25}" stroke-dasharray="${14 + i * 8} ${10 + i * 4}" opacity="${0.18 + i * 0.08}" class="spin" style="animation-duration:${16 + i * 4}s;animation-delay:${-i * 1.5}s"/>`
+    );
+  }
+
+  for (let i = 0; i < ambientCount; i += 1) {
+    const angle = (i / ambientCount) * Math.PI * 2;
+    const radius = size * (0.14 + (i % 5) * 0.05);
+    const x = size / 2 + Math.cos(angle + seed * 0.01) * radius;
+    const y = size / 2 + Math.sin(angle * 1.1 + seed * 0.013) * radius;
+    const accent = [palette.highlight, palette.accent, palette.primary][i % 3];
+
+    elements.push(
+      `<g class="pulse" style="animation-delay:${-(i * 0.4).toFixed(2)}s">`
+      + `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${(1.5 + (i % 4) * 0.9).toFixed(2)}" fill="${accent}" opacity="${0.18 + (i % 5) * 0.05}" filter="url(#${glowId})"/>`
+      + `</g>`
+    );
+  }
+
+  switch (backgroundStyle) {
+    case "cosmic":
+    case "nebula":
+    case "aurora":
+      elements.push(
+        `<circle cx="${size * 0.28}" cy="${size * 0.28}" r="${size * 0.22}" fill="${palette.highlight}" opacity="0.06" class="drift"/>`
+      );
+      elements.push(
+        `<circle cx="${size * 0.72}" cy="${size * 0.72}" r="${size * 0.18}" fill="${palette.primary}" opacity="0.05" class="drift"/>`
+      );
+      break;
+    case "grid":
+    case "geometric":
+      elements.push(
+        `<path d="M ${size * 0.12} ${size * 0.18} L ${size * 0.88} ${size * 0.82}" fill="none" stroke="${palette.primary}" stroke-width="1" opacity="0.08"/>`
+      );
+      elements.push(
+        `<path d="M ${size * 0.88} ${size * 0.18} L ${size * 0.12} ${size * 0.82}" fill="none" stroke="${palette.secondary}" stroke-width="1" opacity="0.06"/>`
+      );
+      break;
+    case "crystalline":
+      elements.push(
+        `<polygon points="${size * 0.16},${size * 0.34} ${size * 0.28},${size * 0.18} ${size * 0.36},${size * 0.32} ${size * 0.24},${size * 0.46}" fill="${palette.accent}" opacity="0.08" class="drift"/>`
+      );
+      elements.push(
+        `<polygon points="${size * 0.82},${size * 0.34} ${size * 0.70},${size * 0.18} ${size * 0.62},${size * 0.32} ${size * 0.74},${size * 0.46}" fill="${palette.highlight}" opacity="0.08" class="drift"/>`
+      );
+      break;
+    default:
+      elements.push(
+        `<circle cx="${size / 2}" cy="${size / 2}" r="${size * 0.3}" fill="url(#${charGradId})" opacity="0.25" class="pulse"/>`
+      );
+      break;
+  }
+
   // Character silhouette
   const cx = size / 2;
   const cy = size / 2;
-  const bodyW = size * rng.nextFloat(0.25, 0.35);
-  const headR = size * rng.nextFloat(0.1, 0.15);
+  const bodyW = size * (0.23 + compositionMode * 0.025 + rng.nextFloat(0.015, 0.045));
+  const headR = size * (0.095 + compositionMode * 0.008 + rng.nextFloat(0.008, 0.02));
   const headY = cy - size * 0.05;
+
+  elements.push(`<g class="float">`);
 
   // Body
   elements.push(`<path d="M ${cx - bodyW} ${size} Q ${cx - bodyW * 0.7} ${cy + size * 0.15} ${cx} ${cy + size * 0.15} Q ${cx + bodyW * 0.7} ${cy + size * 0.15} ${cx + bodyW} ${size}" fill="#1a1a2e" stroke="${palette.primary}" stroke-width="1" opacity="0.6"/>`);
 
   // Head
-  const faceType = rng.nextInt(0, 2);
+  const faceType = (rng.nextInt(0, 2) + compositionMode) % 3;
   if (faceType === 0) {
     elements.push(`<ellipse cx="${cx}" cy="${headY}" rx="${headR}" ry="${headR * 1.2}" fill="#1e1e32" stroke="${palette.primary}" stroke-width="0.8" opacity="0.7"/>`);
   } else if (faceType === 1) {
@@ -200,8 +315,8 @@ export function generateAgentSVG(params: GenerateArtParams): string {
   }
 
   // Eyes
-  const eyeType = rng.nextInt(0, 3);
-  const eyeSpacing = size * 0.05;
+  const eyeType = (rng.nextInt(0, 3) + compositionMode) % 4;
+  const eyeSpacing = size * (0.045 + compositionMode * 0.004);
   const eyeY = headY - size * 0.01;
   const eyeColor = rng.pick([palette.highlight, palette.accent, "#00ff88", "#ff0066", "#00ccff"]);
 
@@ -248,14 +363,20 @@ export function generateAgentSVG(params: GenerateArtParams): string {
   // Tech frame corners
   const bracketSize = size * 0.04;
   const margin = size * 0.03;
-  const borderColor = riskLevel === "Aggressive" ? "#ff4444" : riskLevel === "Conservative" ? "#44ff88" : palette.primary;
-  elements.push(`<path d="M ${margin} ${margin + bracketSize} L ${margin} ${margin} L ${margin + bracketSize} ${margin}" fill="none" stroke="${borderColor}" stroke-width="2" opacity="0.4"/>`);
-  elements.push(`<path d="M ${size - margin - bracketSize} ${margin} L ${size - margin} ${margin} L ${size - margin} ${margin + bracketSize}" fill="none" stroke="${borderColor}" stroke-width="2" opacity="0.4"/>`);
-  elements.push(`<path d="M ${margin} ${size - margin - bracketSize} L ${margin} ${size - margin} L ${margin + bracketSize} ${size - margin}" fill="none" stroke="${borderColor}" stroke-width="2" opacity="0.4"/>`);
-  elements.push(`<path d="M ${size - margin - bracketSize} ${size - margin} L ${size - margin} ${size - margin} L ${size - margin} ${size - margin - bracketSize}" fill="none" stroke="${borderColor}" stroke-width="2" opacity="0.4"/>`);
+  const frameColor = riskLevel === "Aggressive" ? "#ff4444" : riskLevel === "Conservative" ? "#44ff88" : palette.primary;
+  elements.push(`<path d="M ${margin} ${margin + bracketSize} L ${margin} ${margin} L ${margin + bracketSize} ${margin}" fill="none" stroke="${frameColor}" stroke-width="2" opacity="0.4"/>`);
+  elements.push(`<path d="M ${size - margin - bracketSize} ${margin} L ${size - margin} ${margin} L ${size - margin} ${margin + bracketSize}" fill="none" stroke="${frameColor}" stroke-width="2" opacity="0.4"/>`);
+  elements.push(`<path d="M ${margin} ${size - margin - bracketSize} L ${margin} ${size - margin} L ${margin + bracketSize} ${size - margin}" fill="none" stroke="${frameColor}" stroke-width="2" opacity="0.4"/>`);
+  elements.push(`<path d="M ${size - margin - bracketSize} ${size - margin} L ${size - margin} ${size - margin} L ${size - margin} ${size - margin - bracketSize}" fill="none" stroke="${frameColor}" stroke-width="2" opacity="0.4"/>`);
 
   // ID text
-  elements.push(`<text x="${margin + 4}" y="${size - margin - 6}" font-family="monospace" font-size="${size * 0.015}" fill="${borderColor}" opacity="0.3">ID:${seed.toString(16).slice(0, 8).toUpperCase()}</text>`);
+  elements.push(`<text x="${margin + 4}" y="${size - margin - 6}" font-family="monospace" font-size="${size * 0.015}" fill="${frameColor}" opacity="0.3">ID:${seed.toString(16).slice(0, 8).toUpperCase()}</text>`);
+  elements.push(`<text x="${size - margin - 4}" y="${margin + 12}" font-family="monospace" font-size="${size * 0.012}" fill="${palette.highlight}" opacity="0.28" text-anchor="end">${heroArchetype}</text>`);
+  elements.push(`<text x="${size - margin - 4}" y="${margin + 24}" font-family="monospace" font-size="${size * 0.01}" fill="${palette.primary}" opacity="0.24" text-anchor="end">${heroEnergy}</text>`);
+  elements.push(`<text x="${margin + 4}" y="${margin + 12}" font-family="monospace" font-size="${size * 0.01}" fill="${palette.primary}" opacity="0.22">${heroBackground}</text>`);
+  elements.push(`<text x="${margin + 4}" y="${size - margin - 18}" font-family="monospace" font-size="${size * 0.01}" fill="${labelColor}" opacity="0.22">${heroName}</text>`);
+
+  elements.push(`</g>`);
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">
     <defs>${defs.join("")}</defs>

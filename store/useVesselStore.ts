@@ -45,7 +45,7 @@ interface VesselStore {
     currency: "SOL" | "USDC",
     isRental: boolean,
     rentalDays?: number,
-  ) => void;
+  ) => { success: boolean; error?: string };
   removeListing: (agentId: string) => void;
   getListingById: (agentId: string) => Listing | undefined;
   getListings: () => Listing[];
@@ -180,7 +180,14 @@ export const useVesselStore = create<VesselStore>()(
 
       addListing: (agent, price, currency, isRental, rentalDays = 7) => {
         if (!Number.isFinite(price) || price <= 0) {
-          return;
+          return { success: false, error: "Price must be greater than 0." };
+        }
+
+        if (agent.isPremade || agent.sourceTemplateId) {
+          return {
+            success: false,
+            error: "Premade claim agents cannot be relisted on the marketplace.",
+          };
         }
 
         const sellerAddress = agent.seller || agent.owner;
@@ -226,6 +233,8 @@ export const useVesselStore = create<VesselStore>()(
           isRental,
           rentalDays,
         });
+
+        return { success: true };
       },
 
       removeListing: (agentId) => {

@@ -39,6 +39,7 @@ const navLinks: Array<{ href: string; label: string; external?: boolean }> = [
   { href: "/dashboard", label: "DASHBOARD" },
   { href: "/marketplace", label: "MARKETPLACE" },
   { href: "/forge", label: "FORGE" },
+  { href: "/preview", label: "PREVIEW" },
   { href: "/docs", label: "DOCS" },
 ];
 
@@ -274,7 +275,7 @@ export default function Home() {
   }, [loaderStage]);
 
   useEffect(() => {
-    const prefetchTargets = ["/agents", "/dashboard", "/marketplace", "/forge", "/docs"];
+    const prefetchTargets = ["/agents", "/dashboard", "/marketplace", "/forge", "/preview", "/docs"];
     for (const href of prefetchTargets) {
       router.prefetch(href);
     }
@@ -562,6 +563,14 @@ export default function Home() {
                     ) : (
                       "Forge Your First Agent"
                     )}
+                  </motion.button>
+                  <motion.button
+                    onClick={() => router.push("/preview")}
+                    className="inline-flex h-10 min-w-[164px] cursor-pointer items-center justify-center gap-2 border border-black/14 bg-white px-5 text-[12px] font-semibold tracking-[0.06em] text-black shadow-sm transition-all duration-200 hover:bg-black/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20"
+                    whileHover={{ y: -2, scale: 1.01 }}
+                    whileTap={{ scale: 0.96 }}
+                  >
+                    Preview Gallery
                   </motion.button>
                   <WalletConnectButton className="!h-10 !cursor-pointer !rounded-none !border !border-black/20 !bg-[#BDBDBD] !px-5 !text-[12px] !font-semibold !tracking-[0.06em] !text-black !transition-all !duration-200 hover:!bg-[#B3B3B3] hover:!shadow-sm !hidden lg:!inline-flex" />
                 </motion.div>

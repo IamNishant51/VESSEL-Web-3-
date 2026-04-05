@@ -10,9 +10,11 @@ import {
   type AgentTraits,
   type ColorPalette,
 } from "@/lib/generative-art";
-import { generateCyberpunkCNFT } from "@/lib/cyberpunk-cnft-avatars";
+import { getCyberpunkCnftAvatarUrl } from "@/lib/cyberpunk-cnft-avatars";
 
-type VisualInput = Pick<Agent, "id" | "name" | "mintAddress">;
+type VisualInput = Pick<Agent, "id" | "name" | "mintAddress" | "personality" | "riskLevel"> & {
+  toolCount?: number;
+};
 
 function hashText(value: string): number {
   let hash = 0;
@@ -44,9 +46,9 @@ export function generateAgentArtwork(
   return generateAgentArt({
     seed,
     name: input.name || "Agent",
-    personality,
-    riskLevel,
-    toolCount,
+    personality: personality || input.personality || "",
+    riskLevel: riskLevel || input.riskLevel || "Balanced",
+    toolCount: toolCount || input.toolCount || 0,
     size: 2048,
   });
 }
@@ -64,9 +66,9 @@ export function generateAgentPreviewImage(
   return generateAgentPreview({
     seed,
     name: input.name || "Agent",
-    personality,
-    riskLevel,
-    toolCount,
+    personality: personality || input.personality || "",
+    riskLevel: riskLevel || input.riskLevel || "Balanced",
+    toolCount: toolCount || input.toolCount || 0,
     size: 512,
   });
 }
@@ -84,9 +86,9 @@ export function generateAgentPreviewSVG(
   return generateAgentSVG({
     seed,
     name: input.name || "Agent",
-    personality,
-    riskLevel,
-    toolCount,
+    personality: personality || input.personality || "",
+    riskLevel: riskLevel || input.riskLevel || "Balanced",
+    toolCount: toolCount || input.toolCount || 0,
   });
 }
 
@@ -103,9 +105,9 @@ export function getAgentVisualSummaryData(
   return getAgentVisualSummary({
     seed,
     name: input.name || "Agent",
-    personality,
-    riskLevel,
-    toolCount,
+    personality: personality || input.personality || "",
+    riskLevel: riskLevel || input.riskLevel || "Balanced",
+    toolCount: toolCount || input.toolCount || 0,
   });
 }
 
@@ -122,9 +124,9 @@ export function getAgentRarityInfo(
   const traits = generateAgentArt({
     seed,
     name: input.name || "Agent",
-    personality,
-    riskLevel,
-    toolCount,
+    personality: personality || input.personality || "",
+    riskLevel: riskLevel || input.riskLevel || "Balanced",
+    toolCount: toolCount || input.toolCount || 0,
   }).traits;
 
   return {
@@ -197,7 +199,7 @@ export function getAgentVisualLabel(input: VisualInput): string {
  */
 export function getAgentArtworkUrl(input: VisualInput, size = 1024): string {
   void size;
-  return generateCyberpunkCNFT(input.id);
+  return getCyberpunkCnftAvatarUrl(input.id || input.mintAddress || input.name || "0");
 }
 
 /**

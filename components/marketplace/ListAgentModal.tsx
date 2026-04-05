@@ -52,7 +52,7 @@ export function ListAgentModal({
 
   if (!isOpen) return null;
 
-  const availableAgents = agents.filter((agent) => !agent.listed && !agent.isRental);
+  const availableAgents = agents.filter((agent) => !agent.listed && !agent.isRental && !agent.isPremade && !agent.sourceTemplateId);
 
   const resetState = () => {
     setStep("select");
@@ -75,7 +75,7 @@ export function ListAgentModal({
       const parsedDays = Number(durationDays);
       const safeDurationDays = Number.isFinite(parsedDays) && parsedDays > 0 ? parsedDays : 7;
 
-      addListing(
+      const result = addListing(
         {
           ...agentToList,
           seller: ownerAddress,
@@ -86,6 +86,11 @@ export function ListAgentModal({
         isRental,
         safeDurationDays
       );
+
+      if (!result.success) {
+        toast.error(result.error || "Failed to list agent");
+        return;
+      }
 
       toast.success(`${agentToList.name} listed for ${price} ${currency}${isRental ? ` for ${safeDurationDays} days` : ""}!`);
       onListed?.(agentToList.id);
