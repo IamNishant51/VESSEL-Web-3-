@@ -1,6 +1,6 @@
 function LegalLoading() {
   return (
-    <div className="min-h-screen bg-[#f5f5f6]">
+    <div className="min-h-screen bg-[#fafafa]">
       <div className="mx-auto w-full max-w-[980px] px-4 py-10 sm:px-8">
         <div className="h-10 w-56 animate-pulse rounded bg-black/10" />
         <div className="mt-4 h-5 w-3/4 animate-pulse rounded bg-black/8" />

@@ -153,7 +153,7 @@ export default function MarketplacePage() {
 
   if (!hasHydrated) {
     return (
-      <div className="-mx-4 -mt-8 min-h-screen bg-[#f5f5f6] px-4 pb-10 pt-4 text-[#171819] sm:-mx-6 sm:px-6">
+      <div className="-mx-4 -mt-8 min-h-screen bg-[#fafafa] px-4 pb-10 pt-4 text-[#171819] sm:-mx-6 sm:px-6">
         <div className="mx-auto w-full max-w-[1320px]">
           <div className="mb-6 flex gap-2">
             {tabs.map((t) => (
@@ -177,7 +177,7 @@ export default function MarketplacePage() {
   return (
     <>
       <LandingNavigation forceLight />
-      <div className="-mx-4 -mt-8 min-h-screen bg-[#f5f5f6] px-4 pb-10 pt-4 text-[#171819] sm:-mx-6 sm:px-6">
+      <div className="-mx-4 -mt-8 min-h-screen bg-[#fafafa] px-4 pb-10 pt-4 text-[#171819] sm:-mx-6 sm:px-6">
       <div className="mx-auto w-full max-w-[1320px] space-y-6">
         <section className="grid gap-5 rounded-sm bg-[#ececee] p-4 sm:p-5 lg:grid-cols-[1fr_280px]">
           <div>

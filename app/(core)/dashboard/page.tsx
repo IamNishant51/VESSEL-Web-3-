@@ -82,7 +82,7 @@ export default function DashboardPage() {
 
   if (!hasHydrated) {
     return (
-      <div className="-mx-4 -mt-8 min-h-screen bg-[#f5f5f6] px-4 pb-10 pt-4 text-[#171819] sm:-mx-6 sm:px-6">
+      <div className="-mx-4 -mt-8 min-h-screen bg-[#fafafa] px-4 pb-10 pt-4 text-[#171819] sm:-mx-6 sm:px-6">
         <div className="mx-auto w-full max-w-[1320px]">
           <div className="mb-8">
             <div className="h-14 w-64 animate-pulse rounded bg-black/10" />

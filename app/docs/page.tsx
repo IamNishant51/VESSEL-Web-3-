@@ -51,7 +51,7 @@ export default function DocsPage() {
   return (
     <>
       <LandingNavigation forceLight />
-      <div className="min-h-screen bg-[#f5f5f6] px-4 pt-24 sm:px-6">
+      <div className="min-h-screen bg-[#fafafa] px-4 pt-24 sm:px-6">
       <div className="grid w-full grid-cols-1 gap-6 md:grid-cols-[230px_minmax(0,1fr)] lg:grid-cols-[250px_minmax(0,1fr)_200px] lg:gap-8 mx-auto max-w-[1320px]">
         <aside className="rounded-xl border border-black/10 bg-white p-4 md:sticky md:top-28 md:h-fit">
           <p className="text-[12px] font-semibold tracking-[0.14em] text-black">DOCS</p>

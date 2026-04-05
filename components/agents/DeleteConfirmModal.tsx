@@ -59,7 +59,7 @@ export function DeleteConfirmModal({
                 </div>
               </div>
 
-              <div className="bg-[#f5f5f6] rounded-[6px] p-4 mb-5">
+              <div className="bg-[#fafafa] rounded-[6px] p-4 mb-5">
                 <p className="text-[13px] text-black/70 leading-relaxed">
                   Are you sure you want to delete{" "}
                   <span className="font-semibold text-black">

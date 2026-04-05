@@ -1,6 +1,6 @@
 export default function RootLoading() {
   return (
-    <div className="min-h-screen bg-[#f5f5f6] text-[#171819]">
+    <div className="min-h-screen bg-[#fafafa] text-[#171819]">
       <div className="mx-auto flex w-full max-w-[1320px] flex-col gap-10 px-4 py-8 sm:px-8">
         <div className="space-y-4">
           <div className="h-5 w-40 animate-pulse rounded bg-black/10" />

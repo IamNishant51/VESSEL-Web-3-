@@ -71,7 +71,7 @@ const sections = [
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-[#f5f5f6] text-[#111112]">
+    <div className="min-h-screen bg-[#fafafa] text-[#111112]">
       <LandingNavigation forceLight />
 
       <main className="mx-auto w-full max-w-[1100px] px-5 py-10 pt-24 sm:px-8 sm:py-12">

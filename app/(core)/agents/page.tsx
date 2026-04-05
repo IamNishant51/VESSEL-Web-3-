@@ -267,7 +267,7 @@ export default function AgentsPage() {
 
   if (!hasHydrated) {
     return (
-      <div className="-mx-4 -mt-8 min-h-screen bg-[#f5f5f6] px-4 pb-10 pt-20 text-[#171819] sm:-mx-6 sm:px-6">
+      <div className="-mx-4 -mt-8 min-h-screen bg-[#fafafa] px-4 pb-10 pt-20 text-[#171819] sm:-mx-6 sm:px-6">
         <div className="mx-auto w-full max-w-[1320px]">
           <div className="mb-6 space-y-3">
             <div className="flex items-center gap-2">
@@ -301,7 +301,7 @@ export default function AgentsPage() {
   return (
     <>
       <LandingNavigation forceLight />
-      <div className="-mx-4 -mt-8 min-h-screen bg-[#f5f5f6] px-4 pb-10 pt-20 text-[#171819] sm:-mx-6 sm:px-6">
+      <div className="-mx-4 -mt-8 min-h-screen bg-[#fafafa] px-4 pb-10 pt-20 text-[#171819] sm:-mx-6 sm:px-6">
       <div className="mx-auto w-full max-w-[1320px]">
         <div className="mb-6 space-y-3">
           <div className="flex items-center justify-between gap-2 overflow-x-auto pb-1">
@@ -432,7 +432,7 @@ export default function AgentsPage() {
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[250px_minmax(0,1fr)]">
           {/* Mobile Filter Toggle */}
-          <div className="sticky top-[80px] z-30 mb-4 bg-[#f5f5f6] pb-2 lg:hidden">
+          <div className="sticky top-[80px] z-30 mb-4 bg-[#fafafa] pb-2 lg:hidden">
             <button
               onClick={() => setIsMobileFiltersOpen((p) => !p)}
               className="flex w-full items-center justify-between rounded-[4px] border border-black/10 bg-white px-4 py-2.5 text-[12px] font-semibold text-black/70 transition hover:bg-black/5"
