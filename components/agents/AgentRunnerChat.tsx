@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { MessageContent } from "./MessageContent";
 import {
   Send,
   Loader2,
@@ -839,18 +840,18 @@ export function AgentRunnerChat({ agent }: Props) {
                             </span>
                           </div>
                           <div className="group relative mt-1">
-                            <p className="text-[13px] leading-[1.65] text-black/80 whitespace-pre-wrap sm:text-[14px] sm:leading-[1.7]">
-                              {streamingContent && msg === messages[messages.length - 1] && isLoading
-                                ? streamingContent
-                                : msg.content}
-                              {streamingContent && msg === messages[messages.length - 1] && isLoading && (
+                            {streamingContent && msg === messages[messages.length - 1] && isLoading ? (
+                              <p className="text-[13px] leading-[1.65] text-black/80 whitespace-pre-wrap sm:text-[14px] sm:leading-[1.7]">
+                                {streamingContent}
                                 <motion.span
                                   animate={{ opacity: [1, 0] }}
                                   transition={{ duration: 0.5, repeat: Infinity }}
                                   className="inline-block h-3.5 w-1.5 bg-black/30 sm:h-4 sm:w-2"
                                 />
-                              )}
-                            </p>
+                              </p>
+                            ) : (
+                              <MessageContent content={msg.content} />
+                            )}
                             <div className="mt-1.5 flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 sm:mt-2">
                               <button
                                 onClick={() => handleCopy(msg.content, msg.id)}
