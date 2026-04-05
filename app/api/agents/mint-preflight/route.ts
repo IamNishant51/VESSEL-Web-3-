@@ -4,6 +4,8 @@ import { Connection, PublicKey } from "@solana/web3.js";
 import { solanaRpcUrl } from "@/lib/solana";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 type PreflightStatus = {
   ready: boolean;
@@ -43,9 +45,9 @@ async function resolveWorkingConnection() {
   const failures: string[] = [];
 
   for (const rpcUrl of candidates) {
-    const connection = new Connection(rpcUrl, "confirmed");
+    const connection = new Connection(rpcUrl, { commitment: "confirmed", confirmTransactionInitialTimeout: 3000 });
     try {
-      await withRetries(() => connection.getLatestBlockhash(), 3);
+      await withRetries(() => connection.getLatestBlockhash(), 2);
       return { connection, rpcUrl, failures };
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";
@@ -76,22 +78,27 @@ export async function GET() {
     });
   }
 
-  const checks: PreflightStatus["checks"] = [];
-
   const merkleTree = readRequiredEnv("NEXT_PUBLIC_BUBBLEGUM_MERKLE_TREE");
   const collectionMint = readRequiredEnv("NEXT_PUBLIC_BUBBLEGUM_COLLECTION_MINT");
 
-  checks.push({
-    name: "bubblegum_merkle_tree_env",
-    ok: !!merkleTree,
-    detail: merkleTree ? "Configured" : "Missing NEXT_PUBLIC_BUBBLEGUM_MERKLE_TREE",
-  });
+  if (!merkleTree || !collectionMint) {
+    return NextResponse.json({
+      ready: false,
+      checks: [
+        { name: "bubblegum_merkle_tree_env", ok: !!merkleTree, detail: merkleTree ? "Configured" : "Missing NEXT_PUBLIC_BUBBLEGUM_MERKLE_TREE" },
+        { name: "bubblegum_collection_mint_env", ok: !!collectionMint, detail: collectionMint ? "Configured" : "Missing NEXT_PUBLIC_BUBBLEGUM_COLLECTION_MINT" },
+        { name: "rpc_connection", ok: false, detail: "Skipped: environment not configured" },
+        { name: "merkle_tree_account", ok: false, detail: "Skipped: environment not configured" },
+        { name: "collection_mint_account", ok: false, detail: "Skipped: environment not configured" },
+      ],
+      config: { merkleTree, collectionMint },
+    });
+  }
 
-  checks.push({
-    name: "bubblegum_collection_mint_env",
-    ok: !!collectionMint,
-    detail: collectionMint ? "Configured" : "Missing NEXT_PUBLIC_BUBBLEGUM_COLLECTION_MINT",
-  });
+  const checks: PreflightStatus["checks"] = [
+    { name: "bubblegum_merkle_tree_env", ok: true, detail: "Configured" },
+    { name: "bubblegum_collection_mint_env", ok: true, detail: "Configured" },
+  ];
 
   const rpc = await resolveWorkingConnection();
 

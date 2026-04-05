@@ -29,8 +29,38 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "image.pollinations.ai",
       },
+      {
+        protocol: "https",
+        hostname: "ik.imagekit.io",
+      },
     ],
-    minimumCacheTTL: 31536000, // 1 year
+    minimumCacheTTL: 31536000,
+  },
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+        crypto: false,
+      };
+    }
+
+    config.externals = [
+      ...(config.externals || []),
+      "bigint-buffer",
+      "bufferutil",
+      "utf-8-validate",
+    ];
+
+    config.module = {
+      ...config.module,
+      exprContextCritical: false,
+      noParse: [/bigint-buffer/],
+    };
+
+    return config;
   },
   async headers() {
     const baseHeaders = [
