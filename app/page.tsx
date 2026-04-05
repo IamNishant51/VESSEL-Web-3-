@@ -1,10 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, Loader2, Menu, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -629,13 +628,11 @@ export default function Home() {
                   transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                   className="relative z-10 h-full w-full"
                 >
-                  <Image
+                  <img
                     src="/women-hero-section-main-asset.png"
                     alt="Vessel hero"
-                    width={890}
-                    height={990}
+                    loading="eager"
                     className="h-full w-full object-contain"
-                    priority
                   />
                 </motion.div>
               </div>

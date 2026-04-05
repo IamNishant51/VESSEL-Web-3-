@@ -12,6 +12,7 @@ import {
   deleteListingFromDB,
   syncTransactionToDB,
 } from "@/lib/db-sync";
+import { isPremadeDerivedAgent } from "@/lib/premade-agents";
 
 type Listing = Agent & { seller: string; listed: true };
 
@@ -183,7 +184,7 @@ export const useVesselStore = create<VesselStore>()(
           return { success: false, error: "Price must be greater than 0." };
         }
 
-        if (agent.isPremade || agent.sourceTemplateId) {
+        if (isPremadeDerivedAgent(agent)) {
           return {
             success: false,
             error: "Premade claim agents cannot be relisted on the marketplace.",

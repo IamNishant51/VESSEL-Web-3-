@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 
 import { PREMADE_FREE_AGENTS } from "@/lib/premade-agents";
@@ -66,13 +65,11 @@ export default function PreviewPage() {
           {previewAgents.map((agent) => (
             <article key={agent.id} className="overflow-hidden border border-white/10 bg-white/[0.04] shadow-[0_18px_48px_rgba(0,0,0,0.28)] backdrop-blur-md">
               <div className="relative aspect-[4/5] overflow-hidden bg-[#0b0f16]">
-                <Image
+                <img
                   src={agent.artworkUrl}
                   alt={`${agent.name} cNFT artwork`}
-                  fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw"
-                  className="object-cover transition-transform duration-500 hover:scale-[1.03]"
-                  priority={agent.id === previewAgents[0]?.id}
+                  loading={agent.id === previewAgents[0]?.id ? "eager" : "lazy"}
+                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 hover:scale-[1.03]"
                 />
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(255,255,255,0.14),transparent_28%),linear-gradient(180deg,transparent_0%,rgba(0,0,0,0.2)_58%,rgba(0,0,0,0.75)_100%)]" />
                 <div className="absolute left-3 top-3 rounded-full border border-white/12 bg-black/40 px-3 py-1 text-[9px] font-semibold tracking-[0.2em] text-white/72 backdrop-blur">

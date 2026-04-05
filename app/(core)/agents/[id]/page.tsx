@@ -13,6 +13,7 @@ import { AgentRunnerChat } from "@/components/agents/AgentRunnerChat";
 import { ListAgentModal } from "@/components/marketplace/ListAgentModal";
 import { useAgent } from "@/hooks/useAgent";
 import { useStoreHydrated } from "@/hooks/useStoreHydrated";
+import { isPremadeDerivedAgent } from "@/lib/premade-agents";
 import { sendConfirmedSolTransfer } from "@/lib/solana-payments";
 import type { Agent } from "@/types/agent";
 
@@ -34,14 +35,6 @@ export default function AgentDetailPage() {
     Array<{ id: string; role: "user" | "assistant" | "system"; content: string; explorerUrl?: string }>
   >([]);
 
-  if (!hasHydrated) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-black/20 border-t-black" />
-      </div>
-    );
-  }
-
   useEffect(() => {
     const agentId = Array.isArray(params.id) ? params.id[0] : params.id;
     const found = agents.find((a: Agent) => a.id === agentId);
@@ -51,6 +44,14 @@ export default function AgentDetailPage() {
     }
     setIsLoading(false);
   }, [params.id, agents]);
+
+  if (!hasHydrated) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-black/20 border-t-black" />
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -198,6 +199,7 @@ export default function AgentDetailPage() {
             {publicKey && (
               <Button
                 onClick={() => setIsListModalOpen(true)}
+                disabled={isPremadeDerivedAgent(agent) || agent.isRental || agent.listed}
                 className="h-8 gap-1.5 rounded-lg bg-[#171819] px-3 text-[12px] text-white hover:bg-[#111111]"
               >
                 <ShoppingCart className="h-3.5 w-3.5" />

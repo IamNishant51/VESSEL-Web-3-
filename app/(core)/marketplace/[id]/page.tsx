@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Loader2, ShoppingCart, AlertCircle, CheckCircle2 } from "lucide-react";
@@ -112,7 +111,13 @@ export default function MarketplaceDetailPage() {
         return;
       }
 
-      const claimedAgent = clonePremadeFreeAgent(listing, publicKey.toBase58());
+      const premadeTemplate = getPremadeFreeAgentById(listing.id);
+      if (!premadeTemplate) {
+        toast.error("Free template metadata is unavailable. Please refresh and try again.");
+        return;
+      }
+
+      const claimedAgent = clonePremadeFreeAgent(premadeTemplate, publicKey.toBase58());
       addAgent(claimedAgent);
       toast.success(`${listing.name} added to your agents for free.`);
       router.push(`/agents/${claimedAgent.id}`);
@@ -321,13 +326,11 @@ export default function MarketplaceDetailPage() {
             </CardHeader>
             <CardContent className="space-y-6 px-4 pb-6 sm:px-6">
               <div className="overflow-hidden rounded-xl border border-black/10 bg-[#f3f4f6]">
-                <Image
+                <img
                   src={artworkUrl}
                   alt={`${listing.name} cNFT artwork`}
-                  width={1400}
-                  height={800}
+                  loading="eager"
                   className="h-[200px] w-full object-cover sm:h-[320px]"
-                  priority
                 />
               </div>
 

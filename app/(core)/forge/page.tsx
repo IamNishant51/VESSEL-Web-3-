@@ -58,14 +58,6 @@ export default function ForgePage() {
   const hasHydrated = useStoreHydrated();
   const router = useRouter();
 
-  if (!hasHydrated) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-black/20 border-t-black" />
-      </div>
-    );
-  }
-
   useEffect(() => {
     async function loadTools() {
       setLoadingTools(true);
@@ -164,6 +156,14 @@ export default function ForgePage() {
 
     return tools.slice(0, 4);
   }, [tools]);
+
+  if (!hasHydrated) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-black/20 border-t-black" />
+      </div>
+    );
+  }
 
   function updateDraft(patch: Partial<typeof draft>) {
     setDraft((previous) => ({ ...previous, ...patch }));

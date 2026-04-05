@@ -5,6 +5,8 @@ import { getAgentVisualSeed } from "@/lib/agent-visuals";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { clampText } from "@/lib/utils";
 
+type RiskLevel = "Conservative" | "Balanced" | "Aggressive";
+
 export async function POST(request: Request) {
   try {
     const ip = getClientIp(request);
@@ -21,8 +23,8 @@ export async function POST(request: Request) {
     const id = clampText(String(body?.id ?? ""), 64);
     const name = clampText(String(body?.name ?? ""), 100);
     const personality = clampText(String(body?.personality ?? ""), 500);
-    const riskLevel = ["Conservative", "Balanced", "Aggressive"].includes(body?.riskLevel)
-      ? body.riskLevel
+    const riskLevel: RiskLevel = ["Conservative", "Balanced", "Aggressive"].includes(body?.riskLevel)
+      ? (body.riskLevel as RiskLevel)
       : "Balanced";
     const toolCount = Number.isFinite(Number(body?.toolCount))
       ? Math.max(0, Math.min(50, Number(body.toolCount)))
@@ -35,7 +37,13 @@ export async function POST(request: Request) {
       );
     }
 
-    const seed = getAgentVisualSeed({ id, name });
+    const seed = getAgentVisualSeed({
+      id,
+      name,
+      personality,
+      riskLevel,
+      mintAddress: "",
+    });
 
     const artResult = generateAgentArt({
       seed,

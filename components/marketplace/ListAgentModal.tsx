@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { isPremadeDerivedAgent } from "@/lib/premade-agents";
 import { useVesselStore } from "@/store/useVesselStore";
 import type { Agent } from "@/types/agent";
 
@@ -52,7 +53,7 @@ export function ListAgentModal({
 
   if (!isOpen) return null;
 
-  const availableAgents = agents.filter((agent) => !agent.listed && !agent.isRental && !agent.isPremade && !agent.sourceTemplateId);
+  const availableAgents = agents.filter((agent) => !agent.listed && !agent.isRental && !isPremadeDerivedAgent(agent));
 
   const resetState = () => {
     setStep("select");

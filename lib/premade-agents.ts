@@ -13,6 +13,20 @@ export type PremadeFreeAgentTemplate = Agent & {
 
 const PREMADE_PREFIX = "premade-free";
 
+export function isPremadeDerivedAgent(agent: Pick<Agent, "isPremade" | "sourceTemplateId" | "mintAddress">): boolean {
+  if (agent.isPremade) {
+    return true;
+  }
+
+  const source = (agent.sourceTemplateId || "").toLowerCase();
+  if (source.startsWith(PREMADE_PREFIX)) {
+    return true;
+  }
+
+  const mint = (agent.mintAddress || "").toLowerCase();
+  return mint.includes(PREMADE_PREFIX);
+}
+
 export const PREMADE_FREE_AGENTS: PremadeFreeAgentTemplate[] = [
   {
     id: `${PREMADE_PREFIX}-atlas-scout`,
@@ -130,6 +144,7 @@ export function getPremadeFreeAgentById(agentId: string): PremadeFreeAgentTempla
 
 export function clonePremadeFreeAgent(template: PremadeFreeAgentTemplate, owner: string): Agent {
   const timestamp = Date.now();
+  const sourceTemplateId = template.templateId || template.sourceTemplateId || template.id;
 
   return {
     ...template,
@@ -141,9 +156,9 @@ export function clonePremadeFreeAgent(template: PremadeFreeAgentTemplate, owner:
     seller: undefined,
     isRental: false,
     rentalEnd: undefined,
-    sourceTemplateId: template.templateId,
+    sourceTemplateId,
     isPremade: true,
     createdAt: new Date(timestamp).toISOString(),
-    mintAddress: `${template.templateId}-${owner.slice(0, 8)}-${timestamp}`,
+    mintAddress: `${sourceTemplateId}-${owner.slice(0, 8)}-${timestamp}`,
   };
 }

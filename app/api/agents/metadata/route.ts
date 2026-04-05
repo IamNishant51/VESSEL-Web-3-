@@ -11,6 +11,7 @@ import { getAgentVisualSeed } from "@/lib/agent-visuals";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 const ALLOWED_RISK_LEVELS = new Set(["Conservative", "Balanced", "Aggressive"]);
+type RiskLevel = "Conservative" | "Balanced" | "Aggressive";
 
 export async function GET(request: Request) {
   const ip = getClientIp(request);
@@ -29,11 +30,19 @@ export async function GET(request: Request) {
   const tagline = clampText(searchParams.get("tagline") || "Give Your Ideas a Soul", 120);
   const personality = clampText(searchParams.get("personality") || "", 320);
   const riskLevelInput = clampText(searchParams.get("riskLevel") || "Balanced", 24);
-  const riskLevel = ALLOWED_RISK_LEVELS.has(riskLevelInput) ? riskLevelInput : "Balanced";
+  const riskLevel: RiskLevel = ALLOWED_RISK_LEVELS.has(riskLevelInput)
+    ? (riskLevelInput as RiskLevel)
+    : "Balanced";
   const rawToolCount = Number.parseInt(searchParams.get("toolCount") || "0", 10);
   const toolCount = Number.isFinite(rawToolCount) ? Math.max(0, Math.min(24, rawToolCount)) : 0;
 
-  const seed = getAgentVisualSeed({ id, name });
+  const seed = getAgentVisualSeed({
+    id,
+    name,
+    personality,
+    riskLevel,
+    mintAddress: "",
+  });
 
   // Generate traits and art data
   const artResult = generateAgentArt({

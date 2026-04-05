@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useState, memo } from "react";
 
 export const ArtworkImage = memo(function ArtworkImage({ artworkUrl, alt }: { artworkUrl: string; alt: string }) {
@@ -15,12 +14,11 @@ export const ArtworkImage = memo(function ArtworkImage({ artworkUrl, alt }: { ar
   }
 
   return (
-    <Image
+    <img
       src={artworkUrl}
       alt={alt}
-      fill
-      sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw"
-      className="object-cover object-center"
+      loading="lazy"
+      className="absolute inset-0 h-full w-full object-cover object-center"
     />
   );
 });

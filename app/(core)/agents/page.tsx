@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import dynamic from "next/dynamic";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -13,6 +12,7 @@ import { WalletConnectButton } from "@/components/wallet/connect-button";
 import { useAgent } from "@/hooks/useAgent";
 import { useStoreHydrated } from "@/hooks/useStoreHydrated";
 import { getAgentArtworkUrl, getAgentCoverGradientClass } from "@/lib/agent-visuals";
+import { isPremadeDerivedAgent } from "@/lib/premade-agents";
 import { shortAddress } from "@/lib/utils";
 import { useVesselStore } from "@/store/useVesselStore";
 import type { Agent } from "@/types/agent";
@@ -238,7 +238,7 @@ export default function AgentsPage() {
   };
 
   const openListModal = (selectedAgentId?: string) => {
-    const availableAgents = agents.filter((a: Agent) => !a.listed && !a.isRental);
+    const availableAgents = agents.filter((a: Agent) => !a.listed && !a.isRental && !isPremadeDerivedAgent(a));
     if (availableAgents.length === 0) {
       toast.info("No available agents to list.");
       return;
@@ -537,7 +537,7 @@ export default function AgentsPage() {
               <div className="mt-6">
                 <button
                   onClick={() => openListModal()}
-                  disabled={agents.length === 0}
+                  disabled={agents.filter((a: Agent) => !a.listed && !a.isRental && !isPremadeDerivedAgent(a)).length === 0}
                   className="w-full rounded-[4px] bg-[#171819] py-2 text-[11px] font-semibold text-white transition-colors hover:bg-[#111111] disabled:opacity-50"
                 >
                   LIST ON MARKETPLACE
@@ -650,13 +650,11 @@ export default function AgentsPage() {
                     className="group rounded-[6px] border border-black/10 bg-white p-3 transition-shadow hover:shadow-md"
                   >
                     <div className={`relative h-[180px] overflow-hidden rounded-[4px] bg-gradient-to-b ${coverGradient}`}>
-                      <Image
+                      <img
                         src={artworkUrl}
                         alt={`${agent.name || "Agent"} cNFT artwork`}
-                        fill
-                        sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
-                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
                         loading="lazy"
+                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
                       />
                       <div className="absolute inset-0 bg-[radial-gradient(circle_at_22%_30%,rgba(16,199,204,0.2),transparent_45%)]" />
                       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/45 to-transparent" />
@@ -735,7 +733,7 @@ export default function AgentsPage() {
                           ) : (
                             <button
                               onClick={() => openListModal(agent.id)}
-                              disabled={agent.isRental}
+                              disabled={agent.isRental || isPremadeDerivedAgent(agent)}
                               className="inline-flex h-10 w-10 items-center justify-center rounded-[3px] border border-black/10 bg-[#f1f2f3] text-black/70 transition-colors hover:bg-black/5 disabled:opacity-50"
                               aria-label="List on marketplace"
                               title="List on marketplace"
