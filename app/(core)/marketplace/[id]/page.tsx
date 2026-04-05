@@ -13,7 +13,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { getAgentArtworkUrl } from "@/lib/agent-visuals";
 import { sendConfirmedSolTransfer } from "@/lib/solana-payments";
+import { clonePremadeFreeAgent, getPremadeFreeAgentById } from "@/lib/premade-agents";
 import { useVesselStore } from "@/store/useVesselStore";
+import { useStoreHydrated } from "@/hooks/useStoreHydrated";
 import type { Agent } from "@/types/agent";
 
 export default function MarketplaceDetailPage() {
@@ -23,14 +25,16 @@ export default function MarketplaceDetailPage() {
   const { publicKey } = wallet;
   const listings = useVesselStore((state) => state.marketplaceListings);
   const agents = useVesselStore((state) => state.usersAgents);
+  const addAgent = useVesselStore((state) => state.addAgent);
   const getListingById = useVesselStore((state) => state.getListingById);
   const buyAgentWithSettlementTx = useVesselStore((state) => state.buyAgentWithSettlementTx);
   const rentAgentWithSettlementTx = useVesselStore((state) => state.rentAgentWithSettlementTx);
   const removeListing = useVesselStore((state) => state.removeListing);
+  const hasHydrated = useStoreHydrated();
 
   const listingId = Array.isArray(params.id) ? params.id[0] : params.id;
 
-  const [listing, setListing] = useState<(Agent & { seller: string; listed: true }) | null>(null);
+  const [listing, setListing] = useState<(Agent & { seller: string; listed: true; isPremade?: boolean; sourceTemplateId?: string }) | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [purchaseResult, setPurchaseResult] = useState<{
@@ -55,6 +59,13 @@ export default function MarketplaceDetailPage() {
       return;
     }
 
+    const premadeTemplate = getPremadeFreeAgentById(listingId);
+    if (premadeTemplate) {
+      setListing(premadeTemplate);
+      setIsLoading(false);
+      return;
+    }
+
     const fallbackAgent = agents.find((agent: Agent) => agent.id === listingId && agent.listed && (agent.price ?? 0) > 0);
     if (fallbackAgent) {
       setListing({
@@ -70,6 +81,22 @@ export default function MarketplaceDetailPage() {
     setIsLoading(false);
   }, [agents, listingId, getListingById, listings]);
 
+  const claimedPremadeAgent = listing && publicKey
+    ? agents.find(
+        (agent) =>
+          agent.sourceTemplateId === listing.id &&
+          agent.owner === publicKey.toBase58(),
+      )
+    : undefined;
+
+  if (!hasHydrated) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-black/20 border-t-black" />
+      </div>
+    );
+  }
+
   const handleBuyNow = async () => {
     if (!publicKey) {
       toast.error("Connect wallet to purchase");
@@ -77,6 +104,20 @@ export default function MarketplaceDetailPage() {
     }
 
     if (!listing) return;
+
+    if (listing.isPremade || listing.price === 0) {
+      if (claimedPremadeAgent) {
+        toast.info("You already claimed this free agent.");
+        router.push(`/agents/${claimedPremadeAgent.id}`);
+        return;
+      }
+
+      const claimedAgent = clonePremadeFreeAgent(listing, publicKey.toBase58());
+      addAgent(claimedAgent);
+      toast.success(`${listing.name} added to your agents for free.`);
+      router.push(`/agents/${claimedAgent.id}`);
+      return;
+    }
 
     if (publicKey.toBase58() === listing.seller) {
       toast.info("You already own this listing. Open or unlist it instead.");
@@ -239,6 +280,7 @@ export default function MarketplaceDetailPage() {
   const listingPrice = listing.price ?? 0;
   const listingCurrency = listing.priceCurrency ?? "SOL";
   const isOwnerViewingListing = !!publicKey && listing.seller === publicKey.toBase58();
+  const isPremadeFree = !!listing.isPremade || listingPrice === 0;
   const artworkUrl = getAgentArtworkUrl(listing, 1200);
 
   return (
@@ -268,6 +310,11 @@ export default function MarketplaceDetailPage() {
                 {listing.isRental && (
                   <Badge className="shrink-0 border border-black/10 bg-[#f1f2f3] text-black/75">
                     Available for Rental
+                  </Badge>
+                )}
+                {isPremadeFree && (
+                  <Badge className="shrink-0 border border-black/10 bg-[#171819] text-white">
+                    Free Premade
                   </Badge>
                 )}
               </div>
@@ -343,10 +390,16 @@ export default function MarketplaceDetailPage() {
               <div className="space-y-2">
                 <h3 className="text-sm font-semibold text-black/55">Price</h3>
                 <p className="text-4xl font-semibold tracking-[-0.02em] text-black">
-                  {listingPrice}
-                  <span className="ml-2 text-sm text-black/45">{listingCurrency}</span>
+                  {isPremadeFree ? "Free" : listingPrice}
+                  {!isPremadeFree && <span className="ml-2 text-sm text-black/45">{listingCurrency}</span>}
                 </p>
               </div>
+
+              {isPremadeFree && (
+                <div className="rounded-md border border-black/10 bg-[#f7f8f9] px-3 py-2 text-[12px] text-black/65">
+                  This premade agent is free to claim. It will be copied into your agent collection with your wallet as the owner.
+                </div>
+              )}
 
               {isOwnerViewingListing && (
                 <div className="rounded-md border border-black/10 bg-[#f7f8f9] px-3 py-2 text-[12px] text-black/65">
@@ -371,14 +424,23 @@ export default function MarketplaceDetailPage() {
               )}
 
               <div className="space-y-2 border-t border-black/10 pt-4">
-                <div className="flex justify-between text-sm">
-                  <span className="text-black/60">Fee (2%)</span>
-                  <span className="text-black/80">{(listingPrice * 0.02).toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-base font-semibold">
-                  <span className="text-black">Total</span>
-                  <span className="text-black">{(listingPrice * 1.02).toFixed(2)}</span>
-                </div>
+                {isPremadeFree ? (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-black/60">Fee</span>
+                    <span className="text-black/80">Free</span>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-black/60">Fee (2%)</span>
+                      <span className="text-black/80">{(listingPrice * 0.02).toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-base font-semibold">
+                      <span className="text-black">Total</span>
+                      <span className="text-black">{(listingPrice * 1.02).toFixed(2)}</span>
+                    </div>
+                  </>
+                )}
               </div>
 
               {isOwnerViewingListing ? (
@@ -414,7 +476,7 @@ export default function MarketplaceDetailPage() {
                     </>
                   ) : (
                     <>
-                      {listing.isRental ? "Rent Now" : "Buy Now"}
+                      {isPremadeFree ? "Claim Free Agent" : listing.isRental ? "Rent Now" : "Buy Now"}
                     </>
                   )}
                 </Button>
@@ -422,8 +484,18 @@ export default function MarketplaceDetailPage() {
 
               {!publicKey && (
                 <p className="text-center text-xs text-black/50">
-                  Connect wallet to purchase
+                  Connect wallet to {isPremadeFree ? "claim" : "purchase"}
                 </p>
+              )}
+
+              {claimedPremadeAgent && (
+                <Button
+                  onClick={() => router.push(`/agents/${claimedPremadeAgent.id}`)}
+                  variant="outline"
+                  className="h-11 w-full border-black/10 text-black/80 hover:bg-black/5"
+                >
+                  Open Claimed Agent
+                </Button>
               )}
             </CardContent>
           </Card>

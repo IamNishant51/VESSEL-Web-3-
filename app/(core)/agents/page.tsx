@@ -11,6 +11,7 @@ import { AnimatePresence, motion } from "framer-motion";
 
 import { WalletConnectButton } from "@/components/wallet/connect-button";
 import { useAgent } from "@/hooks/useAgent";
+import { useStoreHydrated } from "@/hooks/useStoreHydrated";
 import { getAgentArtworkUrl, getAgentCoverGradientClass } from "@/lib/agent-visuals";
 import { shortAddress } from "@/lib/utils";
 import { useVesselStore } from "@/store/useVesselStore";
@@ -87,6 +88,7 @@ export default function AgentsPage() {
   const listings = useVesselStore((state) => state.marketplaceListings);
   const removeListing = useVesselStore((state) => state.removeListing);
   const getAgentById = useVesselStore((state) => state.getAgentById);
+  const hasHydrated = useStoreHydrated();
   const router = useRouter();
 
   const [viewMode, setViewMode] = useState<ViewMode>("my-agents");
@@ -103,10 +105,6 @@ export default function AgentsPage() {
     agentName: "",
   });
   const [isDeleting, setIsDeleting] = useState(false);
-
-  const handleViewModeChange = (mode: ViewMode) => {
-    setViewMode(mode);
-  };
 
   const categories: Array<{ key: CategoryKey; label: string }> = [
     { key: "all", label: "All" },
@@ -195,6 +193,10 @@ export default function AgentsPage() {
 
   const displayedAgents = viewMode === "my-agents" ? filteredMyAgents : filteredMarketplace;
 
+  const handleViewModeChange = (mode: ViewMode) => {
+    setViewMode(mode);
+  };
+
   const handleDeleteAgent = (agentId: string, agentName: string) => {
     setDeleteModal({ isOpen: true, agentId, agentName });
   };
@@ -260,6 +262,39 @@ export default function AgentsPage() {
     removeListing(agentId);
     toast.success(`${agentName} removed from marketplace.`);
   };
+
+  if (!hasHydrated) {
+    return (
+      <div className="-mx-4 -mt-8 min-h-screen bg-[#f5f5f6] px-4 pb-10 pt-4 text-[#171819] sm:-mx-6 sm:px-6">
+        <div className="mx-auto w-full max-w-[1320px]">
+          <div className="mb-6 space-y-3">
+            <div className="flex items-center gap-2">
+              <div className="h-10 w-36 animate-pulse rounded-[4px] bg-black/10" />
+              <div className="h-10 w-40 animate-pulse rounded-[4px] bg-black/10" />
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="h-10 flex-1 animate-pulse rounded-[4px] bg-black/10 sm:max-w-[320px]" />
+              <div className="h-10 w-32 animate-pulse rounded-[6px] bg-black/10" />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[250px_minmax(0,1fr)]">
+            <div className="hidden h-64 animate-pulse rounded-[4px] bg-black/5 lg:block" />
+            <div>
+              <div className="mb-8">
+                <div className="h-14 w-64 animate-pulse rounded bg-black/10" />
+                <div className="mt-2 h-5 w-96 animate-pulse rounded bg-black/5" />
+              </div>
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {[0, 1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="h-80 animate-pulse rounded-[6px] border border-black/10 bg-white" />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="-mx-4 -mt-8 min-h-screen bg-[#f5f5f6] px-4 pb-10 pt-4 text-[#171819] sm:-mx-6 sm:px-6">

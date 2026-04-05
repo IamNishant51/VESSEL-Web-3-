@@ -24,6 +24,8 @@ export type Agent = {
   seller?: string;
   rentalEnd?: string;
   isRental?: boolean;
+  sourceTemplateId?: string;
+  isPremade?: boolean;
 };
 
 export type AgentStats = {

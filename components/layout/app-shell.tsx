@@ -2,11 +2,9 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { Menu } from "lucide-react";
-import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { Menu, X } from "lucide-react";
 
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { WalletConnectButton } from "@/components/wallet/connect-button";
 import { cn } from "@/lib/utils";
@@ -26,6 +24,7 @@ const links: Array<{ href: string; label: string; external?: boolean }> = [
 export function AppShell({ children }: Props) {
   const pathname = usePathname();
   const router = useRouter();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     for (const link of links) {
@@ -34,6 +33,10 @@ export function AppShell({ children }: Props) {
       }
     }
   }, [router]);
+
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-[#f5f5f6] text-black">
@@ -81,79 +84,62 @@ export function AppShell({ children }: Props) {
             <WalletConnectButton />
           </div>
 
-          <Sheet>
-            <SheetTrigger
-              render={
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-xl border border-black/15 bg-white text-black hover:bg-black/5 md:hidden"
-                />
-              }
-            >
-              <Menu className="h-5 w-5" />
-            </SheetTrigger>
-            <SheetContent className="border-black/10 bg-[#f5f5f6] p-0 text-black">
-              <div className="flex h-full flex-col">
-                <div className="border-b border-black/10 bg-[#efeff1] px-4 pb-4 pt-6">
-                  <p className="text-[11px] font-semibold tracking-[0.16em] text-black/55">NAVIGATION</p>
-                  <div className="appshell-wallet mt-3">
-                    <WalletConnectButton className="w-full !h-10 !rounded-[10px] !bg-[#171819] !text-[11px] !text-white hover:!bg-[#111111]" />
-                  </div>
-                </div>
-
-                <div className="flex-1 overflow-y-auto px-4 py-5">
-                  <div className="space-y-2">
-                    {links.map((link) =>
-                      link.external ? (
-                        <a
-                          key={link.href}
-                          href={link.href}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="block rounded-[10px] border border-black/10 bg-white px-4 py-2.5 text-[19px] font-medium tracking-[-0.015em] text-black/85 transition hover:bg-black/5"
-                        >
-                          {link.label}
-                        </a>
-                      ) : (
-                        <Link
-                          key={link.href}
-                          href={link.href}
-                          className={cn(
-                            "block rounded-[10px] border px-4 py-2.5 text-[21px] font-medium leading-[1.05] tracking-[-0.018em] transition",
-                            pathname === link.href
-                              ? "border-black/10 bg-[#171819] text-white"
-                              : "border-black/10 bg-white text-black/78 hover:bg-black/5",
-                          )}
-                        >
-                          {link.label}
-                        </Link>
-                      ),
-                    )}
-                  </div>
-                </div>
-
-                <div className="border-t border-black/10 px-4 py-3 text-center text-[10px] tracking-[0.12em] text-black/45">
-                  VESSEL ENGINE
-                </div>
-              </div>
-            </SheetContent>
-          </Sheet>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsMobileMenuOpen((current) => !current)}
+            className="rounded-xl border border-black/15 bg-white text-black hover:bg-black/5 md:hidden"
+            aria-expanded={isMobileMenuOpen}
+            aria-label="Toggle navigation menu"
+          >
+            {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
         </div>
       </header>
 
-      <AnimatePresence mode="wait">
-        <motion.main
-          key={pathname}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.28, ease: "easeOut" }}
-          className="relative mx-auto w-full max-w-[1320px] px-4 pb-12 pt-8 sm:px-6"
-        >
-          {children}
-        </motion.main>
-      </AnimatePresence>
+      {isMobileMenuOpen && (
+        <div className="fixed inset-x-0 top-[4.5rem] z-50 px-4 sm:px-8 md:hidden">
+          <div className="mx-auto w-full max-w-[1540px] rounded-2xl border border-black/10 bg-white p-4 shadow-[0_18px_50px_rgba(0,0,0,0.12)]">
+            <div className="appshell-wallet">
+              <WalletConnectButton className="w-full !h-10 !rounded-[10px] !bg-[#171819] !text-[11px] !text-white hover:!bg-[#111111]" />
+            </div>
+
+            <div className="mt-4 space-y-2">
+              {links.map((link) =>
+                link.external ? (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block rounded-[10px] border border-black/10 bg-white px-4 py-3 text-[16px] font-medium tracking-[-0.015em] text-black/85 transition hover:bg-black/5"
+                  >
+                    {link.label}
+                  </a>
+                ) : (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={cn(
+                      "block rounded-[10px] border px-4 py-3 text-[17px] font-medium leading-[1.05] tracking-[-0.018em] transition",
+                      pathname === link.href
+                        ? "border-black/10 bg-[#171819] text-white"
+                        : "border-black/10 bg-white text-black/78 hover:bg-black/5",
+                    )}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    {link.label}
+                  </Link>
+                ),
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <main className="relative mx-auto w-full max-w-[1320px] px-4 pb-12 pt-8 sm:px-6">
+        {children}
+      </main>
     </div>
   );
 }

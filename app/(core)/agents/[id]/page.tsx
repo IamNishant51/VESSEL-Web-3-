@@ -12,6 +12,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { AgentRunnerChat } from "@/components/agents/AgentRunnerChat";
 import { ListAgentModal } from "@/components/marketplace/ListAgentModal";
 import { useAgent } from "@/hooks/useAgent";
+import { useStoreHydrated } from "@/hooks/useStoreHydrated";
 import { sendConfirmedSolTransfer } from "@/lib/solana-payments";
 import type { Agent } from "@/types/agent";
 
@@ -21,6 +22,7 @@ export default function AgentDetailPage() {
   const wallet = useWallet();
   const { publicKey } = wallet;
   const { agents, orchestrateAgents } = useAgent();
+  const hasHydrated = useStoreHydrated();
   const [agent, setAgent] = useState<Agent | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isListModalOpen, setIsListModalOpen] = useState(false);
@@ -31,6 +33,14 @@ export default function AgentDetailPage() {
   const [orchestraChain, setOrchestraChain] = useState<
     Array<{ id: string; role: "user" | "assistant" | "system"; content: string; explorerUrl?: string }>
   >([]);
+
+  if (!hasHydrated) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-black/20 border-t-black" />
+      </div>
+    );
+  }
 
   useEffect(() => {
     const agentId = Array.isArray(params.id) ? params.id[0] : params.id;

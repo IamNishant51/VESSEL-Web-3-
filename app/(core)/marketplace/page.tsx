@@ -8,7 +8,9 @@ import { motion } from "framer-motion";
 import { useWallet } from "@solana/wallet-adapter-react";
 
 import { getAgentArtworkUrl, getAgentCoverGradientClass, getAgentVisualSeed } from "@/lib/agent-visuals";
+import { PREMADE_FREE_AGENTS } from "@/lib/premade-agents";
 import { useVesselStore } from "@/store/useVesselStore";
+import { useStoreHydrated } from "@/hooks/useStoreHydrated";
 import type { Agent } from "@/types/agent";
 
 type TabKey = "all" | "trending" | "new" | "my" | "rented";
@@ -28,6 +30,7 @@ type SoulCard = {
   isRental?: boolean;
   seller?: string;
   priceCurrency?: "SOL" | "USDC";
+  isPremade?: boolean;
 };
 
 const tabs: Array<{ key: TabKey; label: string }> = [
@@ -47,6 +50,7 @@ export default function MarketplacePage() {
   const listings = useVesselStore((state) => state.marketplaceListings);
   const agents = useVesselStore((state) => state.usersAgents);
   const removeListing = useVesselStore((state) => state.removeListing);
+  const hasHydrated = useStoreHydrated();
   const { publicKey } = useWallet();
   const router = useRouter();
 
@@ -127,6 +131,46 @@ export default function MarketplacePage() {
 
   const visibleCards = filtered.slice(0, visibleCount);
   const canLoadMore = visibleCount < filtered.length;
+  const freePremadeCards = PREMADE_FREE_AGENTS.map((agent) => ({
+    id: agent.id,
+    name: agent.name.toUpperCase(),
+    owner: agent.owner,
+    reputation: Math.max(70, Math.min(99.9, agent.reputation ?? 80)),
+    volume: "FREE",
+    floorSol: 0,
+    tag: "ULTRA" as SoulCard["tag"],
+    imageSeed: getAgentVisualSeed(agent),
+    artworkUrl: getAgentArtworkUrl(agent, 960),
+    coverGradient: getAgentCoverGradientClass(agent),
+    listedAt: agent.createdAt,
+    isRental: false,
+    seller: agent.seller,
+    priceCurrency: "SOL" as const,
+    isPremade: true,
+  }));
+
+  if (!hasHydrated) {
+    return (
+      <div className="-mx-4 -mt-8 min-h-screen bg-[#f5f5f6] px-4 pb-10 pt-4 text-[#171819] sm:-mx-6 sm:px-6">
+        <div className="mx-auto w-full max-w-[1320px]">
+          <div className="mb-6 flex gap-2">
+            {tabs.map((t) => (
+              <div key={t.key} className="h-9 w-28 animate-pulse rounded bg-black/10" />
+            ))}
+          </div>
+          <div className="mb-6 flex items-center gap-3">
+            <div className="h-10 flex-1 animate-pulse rounded bg-black/10 sm:max-w-[320px]" />
+            <div className="h-10 w-24 animate-pulse rounded bg-black/10" />
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {[0, 1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="h-80 animate-pulse rounded-[6px] border border-black/10 bg-white" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="-mx-4 -mt-8 min-h-screen bg-[#f5f5f6] px-4 pb-10 pt-4 text-[#171819] sm:-mx-6 sm:px-6">
@@ -167,6 +211,82 @@ export default function MarketplacePage() {
               className="absolute right-[-6px] top-[-8px] h-[230px] w-auto object-contain sm:right-[-10px] sm:top-[-12px] sm:h-[290px]"
               priority
             />
+          </div>
+        </section>
+
+        <section className="space-y-4 rounded-sm border border-black/10 bg-white p-4 sm:p-5">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-[10px] font-semibold tracking-[0.14em] text-black/45">PREMADE COLLECTION</p>
+              <h2 className="mt-1 text-[22px] font-semibold tracking-[-0.02em] text-black sm:text-[28px]">Free agents for everyone</h2>
+              <p className="mt-1 max-w-[760px] text-[13px] text-black/55 sm:text-[14px]">
+                Claim these curated agents at no cost. Each one is specialized for a different job so you can start with a focused workflow immediately.
+              </p>
+            </div>
+            <button
+              onClick={() => window.scrollTo({ top: 420, behavior: "smooth" })}
+              className="inline-flex h-10 items-center rounded-[4px] border border-black/10 bg-[#f1f2f3] px-4 text-[12px] font-semibold tracking-[0.06em] text-black/75 transition-colors hover:bg-black/5"
+            >
+              View paid market
+            </button>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {freePremadeCards.map((card) => (
+              <motion.article
+                key={card.id}
+                whileHover={{ y: -3 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="rounded-md border border-black/10 bg-white p-3"
+              >
+                <div className={`relative h-[190px] overflow-hidden rounded-[4px] bg-gradient-to-b ${card.coverGradient}`}>
+                  <Image
+                    src={card.artworkUrl}
+                    alt={`${card.name} premade artwork`}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw"
+                    className="h-full w-full object-cover transition-transform duration-300 hover:scale-[1.03]"
+                    loading="lazy"
+                  />
+                  <div className="absolute left-2 top-2 rounded-full border border-black/10 bg-[#171819] px-2 py-0.5 text-[9px] font-semibold tracking-[0.1em] text-white">
+                    FREE
+                  </div>
+                  <div className="absolute right-2 top-2 rounded-full border border-black/10 bg-white px-2 py-0.5 text-[9px] font-semibold tracking-[0.1em] text-black/75">
+                    PREMADE
+                  </div>
+                  <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/35 to-transparent" />
+                </div>
+
+                <div className="mt-3 flex items-start justify-between gap-3">
+                  <p className="min-w-0 truncate text-[22px] font-semibold tracking-[-0.02em] text-black sm:text-[31px]">{card.name}</p>
+                  <span className="text-[11px] text-black/55">FREE</span>
+                </div>
+                <p className="mt-1 text-[12px] text-black/62">Owner: <span className="break-all text-[#171819]">{card.owner}</span></p>
+                <p className="mt-1 text-[11px] text-black/50">
+                  Specialized agent built for a different job inside the SOL ecosystem.
+                </p>
+
+                <div className="mt-3 grid grid-cols-2 gap-2 rounded-[4px] bg-[#f2f3f4] p-2">
+                  <div>
+                    <p className="text-[9px] font-semibold tracking-[0.1em] text-black/45">REPUTATION</p>
+                    <p className="mt-1 text-[16px] font-semibold text-black">★ {card.reputation.toFixed(1)}</p>
+                  </div>
+                  <div>
+                    <p className="text-[9px] font-semibold tracking-[0.1em] text-black/45">ROLE</p>
+                    <p className="mt-1 text-[16px] font-semibold text-black">{card.name.split(" ")[1] || "Agent"}</p>
+                  </div>
+                </div>
+
+                <div className="mt-3 grid grid-cols-1 gap-2">
+                  <button
+                    onClick={() => router.push(`/marketplace/${card.id}`)}
+                    className="h-9 cursor-pointer rounded-[4px] bg-[#171819] text-[12px] font-semibold text-white hover:bg-[#111111]"
+                  >
+                    Use for Free
+                  </button>
+                </div>
+              </motion.article>
+            ))}
           </div>
         </section>
 

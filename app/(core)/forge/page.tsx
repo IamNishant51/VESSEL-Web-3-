@@ -19,6 +19,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { useAgent } from "@/hooks/useAgent";
+import { useStoreHydrated } from "@/hooks/useStoreHydrated";
 import { solanaRpcUrl } from "@/lib/solana";
 import type { ForgeTool } from "@/types/agent";
 import { initialForgeDraft } from "@/types/agent";
@@ -54,7 +55,16 @@ export default function ForgePage() {
   const isBraveWallet = (wallet?.adapter?.name || "").toLowerCase().includes("brave");
   const isSolflareWallet = (wallet?.adapter?.name || "").toLowerCase().includes("solflare");
   const { addAgent } = useAgent();
+  const hasHydrated = useStoreHydrated();
   const router = useRouter();
+
+  if (!hasHydrated) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-black/20 border-t-black" />
+      </div>
+    );
+  }
 
   useEffect(() => {
     async function loadTools() {

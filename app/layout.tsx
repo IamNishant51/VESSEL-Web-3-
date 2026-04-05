@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Toaster } from "sonner";
 
 import { VesselWalletProvider } from "@/components/wallet/wallet-provider";
+import { NavigationProgress } from "@/components/layout/navigation-progress";
 
 import "./globals.css";
 import "@solana/wallet-adapter-react-ui/styles.css";
@@ -21,6 +22,7 @@ export default function RootLayout({
     <html lang="en" className="dark h-full antialiased">
       <body suppressHydrationWarning className="min-h-full bg-background font-sans text-foreground">
         <VesselWalletProvider>
+          <NavigationProgress />
           {children}
           <Toaster
             position="top-right"

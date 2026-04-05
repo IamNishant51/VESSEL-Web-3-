@@ -29,6 +29,7 @@ type BuyRentResult = {
 };
 
 interface VesselStore {
+  _hasHydrated: boolean;
   usersAgents: Agent[];
   marketplaceListings: Listing[];
   agentStats: Record<string, AgentStats>;
@@ -94,6 +95,7 @@ function applyStats(agent: Agent, stats?: AgentStats): Agent {
 export const useVesselStore = create<VesselStore>()(
   persist(
     (set, get) => ({
+      _hasHydrated: false,
       usersAgents: [],
       marketplaceListings: [],
       agentStats: {},
@@ -553,6 +555,7 @@ export const useVesselStore = create<VesselStore>()(
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {
+          state._hasHydrated = true;
           state.cleanupExpiredRentals();
         }
       },

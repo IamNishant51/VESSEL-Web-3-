@@ -28,6 +28,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 
 import { WalletConnectButton } from "@/components/wallet/connect-button";
 import { useAgent } from "@/hooks/useAgent";
+import { useStoreHydrated } from "@/hooks/useStoreHydrated";
 import { getAgentArtworkUrl } from "@/lib/agent-visuals";
 import { shortAddress } from "@/lib/utils";
 import { useVesselStore } from "@/store/useVesselStore";
@@ -37,7 +38,31 @@ export default function DashboardPage() {
   const { publicKey } = useWallet();
   const { agents, activeAgents } = useAgent();
   const marketplaceListings = useVesselStore((state) => state.marketplaceListings);
+  const hasHydrated = useStoreHydrated();
   const router = useRouter();
+
+  if (!hasHydrated) {
+    return (
+      <div className="-mx-4 -mt-8 min-h-screen bg-[#f5f5f6] px-4 pb-10 pt-4 text-[#171819] sm:-mx-6 sm:px-6">
+        <div className="mx-auto w-full max-w-[1320px]">
+          <div className="mb-8">
+            <div className="h-14 w-64 animate-pulse rounded bg-black/10" />
+            <div className="mt-2 h-5 w-96 animate-pulse rounded bg-black/5" />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="h-28 animate-pulse rounded-[6px] border border-black/10 bg-white" />
+            ))}
+          </div>
+          <div className="mt-6 grid gap-4 md:grid-cols-2">
+            {[0, 1].map((i) => (
+              <div key={i} className="h-64 animate-pulse rounded-[6px] border border-black/10 bg-white" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const ownerAddress = publicKey?.toBase58();
 

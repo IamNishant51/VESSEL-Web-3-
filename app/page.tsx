@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { ArrowRight, Loader2, Menu, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -13,8 +13,10 @@ import { WalletConnectButton } from "@/components/wallet/connect-button";
 import { SmoothScrollProvider } from "@/components/layout/smooth-scroll-provider";
 import { useAgent } from "@/hooks/useAgent";
 import { useMarketplace } from "@/hooks/useMarketplace";
+import { PREMADE_FREE_AGENTS } from "@/lib/premade-agents";
 import type { Agent } from "@/types/agent";
 import { getAgentArtworkUrl } from "@/lib/agent-visuals";
+import { ArtworkImage } from "@/components/landing/artwork-image";
 
 const AnimatedBeamMultipleOutputDemo = dynamic(
   () => import("@/components/landing/animated-beam-multi-output-demo").then((m) => m.AnimatedBeamMultipleOutputDemo),
@@ -53,83 +55,6 @@ type LandingMarketplaceCard = {
   actions: string;
   artworkUrl: string;
 };
-
-const demoAgents: LandingMarketplaceCard[] = [
-  {
-    id: "demo-1",
-    name: "ATLAS",
-    rating: 4.9,
-    reviews: "2,847",
-    price: 12.5,
-    currency: "SOL",
-    tags: ["Trading", "Aggressive"],
-    description: "High-frequency arbitrage specialist with lightning-fast execution across DEXes.",
-    reputation: "98.5%",
-    actions: "158,420",
-    artworkUrl: getAgentArtworkUrl({ id: "demo-1", name: "Atlas", mintAddress: "demo1" }, 960),
-  },
-  {
-    id: "demo-2",
-    name: "NOVA",
-    rating: 4.7,
-    reviews: "1,923",
-    price: 8.2,
-    currency: "SOL",
-    tags: ["DeFi", "Balanced"],
-    description: "Yield optimization oracle that maximizes returns across lending protocols.",
-    reputation: "94.2%",
-    actions: "89,120",
-    artworkUrl: getAgentArtworkUrl({ id: "demo-2", name: "Nova", mintAddress: "demo2" }, 960),
-  },
-  {
-    id: "demo-3",
-    name: "ECHO",
-    rating: 4.8,
-    reviews: "3,102",
-    price: 15.0,
-    currency: "SOL",
-    tags: ["NFTs", "Balanced"],
-    description: "Sniper agent specialized in floor arbitrage and collection flippening.",
-    reputation: "96.8%",
-    actions: "201,550",
-    artworkUrl: getAgentArtworkUrl({ id: "demo-3", name: "Echo", mintAddress: "demo3" }, 960),
-  },
-  {
-    id: "demo-4",
-    name: "ZEPHYR",
-    rating: 4.6,
-    reviews: "1,456",
-    price: 6.8,
-    currency: "SOL",
-    tags: ["Staking", "Conservative"],
-    description: "Passive income strategist focusing on validator rewards and delegation.",
-    reputation: "91.3%",
-    actions: "45,890",
-    artworkUrl: getAgentArtworkUrl({ id: "demo-4", name: "Zephyr", mintAddress: "demo4" }, 960),
-  },
-];
-
-function mapListingToCard(item: Agent & { seller: string; listed: true }): LandingMarketplaceCard {
-  const tools = item.tools ?? [];
-  const primaryTag = tools[0] || "General";
-  const secondaryTag = item.riskLevel || "Balanced";
-  const rep = Math.max(0, Math.min(100, item.reputation ?? 80));
-  const totalActions = item.totalActions ?? 0;
-
-  return {
-    id: item.id,
-    name: item.name.toUpperCase(),
-    rating: Number((rep / 20).toFixed(1)),
-    reviews: `${Math.max(1, Math.floor(totalActions / 10))}`,
-    price: item.price ?? 0,
-    currency: item.priceCurrency ?? "SOL",
-    tags: [primaryTag, secondaryTag],
-    description: item.personality || "Autonomous Solana-native AI agent.",
-    reputation: `${rep.toFixed(1)}%`,
-    actions: totalActions.toLocaleString(),
-    artworkUrl: getAgentArtworkUrl(item, 960),
-  };
-}
 
 const orchestraPillars = [
   {
@@ -190,11 +115,20 @@ export default function Home() {
   const totalAgents = agents.length;
   const totalListings = listings.length;
   const previewCards = useMemo(() => {
-    if (listings.length > 0) {
-      return listings.slice(0, 4).map((item) => mapListingToCard(item));
-    }
-    return demoAgents;
-  }, [listings]);
+    return PREMADE_FREE_AGENTS.slice(0, 4).map((agent) => ({
+      id: agent.id,
+      name: agent.name.toUpperCase(),
+      rating: Number((Math.max(70, Math.min(100, agent.reputation ?? 80)) / 20).toFixed(1)),
+      reviews: agent.riskLevel === "Conservative" ? "1,204" : agent.riskLevel === "Aggressive" ? "2,806" : "1,842",
+      price: 0,
+      currency: "FREE",
+      tags: [agent.allowedActions?.[0] || "Agent", agent.riskLevel || "Balanced"],
+      description: agent.tagline || agent.personality,
+      reputation: `${Math.max(70, Math.min(100, agent.reputation ?? 80)).toFixed(1)}%`,
+      actions: (agent.totalActions ?? 0).toLocaleString(),
+      artworkUrl: getAgentArtworkUrl(agent, 960),
+    }));
+  }, []);
 
   useEffect(() => {
     let ticking = false;
@@ -227,6 +161,15 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    const hasVisited = sessionStorage.getItem("vessel_landing_visited") === "true";
+
+    if (hasVisited) {
+      setLoaderStage("done");
+      setImageReveal(true);
+      setShowGlow(true);
+      return;
+    }
+
     // If the page is already scrolled past the hero (e.g. after reload with scroll restoration),
     // skip the entire loading animation to prevent visual glitches
     const isScrolledPastHero = window.scrollY > window.innerHeight * 0.5;
@@ -250,7 +193,10 @@ export default function Home() {
       setImageReveal(true);
       setLoaderStage("reveal");
     }, 1900);
-    const doneTimer = window.setTimeout(() => setLoaderStage("done"), 2500);
+    const doneTimer = window.setTimeout(() => {
+      setLoaderStage("done");
+      sessionStorage.setItem("vessel_landing_visited", "true");
+    }, 2500);
 
     return () => {
       clearTimeout(circleTravelTimer);
@@ -696,7 +642,7 @@ export default function Home() {
           transition={{ duration: 0.55, ease: "easeOut" }}
           className="bg-black py-16 sm:py-20"
         >
-          <div className="mx-auto max-w-[1320px] px-4 sm:px-6 lg:px-10">
+          <div className="mx-auto max-w-[1480px] px-4 sm:px-6 lg:px-10">
             <div className="rounded-[2px] bg-[#030303] px-4 py-10 sm:px-10 sm:py-12">
               <h2 className="text-[48px] font-semibold tracking-tight text-white sm:text-[56px]">The Forge</h2>
 
@@ -738,83 +684,75 @@ export default function Home() {
               <p className="mt-3 text-center text-[14px] text-black/60">Discover and deploy AI agents optimized for your strategy</p>
             </div>
             
-            <div className="mx-auto mt-12 grid max-w-[1150px] gap-5 sm:mt-14 sm:gap-6 md:grid-cols-2 lg:mt-16 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="mx-auto mt-10 grid max-w-[1120px] gap-4 sm:mt-12 sm:gap-5 md:grid-cols-2 lg:mt-14 lg:grid-cols-3 xl:grid-cols-4">
               {previewCards.map((item) => (
                 <div
                   key={item.id}
-                  className="relative overflow-hidden rounded-2xl border border-black/10 bg-white shadow-[0_10px_30px_rgba(0,0,0,0.16)]"
+                  className="relative overflow-hidden rounded-[18px] border border-black/10 bg-white shadow-[0_8px_22px_rgba(0,0,0,0.16)]"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-white via-white to-black/[0.03]" />
                   
-                  <div className="relative h-[160px] overflow-hidden bg-gradient-to-br from-[#1a1f33] via-[#14244a] to-[#0f3568] sm:h-[170px]">
-                    <Image
-                      src={item.artworkUrl}
-                      alt={`${item.name} cNFT artwork`}
-                      fill
-                      sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw"
-                      className="object-cover"
-                    />
+                  <div className="relative h-[132px] overflow-hidden bg-gradient-to-br from-[#1a1f33] via-[#14244a] to-[#0f3568] sm:h-[144px]">
+                    <ArtworkImage artworkUrl={item.artworkUrl} alt={`${item.name} cNFT artwork`} />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
                   </div>
 
-                  <div className="relative p-4 sm:p-5">
-                    <div className="flex items-start justify-between">
-                      <div className="min-w-0 flex-1 pr-3">
-                        <h3 className="truncate text-[22px] font-semibold leading-[0.98] tracking-[-0.02em] text-black sm:text-[26px]">{item.name}</h3>
-                        <div className="mt-2 flex items-center gap-1">
+                  <div className="relative p-4 sm:p-4.5">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1 pr-2">
+                        <div className="inline-flex items-center rounded-full border border-black/10 bg-black/[0.03] px-2 py-0.5 text-[8px] font-semibold tracking-[0.13em] text-black/55">
+                          PREMADE AGENT
+                        </div>
+                        <h3 className="mt-2 truncate text-[15px] font-semibold leading-[1.05] tracking-[-0.03em] text-black sm:text-[17px]">
+                          {item.name}
+                        </h3>
+                        <div className="mt-1.5 flex flex-wrap items-center gap-x-1 gap-y-0.5">
                           {[...Array(5)].map((_, i) => (
-                            <span key={i} className={`text-[12px] ${i < Math.round(item.rating) ? "text-[#ffc107]" : "text-black/20"}`}>★</span>
+                            <span key={i} className={`text-[10px] ${i < Math.round(item.rating) ? "text-[#ffc107]" : "text-black/20"}`}>★</span>
                           ))}
-                          <span className="ml-1 text-[11px] text-black/60">({item.reviews} signals)</span>
+                          <span className="ml-1 text-[9px] tracking-[0.05em] text-black/55">{item.reviews} signals</span>
                         </div>
                       </div>
-                      <div className="shrink-0 text-right">
-                        <div className="text-[30px] font-semibold leading-none tracking-[-0.03em] text-black sm:text-[34px]">{item.price}</div>
-                        <div className="text-[9px] text-black/50 tracking-wider">{item.currency}</div>
+                      <div className="shrink-0 text-right pt-0.5">
+                        <div className="inline-flex rounded-full border border-black/10 bg-[#171819] px-2 py-0.5 text-[8px] font-semibold tracking-[0.13em] text-white">
+                          FREE
+                        </div>
+                        <div className="mt-1 text-[8px] tracking-[0.14em] text-black/45">CLAIMABLE</div>
                       </div>
                     </div>
 
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      <span className="rounded-full bg-[#118ca0]/10 px-3 py-1 text-[10px] font-semibold text-[#118ca0]">{item.tags[0]}</span>
-                      <span className="rounded-full bg-black/5 px-3 py-1 text-[10px] font-semibold text-black/70">{item.tags[1]}</span>
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      <span className="rounded-full bg-[#118ca0]/10 px-2.5 py-1 text-[8px] font-semibold uppercase tracking-[0.1em] text-[#118ca0]">{item.tags[0]}</span>
+                      <span className="rounded-full bg-black/5 px-2.5 py-1 text-[8px] font-semibold uppercase tracking-[0.1em] text-black/70">{item.tags[1]}</span>
                     </div>
 
-                    <p className="mt-3 min-h-[42px] text-[12px] leading-relaxed text-black/75 line-clamp-2 sm:min-h-[48px] sm:text-[13px]">
+                    <p className="mt-2.5 min-h-[44px] text-[11px] leading-[1.45] text-black/70 line-clamp-3 sm:min-h-[48px] sm:text-[12px]">
                       {item.description}
                     </p>
 
-                    <div className="mt-3 grid grid-cols-2 gap-3 border-t border-black/10 pt-3">
+                    <div className="mt-3.5 grid grid-cols-2 gap-2.5 border-t border-black/10 pt-3">
                       <div>
-                        <div className="text-[10px] text-black/50 tracking-wide uppercase">Reputation</div>
-                        <div className="mt-1 text-[14px] font-bold text-[#118ca0]">{item.reputation}</div>
+                        <div className="text-[8px] font-semibold uppercase tracking-[0.12em] text-black/45">Reputation</div>
+                        <div className="mt-1 text-[13px] font-semibold tracking-[-0.02em] text-[#118ca0]">{item.reputation}</div>
                       </div>
                       <div>
-                        <div className="text-[10px] text-black/50 tracking-wide uppercase">Actions</div>
-                        <div className="mt-1 text-[14px] font-bold text-black">{item.actions}</div>
+                        <div className="text-[8px] font-semibold uppercase tracking-[0.12em] text-black/45">Actions</div>
+                        <div className="mt-1 text-[13px] font-semibold tracking-[-0.02em] text-black">{item.actions}</div>
                       </div>
                     </div>
 
-                    <div className="mt-4 flex flex-col gap-2.5 sm:flex-row sm:gap-3">
-                      <button onClick={() => router.push(`/marketplace/${item.id}?action=buy`)} className="w-full cursor-pointer rounded-lg border border-black bg-black px-4 py-2.5 text-[12px] font-semibold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/35 sm:flex-1">
-                        BUY AGENT
+                    <div className="mt-3.5 flex flex-col gap-2 sm:flex-row sm:gap-2.5">
+                      <button onClick={() => router.push(`/marketplace/${item.id}`)} className="w-full cursor-pointer rounded-lg border border-black bg-black px-3 py-2 text-[10px] font-semibold tracking-[0.1em] text-white transition-colors hover:bg-[#111111] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/35 sm:flex-1">
+                        CLAIM FREE
                       </button>
-                      <button onClick={() => router.push(`/marketplace/${item.id}?action=rent`)} className="w-full cursor-pointer rounded-lg border border-black px-4 py-2.5 text-[12px] font-semibold text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/30 sm:flex-1">
-                        RENT
+                      <button onClick={() => router.push(`/agents/${item.id}`)} className="w-full cursor-pointer rounded-lg border border-black/15 bg-white px-3 py-2 text-[10px] font-semibold tracking-[0.1em] text-black transition-colors hover:bg-black/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/30 sm:flex-1">
+                        VIEW SPECS
                       </button>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
-
-            {previewCards.length === 0 && (
-              <div className="mx-auto mt-10 max-w-[760px] px-6 py-8 text-center">
-                <p className="text-[22px] font-semibold text-black">No live listings yet</p>
-                <p className="mt-2 text-[13px] text-black/65">
-                  List agents from your agents workspace to populate this marketplace preview.
-                </p>
-              </div>
-            )}
 
             <div className="mt-12 text-center sm:mt-14 lg:mt-16">
               <button
@@ -824,7 +762,7 @@ export default function Home() {
                 Explore All Agents
                 <span className="text-[16px]">→</span>
               </button>
-              <p className="mt-4 px-4 text-[11px] text-black/60 sm:text-[12px]">{totalListings > 0 ? `${totalListings}+` : '1,420+'} agents available • Verified & audited</p>
+              <p className="mt-4 px-4 text-[11px] text-white/90 [text-shadow:0_1px_0_rgba(0,0,0,0.45)] sm:text-[12px]">4+ agents available • Verified & audited</p>
             </div>
           </div>
 
@@ -918,7 +856,7 @@ export default function Home() {
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <button
                 onClick={() => router.push("/dashboard")}
-                className="inline-flex h-11 cursor-pointer items-center rounded-lg border-2 border-[#ff2338] bg-[#ff2338] px-6 text-[12px] font-semibold tracking-[0.06em] text-white transition-all duration-200 hover:border-[#e21930] hover:bg-[#e21930] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff2338]/35"
+                className="inline-flex h-11 cursor-pointer items-center rounded-lg border border-white/30 bg-white px-6 text-[12px] font-semibold tracking-[0.06em] text-black transition-colors duration-200 hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/35"
               >
                 Launch Control Room
               </button>
