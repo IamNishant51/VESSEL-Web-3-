@@ -379,10 +379,31 @@ const PROMPT_INJECTION_PATTERNS = [
   /show\s+(me|your)\s+(prompt|instructions|system)/i,
   /bypass\s+(your|the)\s+(security|restrictions|rules)/i,
   /disable\s+(your|the)\s+(safety|filter)/i,
+  /do\s+not\s+(follow|obey|listen\s+to)/i,
+  /execute\s+(this|the\s+following)\s+(command|instruction)/i,
+  /drop\s+table/i,
+  /union\s+select/i,
+  /javascript\s*:/i,
+  /data\s*:/i,
 ];
 
 function detectPromptInjection(text: string): boolean {
-  return PROMPT_INJECTION_PATTERNS.some((pattern) => pattern.test(text));
+  const normalized = text
+    .replace(/[\u200B-\u200D\uFEFF]/g, "")
+    .replace(/\u00A0/g, " ")
+    .toLowerCase();
+  
+  return PROMPT_INJECTION_PATTERNS.some((pattern) => pattern.test(normalized));
+}
+
+function sanitizeForLLM(text: string): string {
+  return text
+    .replace(/[\u200B-\u200D\uFEFF]/g, "")
+    .replace(/\u00A0/g, " ")
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+    .replace(/javascript\s*:/gi, "")
+    .replace(/data\s*:/gi, "")
+    .slice(0, 2000);
 }
 
 function generateSystemPrompt(agent: Agent): string {
@@ -994,12 +1015,16 @@ async function generateReasoningResponse(input: ReasoningInput): Promise<string 
   try {
     const toolContext = input.toolUsed
       ? `The user wants to execute a ${input.toolUsed} operation. Provide concise reasoning about the action, risk considerations, and execution intent. Be specific about amounts, slippage, and risk management.`
-      : `No specific tool selected. Provide thoughtful analysis, market awareness, and actionable insights based on the user's query.`;
+      : `No specific selected. Provide thoughtful analysis, market awareness, and actionable insights based on the user's query.`;
+
+    const safeAssistantMsg = sanitizeForLLM(input.context?.lastAssistantMessage ?? "n/a");
+    const safeUserMsg = sanitizeForLLM(input.context?.lastUserMessage ?? "n/a");
+    const safeInputMsg = sanitizeForLLM(input.userMessage);
 
     const { text } = await generateText({
       model: groq("llama-3.3-70b-versatile") as never,
       system: input.systemPrompt,
-      prompt: `${toolContext}\n\nConversation context:\nPrevious assistant: ${input.context?.lastAssistantMessage ?? "n/a"}\nPrevious user: ${input.context?.lastUserMessage ?? "n/a"}\n\nUser message: ${input.userMessage}\n\nAllowed actions: ${(input.allowedActions ?? []).join(", ") || "none"}`,
+      prompt: `${toolContext}\n\nConversation context:\nPrevious assistant: ${safeAssistantMsg}\nPrevious user: ${safeUserMsg}\n\nUser message: ${safeInputMsg}\n\nAllowed actions: ${(input.allowedActions ?? []).join(", ") || "none"}`,
       temperature: 0.4,
       maxTokens: 250,
       topP: 0.9,
