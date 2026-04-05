@@ -391,10 +391,10 @@ export async function enhanceTraitPng(inputPath: string, outputPath: string, opt
     
     await sharp(inputPath)
       .composite([
-        { input: blurred, blend: "screen", opacity: 0.28 },
-        { input: grainPng, blend: "soft-light", opacity: 1 },
-        { input: vignette, blend: "multiply", opacity: 1 },
-        { input: colorGradeOverlay, blend: "overlay", opacity: 0.35 },
+        { input: blurred, blend: "screen" as Blend, opacity: 0.28 },
+        { input: grainPng, blend: "soft-light" as Blend, opacity: 1 },
+        { input: vignette, blend: "multiply" as Blend, opacity: 1 },
+        { input: colorGradeOverlay, blend: "overlay" as Blend, opacity: 0.35 },
       ])
       .modulate({ brightness: 1.03, saturation: 1.22 })
       .gamma(1.06)
@@ -408,7 +408,7 @@ export async function enhanceTraitPng(inputPath: string, outputPath: string, opt
   const edgeExpanded = await sharp(alpha).dilate(2).blur(1.0).png().toBuffer();
   const edgeInner = await sharp(alpha).erode(2).blur(0.8).png().toBuffer();
   const edgeMask = await sharp(edgeExpanded)
-    .composite([{ input: edgeInner, blend: "dest-out" }])
+    .composite([{ input: edgeInner, blend: "dest-out" as Blend }])
     .png()
     .toBuffer();
 
@@ -473,24 +473,24 @@ export async function enhanceTraitPng(inputPath: string, outputPath: string, opt
   const directionalShade = await buildDirectionalShadeOverlay(inputPath, options.seed);
 
   const compositeOps = [
-    { input: blurred, blend: "screen", opacity: 0.14 },
-    { input: embossedHighlight, blend: "screen", opacity: 0.1 },
-    { input: embossedShadow, blend: "multiply", opacity: 0.44 },
-    { input: materialTone, blend: "multiply", opacity: 0.82 },
-    { input: directionalShade, blend: "overlay", opacity: 0.68 },
-    { input: edgeGlow, blend: "screen", opacity: 0.25 },
-    { input: magentaRim, blend: "screen", opacity: 0.08 },
-    { input: cyanRim, blend: "screen", opacity: 0.15 },
-    { input: innerLight, blend: "soft-light", opacity: 0.08 },
-    { input: sssOverlay, blend: "soft-light", opacity: 0.2 },
-    { input: threePointLight, blend: "overlay", opacity: 0.18 },
-    { input: topSpecular, blend: "screen", opacity: 0.07 },
-    { input: ambientOcclusion, blend: "multiply", opacity: 0.68 },
-    { input: holoStreaks, blend: "screen", opacity: 0.18 },
-    { input: microDetail, blend: "soft-light", opacity: 0.36 },
-    { input: colorGradeOverlay, blend: "overlay", opacity: 0.28 },
-    { input: softFocus, blend: "screen", opacity: 0.15 },
-    { input: grainPng, blend: "soft-light", opacity: 1 },
+    { input: blurred, blend: "screen" as Blend, opacity: 0.14 },
+    { input: embossedHighlight, blend: "screen" as Blend, opacity: 0.1 },
+    { input: embossedShadow, blend: "multiply" as Blend, opacity: 0.44 },
+    { input: materialTone, blend: "multiply" as Blend, opacity: 0.82 },
+    { input: directionalShade, blend: "overlay" as Blend, opacity: 0.68 },
+    { input: edgeGlow, blend: "screen" as Blend, opacity: 0.25 },
+    { input: magentaRim, blend: "screen" as Blend, opacity: 0.08 },
+    { input: cyanRim, blend: "screen" as Blend, opacity: 0.15 },
+    { input: innerLight, blend: "soft-light" as Blend, opacity: 0.08 },
+    { input: sssOverlay, blend: "soft-light" as Blend, opacity: 0.2 },
+    { input: threePointLight, blend: "overlay" as Blend, opacity: 0.18 },
+    { input: topSpecular, blend: "screen" as Blend, opacity: 0.07 },
+    { input: ambientOcclusion, blend: "multiply" as Blend, opacity: 0.68 },
+    { input: holoStreaks, blend: "screen" as Blend, opacity: 0.18 },
+    { input: microDetail, blend: "soft-light" as Blend, opacity: 0.36 },
+    { input: colorGradeOverlay, blend: "overlay" as Blend, opacity: 0.28 },
+    { input: softFocus, blend: "screen" as Blend, opacity: 0.15 },
+    { input: grainPng, blend: "soft-light" as Blend, opacity: 1 },
   ];
 
   const enhancedRgb = await sharp(inputPath)
@@ -504,7 +504,7 @@ export async function enhanceTraitPng(inputPath: string, outputPath: string, opt
     .toBuffer();
 
   await sharp(enhancedRgb)
-    .composite([{ input: filmGrainPng, blend: "overlay", opacity: 0.6 }])
+    .composite([{ input: filmGrainPng, blend: "overlay" as Blend, opacity: 0.6 }])
     .png({ compressionLevel: 9, effort: 8 })
     .toFile(outputPath);
 }

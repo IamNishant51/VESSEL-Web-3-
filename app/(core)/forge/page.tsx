@@ -24,6 +24,8 @@ import { useStoreHydrated } from "@/hooks/useStoreHydrated";
 import { solanaRpcUrl } from "@/lib/solana";
 import type { ForgeTool } from "@/types/agent";
 import { initialForgeDraft } from "@/types/agent";
+import type { Agent } from "@/types/agent";
+import { useVesselStore } from "@/store/useVesselStore";
 
 const moduleItems = [
   { id: "identity", label: "IDENTITY", icon: Bot },
@@ -222,6 +224,14 @@ export default function ForgePage() {
 
     if (!draft.name.trim() || !draft.personality.trim()) {
       toast.error("Add agent name and behavioral directives first.");
+      return;
+    }
+    
+    // Check for duplicate agent names (senior web3 engineer approach)
+    const { usersAgents } = useVesselStore();
+    const normalizedName = draft.name.trim().toLowerCase();
+    if (usersAgents.some((agent: Agent) => agent.name.trim().toLowerCase() === normalizedName)) {
+      toast.error(`An agent named "${draft.name}" already exists. Agent names must be unique.`);
       return;
     }
 
