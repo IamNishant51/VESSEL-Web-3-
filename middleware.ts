@@ -38,7 +38,8 @@ const ALLOWED_ORIGINS = [
 export function middleware(request: NextRequest) {
   const { pathname, origin } = request.nextUrl;
   const userAgent = request.headers.get("user-agent") || "";
-  const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";
+  // Use Next.js platform-provided IP instead of client-controllable headers
+  const ip = (request as any).ip || request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   const response = NextResponse.next();
 
   // Block known bots/scrapers
@@ -49,7 +50,6 @@ export function middleware(request: NextRequest) {
   // Add security headers
   response.headers.set("X-Content-Type-Options", "nosniff");
   response.headers.set("X-Frame-Options", "DENY");
-  response.headers.set("X-XSS-Protection", "1; mode=block");
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   response.headers.set(
     "Permissions-Policy",
@@ -63,7 +63,7 @@ export function middleware(request: NextRequest) {
   );
   response.headers.set(
     "Content-Security-Policy",
-    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https: ik.imagekit.io; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https: *.solana.com *.helius.xyz *.rpcpool.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
   );
 
   // CORS headers for API routes

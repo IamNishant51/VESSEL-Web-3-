@@ -12,16 +12,12 @@ export function shortAddress(address?: string, chars: number = 4): string {
 
 export function clampText(input: string, maxLength: number = 1000): string {
   return input
-    .replace(/[<>"'/]/g, (char) => {
-      const entities: Record<string, string> = {
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#x27;",
-        "/": "&#x2F;",
-      };
-      return entities[char] || char;
-    })
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;")
+    .replace(/\//g, "&#x2F;")
     .slice(0, maxLength)
     .trim();
 }
