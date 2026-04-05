@@ -57,7 +57,7 @@ async function resolveWorkingConnection() {
 }
 
 export async function GET() {
-  const isDevMode = process.env.NEXT_PUBLIC_DEV_MODE === "true";
+  const isDevMode = process.env.DEV_MODE === "true" || process.env.NEXT_PUBLIC_DEV_MODE === "true";
 
   if (isDevMode) {
     return NextResponse.json({

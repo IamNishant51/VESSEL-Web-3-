@@ -10,6 +10,69 @@ const groq = createGroq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
+type CircuitBreakerState = {
+  failures: number;
+  lastFailureAt: number;
+  isTripped: boolean;
+  nextRetryAt: number;
+};
+
+const coingeckoBreaker: CircuitBreakerState = {
+  failures: 0,
+  lastFailureAt: 0,
+  isTripped: false,
+  nextRetryAt: 0,
+};
+
+const COINGECKO_FAILURE_THRESHOLD = 5;
+const COINGECKO_COOLDOWN_MS = 60_000;
+const COINGECKO_RATE_LIMIT_PER_MINUTE = 15;
+let coingeckoCallCount = 0;
+let coingeckoCallWindowStart = Date.now();
+
+function checkCoingeckoRateLimit(): boolean {
+  const now = Date.now();
+  if (now - coingeckoCallWindowStart > 60_000) {
+    coingeckoCallCount = 0;
+    coingeckoCallWindowStart = now;
+  }
+  
+  if (coingeckoCallCount >= COINGECKO_RATE_LIMIT_PER_MINUTE) {
+    return false;
+  }
+  
+  coingeckoCallCount++;
+  return true;
+}
+
+function checkCircuitBreaker(): boolean {
+  if (!coingeckoBreaker.isTripped) {
+    return true;
+  }
+  
+  if (Date.now() >= coingeckoBreaker.nextRetryAt) {
+    coingeckoBreaker.isTripped = false;
+    coingeckoBreaker.failures = 0;
+    return true;
+  }
+  
+  return false;
+}
+
+function recordCoingeckoFailure(): void {
+  coingeckoBreaker.failures++;
+  coingeckoBreaker.lastFailureAt = Date.now();
+  
+  if (coingeckoBreaker.failures >= COINGECKO_FAILURE_THRESHOLD) {
+    coingeckoBreaker.isTripped = true;
+    coingeckoBreaker.nextRetryAt = Date.now() + COINGECKO_COOLDOWN_MS;
+  }
+}
+
+function recordCoingeckoSuccess(): void {
+  coingeckoBreaker.failures = Math.max(0, coingeckoBreaker.failures - 1);
+}
+
 type SolPriceQuote = {
   symbol: "SOL";
   usd: number;
@@ -74,6 +137,14 @@ async function fetchSolPriceUsd(): Promise<SolPriceQuote | null> {
     return cached.data as SolPriceQuote | null;
   }
 
+  if (!checkCircuitBreaker()) {
+    return null;
+  }
+
+  if (!checkCoingeckoRateLimit()) {
+    return null;
+  }
+
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 5000);
 
@@ -83,7 +154,16 @@ async function fetchSolPriceUsd(): Promise<SolPriceQuote | null> {
       { method: "GET", cache: "no-store", signal: controller.signal },
     );
 
-    if (!response.ok) return null;
+    if (!response.ok) {
+      if (response.status === 429) {
+        coingeckoBreaker.isTripped = true;
+        coingeckoBreaker.nextRetryAt = Date.now() + COINGECKO_COOLDOWN_MS;
+      }
+      recordCoingeckoFailure();
+      return null;
+    }
+
+    recordCoingeckoSuccess();
 
     const body = (await response.json()) as {
       solana?: { usd?: number; usd_24h_change?: number; market_cap?: number; usd_24h_vol?: number; last_updated_at?: number };
@@ -105,6 +185,7 @@ async function fetchSolPriceUsd(): Promise<SolPriceQuote | null> {
     priceCache.set("SOL", { data: result, expiresAt: Date.now() + PRICE_CACHE_TTL_MS });
     return result;
   } catch {
+    recordCoingeckoFailure();
     return null;
   } finally {
     clearTimeout(timeout);
@@ -145,6 +226,14 @@ async function fetchAssetPriceUsd(symbol: string): Promise<AssetPriceQuote | nul
   const asset = Object.values(SUPPORTED_PRICE_ASSETS).find((item) => item.symbol === symbol);
   if (!asset) return null;
 
+  if (!checkCircuitBreaker()) {
+    return null;
+  }
+
+  if (!checkCoingeckoRateLimit()) {
+    return null;
+  }
+
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 5000);
 
@@ -154,7 +243,16 @@ async function fetchAssetPriceUsd(symbol: string): Promise<AssetPriceQuote | nul
       { method: "GET", cache: "no-store", signal: controller.signal },
     );
 
-    if (!response.ok) return null;
+    if (!response.ok) {
+      if (response.status === 429) {
+        coingeckoBreaker.isTripped = true;
+        coingeckoBreaker.nextRetryAt = Date.now() + COINGECKO_COOLDOWN_MS;
+      }
+      recordCoingeckoFailure();
+      return null;
+    }
+
+    recordCoingeckoSuccess();
 
     const body = (await response.json()) as Record<string, { usd?: number; usd_24h_change?: number; market_cap?: number; usd_24h_vol?: number; last_updated_at?: number }>;
     const usd = body[asset.id]?.usd;
@@ -174,6 +272,7 @@ async function fetchAssetPriceUsd(symbol: string): Promise<AssetPriceQuote | nul
     priceCache.set(symbol, { data: result, expiresAt: Date.now() + PRICE_CACHE_TTL_MS });
     return result;
   } catch {
+    recordCoingeckoFailure();
     return null;
   } finally {
     clearTimeout(timeout);
