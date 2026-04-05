@@ -146,6 +146,9 @@ export const useVesselStore = create<VesselStore>()(
             agentStats: nextStats,
           };
         });
+
+        // Sync to MongoDB
+        void syncAgentToDB({ id: agentId, ...updates } as Agent);
       },
 
       deleteAgent: (agentId) => {
@@ -446,6 +449,19 @@ export const useVesselStore = create<VesselStore>()(
               : agent,
           ),
         }));
+
+        // Sync transaction to MongoDB
+        void syncTransactionToDB({
+          transactionSignature: txMeta.transactionSignature,
+          type: "tool_call",
+          fromAddress: source.owner || "",
+          toAddress: target,
+          amount,
+          currency: "USDC",
+          agentId: source.id,
+          status: "confirmed",
+          explorerUrl: txMeta.explorerUrl,
+        });
 
         return { success: true, payment };
       },
