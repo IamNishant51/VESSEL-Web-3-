@@ -13,6 +13,7 @@ import { PREMADE_FREE_AGENTS } from "@/lib/premade-agents";
 import { useVesselStore } from "@/store/useVesselStore";
 import { useStoreHydrated } from "@/hooks/useStoreHydrated";
 import type { Agent } from "@/types/agent";
+import { SkeletonImage } from "@/components/ui/skeleton-image";
 
 type TabKey = "all" | "trending" | "new" | "my" | "rented";
 
@@ -204,12 +205,12 @@ export default function MarketplacePage() {
             </div>
           </div>
 
-          <div className="relative h-[210px] overflow-hidden rounded-xl bg-gradient-to-br from-[#131313] to-[#1f1f1f] sm:h-[260px]">
+            <div className="relative h-[210px] overflow-hidden rounded-xl bg-gradient-to-br from-[#131313] to-[#1f1f1f] sm:h-[260px]">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_40%,rgba(22,207,212,0.2),transparent_40%)]" />
-            <img
+            <SkeletonImage
               src="https://ik.imagekit.io/9pfz6g8ri/VESSSEL/women-hero-section-main-asset.png"
               alt="Marketplace hero"
-              loading="eager"
+              fallbackSrc="/women-hero-section-main-asset.png"
               className="absolute right-[-6px] top-[-8px] h-[230px] w-auto object-contain sm:right-[-10px] sm:top-[-12px] sm:h-[290px]"
             />
           </div>

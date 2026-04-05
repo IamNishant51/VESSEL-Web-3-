@@ -17,6 +17,7 @@ import { PREMADE_FREE_AGENTS } from "@/lib/premade-agents";
 import type { Agent } from "@/types/agent";
 import { getAgentArtworkUrl } from "@/lib/agent-visuals";
 import { ArtworkImage } from "@/components/landing/artwork-image";
+import { SkeletonImage } from "@/components/ui/skeleton-image";
 
 const AnimatedBeamMultipleOutputDemo = dynamic(
   () => import("@/components/landing/animated-beam-multi-output-demo").then((m) => m.AnimatedBeamMultipleOutputDemo),
@@ -513,10 +514,10 @@ export default function Home() {
                   transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                   className="relative z-10 h-full w-full"
                 >
-                  <img
+                  <SkeletonImage
                     src="https://ik.imagekit.io/9pfz6g8ri/VESSSEL/women-hero-section-main-asset.png"
                     alt="Vessel hero"
-                    loading="eager"
+                    fallbackSrc="/women-hero-section-main-asset.png"
                     className="h-full w-full object-contain"
                   />
                 </motion.div>
