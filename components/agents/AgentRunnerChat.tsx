@@ -674,7 +674,7 @@ export function AgentRunnerChat({ agent }: Props) {
       {/* Main Area */}
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Header */}
-        <div className="shrink-0 border-b border-black/8 bg-white/80 px-3 py-2 backdrop-blur-xl sm:px-4 sm:py-2.5">
+        <div className="shrink-0 border-b border-black/8 bg-white px-3 py-2 sm:px-4 sm:py-2.5">
           <div className="flex items-center justify-between">
             <div className="flex min-w-0 items-center gap-2 sm:gap-3">
               <button
