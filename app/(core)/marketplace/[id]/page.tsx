@@ -7,10 +7,12 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useWallet } from "@solana/wallet-adapter-react";
 
+import { LandingNavigation } from "@/components/layout/landing-navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { getAgentArtworkUrl } from "@/lib/agent-visuals";
+import { getCyberpunkAgentDataUrl } from "@/lib/agent-avatar";
 import { sendConfirmedSolTransfer } from "@/lib/solana-payments";
 import { clonePremadeFreeAgent, getPremadeFreeAgentById } from "@/lib/premade-agents";
 import { useVesselStore } from "@/store/useVesselStore";
@@ -289,9 +291,11 @@ export default function MarketplaceDetailPage() {
   const artworkUrl = getAgentArtworkUrl(listing, 1200);
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
+    <>
+      <LandingNavigation forceLight />
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
       className="space-y-6"
     >
       <Button
@@ -330,6 +334,11 @@ export default function MarketplaceDetailPage() {
                   src={artworkUrl}
                   alt={`${listing.name} cNFT artwork`}
                   loading="eager"
+                  onError={(event) => {
+                    const target = event.currentTarget;
+                    target.onerror = null;
+                    target.src = getCyberpunkAgentDataUrl(listing.id);
+                  }}
                   className="h-[200px] w-full object-cover sm:h-[320px]"
                 />
               </div>
@@ -516,5 +525,6 @@ export default function MarketplaceDetailPage() {
         </div>
       </div>
     </motion.div>
+    </>
   );
 }

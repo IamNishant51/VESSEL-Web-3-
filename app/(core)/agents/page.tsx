@@ -8,10 +8,12 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
 
+import { LandingNavigation } from "@/components/layout/landing-navigation";
 import { WalletConnectButton } from "@/components/wallet/connect-button";
 import { useAgent } from "@/hooks/useAgent";
 import { useStoreHydrated } from "@/hooks/useStoreHydrated";
 import { getAgentArtworkUrl, getAgentCoverGradientClass } from "@/lib/agent-visuals";
+import { getCyberpunkAgentDataUrl } from "@/lib/agent-avatar";
 import { isPremadeDerivedAgent } from "@/lib/premade-agents";
 import { shortAddress } from "@/lib/utils";
 import { useVesselStore } from "@/store/useVesselStore";
@@ -265,7 +267,7 @@ export default function AgentsPage() {
 
   if (!hasHydrated) {
     return (
-      <div className="-mx-4 -mt-8 min-h-screen bg-[#f5f5f6] px-4 pb-10 pt-4 text-[#171819] sm:-mx-6 sm:px-6">
+      <div className="-mx-4 -mt-8 min-h-screen bg-[#f5f5f6] px-4 pb-10 pt-20 text-[#171819] sm:-mx-6 sm:px-6">
         <div className="mx-auto w-full max-w-[1320px]">
           <div className="mb-6 space-y-3">
             <div className="flex items-center gap-2">
@@ -297,134 +299,140 @@ export default function AgentsPage() {
   }
 
   return (
-    <div className="-mx-4 -mt-8 min-h-screen bg-[#f5f5f6] px-4 pb-10 pt-4 text-[#171819] sm:-mx-6 sm:px-6">
+    <>
+      <LandingNavigation forceLight />
+      <div className="-mx-4 -mt-8 min-h-screen bg-[#f5f5f6] px-4 pb-10 pt-20 text-[#171819] sm:-mx-6 sm:px-6">
       <div className="mx-auto w-full max-w-[1320px]">
         <div className="mb-6 space-y-3">
-          <div className="flex items-center gap-2 overflow-x-auto pb-1">
-            <button
-              onClick={() => handleViewModeChange("my-agents")}
-              className={`flex shrink-0 items-center gap-2 rounded-[4px] px-3 py-2 text-[12px] font-semibold transition-colors sm:px-4 ${
-                viewMode === "my-agents"
-                  ? "bg-[#171819] text-white"
-                  : "bg-white text-black/70 hover:bg-black/5"
-              }`}
-            >
-              <BotIcon className="h-4 w-4" />
-              MY AGENTS
-              {agents.length > 0 && (
-                <span className="ml-1 rounded-full bg-white/20 px-2 py-0.5 text-[10px]">{agents.length}</span>
-              )}
-            </button>
-            <button
-              onClick={() => handleViewModeChange("marketplace")}
-              className={`flex shrink-0 items-center gap-2 rounded-[4px] px-3 py-2 text-[12px] font-semibold transition-colors sm:px-4 ${
-                viewMode === "marketplace"
-                  ? "bg-[#171819] text-white"
-                  : "bg-white text-black/70 hover:bg-black/5"
-              }`}
-            >
-              <ShoppingBag className="h-4 w-4" />
-              MARKETPLACE
-              {marketplaceListings.length > 0 && (
-                <span className="ml-1 rounded-full bg-white/20 px-2 py-0.5 text-[10px]">{marketplaceListings.length}</span>
-              )}
-            </button>
-          </div>
+          <div className="flex items-center justify-between gap-2 overflow-x-auto pb-1">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <button
+                onClick={() => handleViewModeChange("my-agents")}
+                className={`flex shrink-0 items-center gap-1.5 rounded-[4px] px-2.5 py-2 text-[11px] font-semibold transition-colors sm:px-3 sm:text-[12px] ${
+                  viewMode === "my-agents"
+                    ? "bg-[#171819] text-white"
+                    : "bg-white text-black/70 hover:bg-black/5"
+                }`}
+              >
+                <BotIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">MY AGENTS</span>
+                <span className="sm:hidden">MY</span>
+                {agents.length > 0 && (
+                  <span className="ml-0.5 rounded-full bg-white/20 px-1.5 py-0.5 text-[9px] sm:px-2 sm:text-[10px]">{agents.length}</span>
+                )}
+              </button>
+              <button
+                onClick={() => handleViewModeChange("marketplace")}
+                className={`flex shrink-0 items-center gap-1.5 rounded-[4px] px-2.5 py-2 text-[11px] font-semibold transition-colors sm:px-3 sm:text-[12px] ${
+                  viewMode === "marketplace"
+                    ? "bg-[#171819] text-white"
+                    : "bg-white text-black/70 hover:bg-black/5"
+                }`}
+              >
+                <ShoppingBag className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">MARKETPLACE</span>
+                <span className="sm:hidden">SHOP</span>
+                {marketplaceListings.length > 0 && (
+                  <span className="ml-0.5 rounded-full bg-white/20 px-1.5 py-0.5 text-[9px] sm:px-2 sm:text-[10px]">{marketplaceListings.length}</span>
+                )}
+              </button>
+            </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
-            <motion.div
-              layout
-              transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-              className={`overflow-hidden sm:hidden ${isMobileSearchOpen ? "min-w-0 flex-1" : "w-10"}`}
-            >
-              <AnimatePresence initial={false} mode="wait">
-                {isMobileSearchOpen ? (
+            <div className="flex items-center gap-2 sm:gap-3">
+              <motion.div
+                layout
+                transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+                className={`overflow-hidden sm:hidden ${isMobileSearchOpen ? "min-w-0 flex-1" : "w-10"}`}
+              >
+                <AnimatePresence initial={false} mode="wait">
+                  {isMobileSearchOpen ? (
+                    <motion.div
+                      key="mobile-search-open"
+                      initial={{ opacity: 0, x: 8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 8 }}
+                      transition={{ duration: 0.14, ease: "easeOut" }}
+                      className="relative"
+                    >
+                      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-black/45" />
+                      <input
+                        id="agents-mobile-search"
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        placeholder="Search agents..."
+                        autoFocus
+                        className="h-10 w-full rounded-[6px] border border-[#171819]/30 bg-white pl-9 pr-9 text-[12px] text-black outline-none focus:border-[#171819]"
+                      />
+                      <button
+                        aria-label="Close search"
+                        onClick={() => setIsMobileSearchOpen(false)}
+                        className="absolute right-2 top-1/2 inline-flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-black/55 hover:bg-black/5"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </motion.div>
+                  ) : (
+                    <motion.button
+                      key="mobile-search-closed"
+                      aria-label="Search"
+                      aria-expanded={isMobileSearchOpen}
+                      aria-controls="agents-mobile-search"
+                      onClick={() => setIsMobileSearchOpen(true)}
+                      initial={{ opacity: 0, scale: 0.94 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.94 }}
+                      transition={{ duration: 0.12, ease: "easeOut" }}
+                      className={`inline-flex h-10 w-10 items-center justify-center rounded-[6px] border text-black/65 hover:bg-black/5 ${
+                        query.trim() ? "border-[#171819]/30 bg-black/[0.04]" : "border-black/10 bg-white"
+                      }`}
+                    >
+                      <Search className="h-4 w-4" />
+                    </motion.button>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+              <div className="relative hidden min-w-0 flex-1 sm:block sm:max-w-[320px]">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-black/45" />
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search agents..."
+                  className="h-10 w-full rounded-[4px] border border-black/10 bg-white pl-9 pr-3 text-[12px] text-black outline-none focus:border-[#171819]"
+                />
+              </div>
+              <AnimatePresence initial={false}>
+                {!isMobileSearchOpen && (
                   <motion.div
-                    key="mobile-search-open"
+                    layout
+                    key="mobile-action-control"
                     initial={{ opacity: 0, x: 8 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 8 }}
                     transition={{ duration: 0.14, ease: "easeOut" }}
-                    className="relative"
+                    className="shrink-0"
                   >
-                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-black/45" />
-                    <input
-                      id="agents-mobile-search"
-                      value={query}
-                      onChange={(e) => setQuery(e.target.value)}
-                      placeholder="Search agents..."
-                      autoFocus
-                      className="h-10 w-full rounded-[6px] border border-[#171819]/30 bg-white pl-9 pr-9 text-[12px] text-black outline-none focus:border-[#171819]"
-                    />
-                    <button
-                      aria-label="Close search"
-                      onClick={() => setIsMobileSearchOpen(false)}
-                      className="absolute right-2 top-1/2 inline-flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-black/55 hover:bg-black/5"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
+                    {publicKey ? (
+                      <button
+                        onClick={handleForgeAgent}
+                        className="inline-flex h-10 shrink-0 items-center gap-2 rounded-[6px] bg-[#171819] px-3 text-[12px] font-semibold text-white transition-colors hover:bg-[#111111] sm:px-4"
+                      >
+                        <Plus className="h-4 w-4" />
+                        <span className="hidden sm:inline">FORGE AGENT</span>
+                        <span className="sm:hidden">FORGE</span>
+                      </button>
+                    ) : (
+                      <WalletConnectButton />
+                    )}
                   </motion.div>
-                ) : (
-                  <motion.button
-                    key="mobile-search-closed"
-                    aria-label="Search"
-                    aria-expanded={isMobileSearchOpen}
-                    aria-controls="agents-mobile-search"
-                    onClick={() => setIsMobileSearchOpen(true)}
-                    initial={{ opacity: 0, scale: 0.94 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.94 }}
-                    transition={{ duration: 0.12, ease: "easeOut" }}
-                    className={`inline-flex h-10 w-10 items-center justify-center rounded-[6px] border text-black/65 hover:bg-black/5 ${
-                      query.trim() ? "border-[#171819]/30 bg-black/[0.04]" : "border-black/10 bg-white"
-                    }`}
-                  >
-                    <Search className="h-4 w-4" />
-                  </motion.button>
                 )}
               </AnimatePresence>
-            </motion.div>
-            <div className="relative hidden min-w-0 flex-1 sm:block sm:max-w-[320px]">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-black/45" />
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search agents..."
-                className="h-10 w-full rounded-[4px] border border-black/10 bg-white pl-9 pr-3 text-[12px] text-black outline-none focus:border-[#171819]"
-              />
             </div>
-            <AnimatePresence initial={false}>
-              {!isMobileSearchOpen && (
-                <motion.div
-                  layout
-                  key="mobile-action-control"
-                  initial={{ opacity: 0, x: 8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 8 }}
-                  transition={{ duration: 0.14, ease: "easeOut" }}
-                  className="shrink-0"
-                >
-                  {publicKey ? (
-                    <button
-                      onClick={handleForgeAgent}
-                      className="inline-flex h-10 shrink-0 items-center gap-2 rounded-[6px] bg-[#171819] px-3 text-[12px] font-semibold text-white transition-colors hover:bg-[#111111] sm:px-4"
-                    >
-                      <Plus className="h-4 w-4" />
-                      <span className="hidden sm:inline">FORGE AGENT</span>
-                      <span className="sm:hidden">FORGE</span>
-                    </button>
-                  ) : (
-                    <WalletConnectButton />
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
           </div>
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[250px_minmax(0,1fr)]">
           {/* Mobile Filter Toggle */}
-          <div className="lg:hidden">
+          <div className="sticky top-[80px] z-30 mb-4 bg-[#f5f5f6] pb-2 lg:hidden">
             <button
               onClick={() => setIsMobileFiltersOpen((p) => !p)}
               className="flex w-full items-center justify-between rounded-[4px] border border-black/10 bg-white px-4 py-2.5 text-[12px] font-semibold text-black/70 transition hover:bg-black/5"
@@ -496,7 +504,7 @@ export default function AgentsPage() {
             </AnimatePresence>
           </div>
 
-          <aside className="hidden h-fit border-r border-black/5 pr-0 lg:block lg:pr-6">
+          <aside className="sticky top-[80px] z-30 hidden h-fit border-r border-black/5 pr-0 lg:block lg:pr-6">
             <p className="text-[11px] font-semibold tracking-[0.18em] text-black/58">FILTERS</p>
             <p className="mt-1 text-[9px] tracking-[0.15em] text-black/35">REFINE SEARCH</p>
 
@@ -552,18 +560,18 @@ export default function AgentsPage() {
           </aside>
 
           <section>
-            <div className="mb-8 flex items-end justify-between gap-3">
+            <div className="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <h1 className="text-[50px] font-semibold leading-[0.95] tracking-[-0.03em] text-[#1d1f21] sm:text-[56px]">
+                <h1 className="text-[32px] font-semibold leading-[0.95] tracking-[-0.03em] text-[#1d1f21] sm:text-[50px] md:text-[56px]">
                   {viewMode === "my-agents" ? "My Agents" : "Marketplace"}
                 </h1>
-                <p className="mt-2 max-w-[560px] text-[14px] leading-[1.35] tracking-[-0.02em] text-black/70 sm:text-[16px]">
+                <p className="mt-1.5 max-w-[560px] text-[13px] leading-[1.35] tracking-[-0.02em] text-black/70 sm:text-[14px] md:text-[16px]">
                   {viewMode === "my-agents"
                     ? `${agents.length} agent${agents.length !== 1 ? "s" : ""} in your collection. Chat, manage, and list them.`
                     : `Browse ${marketplaceListings.length} agent${marketplaceListings.length !== 1 ? "s" : ""} available for purchase or rent.`}
                 </p>
               </div>
-              <p className="hidden text-[11px] font-semibold tracking-[0.15em] text-black/45 md:block">
+              <p className="text-[10px] font-semibold tracking-[0.15em] text-black/45 sm:text-[11px] md:block">
                 SHOWING {displayedAgents.length.toLocaleString()} RESULTS
               </p>
             </div>
@@ -639,7 +647,7 @@ export default function AgentsPage() {
                 )}
               </div>
             ) : (
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <div className="grid gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {displayedAgents.map((agent) => {
                   const coverGradient = getAgentCoverGradientClass(agent);
                   const artworkUrl = getAgentArtworkUrl(agent, 960);
@@ -647,13 +655,18 @@ export default function AgentsPage() {
                   return (
                   <article
                     key={agent.id}
-                    className="group rounded-[6px] border border-black/10 bg-white p-3 transition-shadow hover:shadow-md"
+                    className="group rounded-[6px] border border-black/10 bg-white p-2.5 transition-shadow hover:shadow-md sm:p-3"
                   >
-                    <div className={`relative h-[180px] overflow-hidden rounded-[4px] bg-gradient-to-b ${coverGradient}`}>
+                    <div className={`relative h-[140px] overflow-hidden rounded-[4px] bg-gradient-to-b ${coverGradient} sm:h-[180px]`}>
                       <img
                         src={artworkUrl}
                         alt={`${agent.name || "Agent"} cNFT artwork`}
                         loading="lazy"
+                        onError={(event) => {
+                          const target = event.currentTarget;
+                          target.onerror = null;
+                          target.src = getCyberpunkAgentDataUrl(agent.id);
+                        }}
                         className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
                       />
                       <div className="absolute inset-0 bg-[radial-gradient(circle_at_22%_30%,rgba(16,199,204,0.2),transparent_45%)]" />
@@ -670,61 +683,61 @@ export default function AgentsPage() {
                       )}
                     </div>
 
-                    <div className="mt-3 flex items-start justify-between gap-3">
+                    <div className="mt-2.5 flex items-start justify-between gap-2 sm:mt-3 sm:gap-3">
                       <div className="min-w-0 flex-1">
-                        <p className="text-[24px] font-semibold leading-none tracking-[-0.02em] text-black truncate">
+                        <p className="text-[18px] font-semibold leading-none tracking-[-0.02em] text-black truncate sm:text-[24px]">
                           {agent.name || "UNTITLED_AGENT"}
                         </p>
                         {agent.tagline && (
-                          <p className="mt-1 text-[10px] text-black/50 truncate">{agent.tagline}</p>
+                          <p className="mt-1 text-[9px] text-black/50 truncate sm:text-[10px]">{agent.tagline}</p>
                         )}
                       </div>
-                      <span className="shrink-0 rounded-[2px] bg-[#e7f3f2] px-2 py-1 text-[9px] font-semibold tracking-[0.1em] text-[#171819]">
+                      <span className="shrink-0 rounded-[2px] bg-[#e7f3f2] px-1.5 py-0.5 text-[8px] font-semibold tracking-[0.1em] text-[#171819] sm:px-2 sm:py-1 sm:text-[9px]">
                         {mapCategory(agent.tools).toUpperCase()}
                       </span>
                     </div>
 
-                    <p className="mt-2 text-[10px] tracking-[0.08em] text-black/48">
+                    <p className="mt-1.5 text-[9px] tracking-[0.08em] text-black/48 sm:mt-2 sm:text-[10px]">
                       BY <span className="text-[#171819]">@{shortAddress(agent.owner)}</span>
                     </p>
-                    <p className="mt-3 min-h-[40px] text-[13px] leading-relaxed text-black/72 line-clamp-2">
+                    <p className="mt-2 min-h-[36px] text-[12px] leading-relaxed text-black/72 line-clamp-2 sm:mt-3 sm:min-h-[40px] sm:text-[13px]">
                       {agent.personality || "Autonomous Solana-native agent."}
                     </p>
 
-                    <div className="mt-4 grid grid-cols-4 gap-2 border-t border-black/8 pt-3 text-center">
+                    <div className="mt-3 grid grid-cols-4 gap-1.5 border-t border-black/8 pt-2.5 text-center sm:mt-4 sm:gap-2 sm:pt-3">
                       <div>
-                        <p className="text-[8px] tracking-[0.12em] text-black/45">REP</p>
-                        <p className="mt-0.5 text-[13px] font-semibold text-black">{agent.reputation ?? 80}%</p>
+                        <p className="text-[7px] tracking-[0.12em] text-black/45 sm:text-[8px]">REP</p>
+                        <p className="mt-0.5 text-[11px] font-semibold text-black sm:text-[13px]">{agent.reputation ?? 80}%</p>
                       </div>
                       <div>
-                        <p className="text-[8px] tracking-[0.12em] text-black/45">ACTIONS</p>
-                        <p className="mt-0.5 text-[13px] font-semibold text-black">{(agent.totalActions ?? 0).toLocaleString()}</p>
+                        <p className="text-[7px] tracking-[0.12em] text-black/45 sm:text-[8px]">ACTIONS</p>
+                        <p className="mt-0.5 text-[11px] font-semibold text-black sm:text-[13px]">{(agent.totalActions ?? 0).toLocaleString()}</p>
                       </div>
                       <div>
-                        <p className="text-[8px] tracking-[0.12em] text-black/45">ACTIVE</p>
-                        <p className="mt-0.5 text-[13px] font-semibold text-black">{relativeTime(agent.lastActionAt)}</p>
+                        <p className="text-[7px] tracking-[0.12em] text-black/45 sm:text-[8px]">ACTIVE</p>
+                        <p className="mt-0.5 text-[11px] font-semibold text-black sm:text-[13px]">{relativeTime(agent.lastActionAt)}</p>
                       </div>
                       <div>
-                        <p className="text-[8px] tracking-[0.12em] text-black/45">RISK</p>
-                        <p className="mt-0.5 text-[11px] font-semibold text-black">
+                        <p className="text-[7px] tracking-[0.12em] text-black/45 sm:text-[8px]">RISK</p>
+                        <p className="mt-0.5 text-[9px] font-semibold text-black sm:text-[11px]">
                           {agent.riskLevel ? agent.riskLevel.slice(0, 4).toUpperCase() : "BAL"}
                         </p>
                       </div>
                     </div>
 
-                    <div className="mt-4 flex items-center gap-2">
+                    <div className="mt-2.5 flex flex-wrap items-center gap-1.5 sm:mt-4 sm:gap-2">
                       {viewMode === "my-agents" ? (
                         <>
                           <button
                             onClick={() => handleViewAgent(agent.id)}
-                            className="h-10 flex-1 rounded-[3px] bg-[#171819] text-[11px] font-semibold tracking-[0.11em] text-white transition-colors hover:bg-[#111111]"
+                            className="h-9 flex-1 rounded-[3px] bg-[#171819] text-[10px] font-semibold tracking-[0.11em] text-white transition-colors hover:bg-[#111111] sm:h-10 sm:text-[11px]"
                           >
                             RUN AGENT
                           </button>
                           {agent.listed ? (
                             <button
                               onClick={() => handleUnlist(agent.id, agent.name)}
-                              className="inline-flex h-10 items-center justify-center rounded-[3px] border border-black/10 bg-[#f1f2f3] px-3 text-[10px] font-semibold tracking-[0.08em] text-black/70 transition-colors hover:bg-black/5"
+                              className="inline-flex h-9 items-center justify-center rounded-[3px] border border-black/10 bg-[#f1f2f3] px-2.5 text-[9px] font-semibold tracking-[0.08em] text-black/70 transition-colors hover:bg-black/5 sm:h-10 sm:px-3 sm:text-[10px]"
                               aria-label="Unlist from marketplace"
                               title="Unlist from marketplace"
                             >
@@ -734,20 +747,20 @@ export default function AgentsPage() {
                             <button
                               onClick={() => openListModal(agent.id)}
                               disabled={agent.isRental || isPremadeDerivedAgent(agent)}
-                              className="inline-flex h-10 w-10 items-center justify-center rounded-[3px] border border-black/10 bg-[#f1f2f3] text-black/70 transition-colors hover:bg-black/5 disabled:opacity-50"
+                              className="inline-flex h-9 w-9 items-center justify-center rounded-[3px] border border-black/10 bg-[#f1f2f3] text-black/70 transition-colors hover:bg-black/5 disabled:opacity-50 sm:h-10 sm:w-10"
                               aria-label="List on marketplace"
                               title="List on marketplace"
                             >
-                              <ExternalLink className="h-4 w-4" />
+                              <ExternalLink className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                             </button>
                           )}
                           <button
                             onClick={() => handleDeleteAgent(agent.id, agent.name)}
-                            className="inline-flex h-10 w-10 items-center justify-center rounded-[3px] border border-black/10 bg-[#f1f2f3] text-red-500/70 transition-colors hover:bg-red-50 hover:text-red-500"
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-[3px] border border-black/10 bg-[#f1f2f3] text-red-500/70 transition-colors hover:bg-red-50 hover:text-red-500 sm:h-10 sm:w-10"
                             aria-label="Delete agent"
                             title="Delete agent"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                           </button>
                         </>
                       ) : (
@@ -756,13 +769,13 @@ export default function AgentsPage() {
                             <>
                               <button
                                 onClick={() => handleViewAgent(agent.id)}
-                                className="h-10 flex-1 rounded-[3px] bg-[#171819] text-[11px] font-semibold tracking-[0.11em] text-white transition-colors hover:bg-[#111111]"
+                                className="h-9 flex-1 rounded-[3px] bg-[#171819] text-[10px] font-semibold tracking-[0.11em] text-white transition-colors hover:bg-[#111111] sm:h-10 sm:text-[11px]"
                               >
                                 OPEN AGENT
                               </button>
                               <button
                                 onClick={() => handleUnlist(agent.id, agent.name)}
-                                className="inline-flex h-10 items-center justify-center rounded-[3px] border border-black/10 bg-[#f1f2f3] px-3 text-[10px] font-semibold tracking-[0.08em] text-black/70 transition-colors hover:bg-black/5"
+                                className="inline-flex h-9 items-center justify-center rounded-[3px] border border-black/10 bg-[#f1f2f3] px-2.5 text-[9px] font-semibold tracking-[0.08em] text-black/70 transition-colors hover:bg-black/5 sm:h-10 sm:px-3 sm:text-[10px]"
                                 aria-label="Unlist from marketplace"
                                 title="Unlist from marketplace"
                               >
@@ -772,28 +785,28 @@ export default function AgentsPage() {
                           ) : (
                             <button
                               onClick={() => (agent.isRental ? handleRentAgent(agent.id) : handleBuyAgent(agent.id))}
-                              className="h-10 flex-1 rounded-[3px] bg-[#171819] text-[11px] font-semibold tracking-[0.11em] text-white transition-colors hover:bg-[#111111]"
+                              className="h-9 flex-1 rounded-[3px] bg-[#171819] text-[10px] font-semibold tracking-[0.11em] text-white transition-colors hover:bg-[#111111] sm:h-10 sm:text-[11px]"
                             >
                               {agent.isRental ? "RENT NOW" : "BUY NOW"}
                             </button>
                           )}
                           <button
                             onClick={() => router.push(`/marketplace/${agent.id}`)}
-                            className="inline-flex h-10 w-10 items-center justify-center rounded-[3px] border border-black/10 bg-[#f1f2f3] text-black/70 transition-colors hover:bg-black/5"
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-[3px] border border-black/10 bg-[#f1f2f3] text-black/70 transition-colors hover:bg-black/5 sm:h-10 sm:w-10"
                             aria-label="View agent"
                           >
-                            <ExternalLink className="h-4 w-4" />
+                            <ExternalLink className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                           </button>
                         </>
                       )}
                     </div>
 
                     {agent.price && (
-                      <div className="mt-3 flex items-center justify-center gap-2 rounded-[3px] bg-black/[0.03] py-2">
-                        <span className="text-[16px] font-semibold text-[#171819]">
+                      <div className="mt-2.5 flex items-center justify-center gap-2 rounded-[3px] bg-black/[0.03] py-1.5 sm:mt-3 sm:py-2">
+                        <span className="text-[14px] font-semibold text-[#171819] sm:text-[16px]">
                           {agent.price} {agent.priceCurrency || "SOL"}
                         </span>
-                        {agent.isRental && <span className="text-[10px] text-black/50">per 7 days</span>}
+                        {agent.isRental && <span className="text-[9px] text-black/50 sm:text-[10px]">per 7 days</span>}
                       </div>
                     )}
                   </article>
@@ -838,5 +851,6 @@ export default function AgentsPage() {
         isDeleting={isDeleting}
       />
     </div>
+    </>
   );
 }

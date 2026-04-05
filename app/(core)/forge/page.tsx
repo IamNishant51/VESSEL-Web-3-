@@ -17,6 +17,7 @@ import {
 import { useWallet } from "@solana/wallet-adapter-react";
 import { toast } from "sonner";
 
+import { LandingNavigation } from "@/components/layout/landing-navigation";
 import { Button } from "@/components/ui/button";
 import { useAgent } from "@/hooks/useAgent";
 import { useStoreHydrated } from "@/hooks/useStoreHydrated";
@@ -366,7 +367,9 @@ export default function ForgePage() {
   }
 
   return (
-    <div className="-mx-4 -mt-8 min-h-screen bg-[#f5f5f6] px-4 pb-10 pt-6 text-[#161718] sm:-mx-6 sm:px-6 lg:pt-8">
+    <>
+      <LandingNavigation forceLight />
+      <div className="-mx-4 -mt-8 min-h-screen bg-[#f5f5f6] px-4 pb-10 pt-6 text-[#161718] sm:-mx-6 sm:px-6 lg:pt-8">
       <div className="mx-auto grid w-full max-w-[1320px] grid-cols-1 gap-16 lg:grid-cols-[320px_minmax(0,1fr)]">
         <aside className="hidden self-start lg:block lg:sticky lg:top-24 lg:h-fit">
           <div className="mb-8 flex items-center gap-2">
@@ -770,5 +773,6 @@ export default function ForgePage() {
         </div>
       </footer>
     </div>
+    </>
   );
 }

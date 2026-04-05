@@ -25,10 +25,12 @@ import {
 } from "lucide-react";
 import { useWallet } from "@solana/wallet-adapter-react";
 
+import { LandingNavigation } from "@/components/layout/landing-navigation";
 import { WalletConnectButton } from "@/components/wallet/connect-button";
 import { useAgent } from "@/hooks/useAgent";
 import { useStoreHydrated } from "@/hooks/useStoreHydrated";
 import { getAgentArtworkUrl } from "@/lib/agent-visuals";
+import { getCyberpunkAgentDataUrl } from "@/lib/agent-avatar";
 import { shortAddress } from "@/lib/utils";
 import { useVesselStore } from "@/store/useVesselStore";
 import type { Agent } from "@/types/agent";
@@ -149,7 +151,9 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <>
+      <LandingNavigation forceLight />
+      <div className="min-h-screen bg-white">
       <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -245,6 +249,11 @@ export default function DashboardPage() {
                         src={agent.artworkUrl}
                         alt={`${agent.name} artwork`}
                         loading="lazy"
+                        onError={(event) => {
+                          const target = event.currentTarget;
+                          target.onerror = null;
+                          target.src = getCyberpunkAgentDataUrl(agent.id);
+                        }}
                         className="h-12 w-12 shrink-0 rounded-xl object-cover"
                       />
                       <div className="min-w-0 flex-1">
@@ -397,6 +406,7 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

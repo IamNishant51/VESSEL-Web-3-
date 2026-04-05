@@ -1,0 +1,88 @@
+{
+  "tokenId": 14,
+  "uniqueId": "vessel-cyber-sentients-0014",
+  "name": "Vessel Cyber Sentients #0014",
+  "description": "Premium two-phase cNFT collection generated from handcrafted trait PNG layers.",
+  "image": "/nft-engine/output/images/0014.png",
+  "attributes": [
+    {
+      "trait_type": "Background",
+      "value": "Neon Alley"
+    },
+    {
+      "trait_type": "Body",
+      "value": "Feline Arc"
+    },
+    {
+      "trait_type": "Clothing",
+      "value": "Neon Trench"
+    },
+    {
+      "trait_type": "Eyes",
+      "value": "Predator Tilt"
+    },
+    {
+      "trait_type": "Headgear",
+      "value": "Samurai Halo"
+    },
+    {
+      "trait_type": "Accessories",
+      "value": "Neck Ring"
+    },
+    {
+      "trait_type": "Effects",
+      "value": "Circuit Aura"
+    },
+    {
+      "trait_type": "Background Rarity",
+      "value": "common"
+    },
+    {
+      "trait_type": "Body Rarity",
+      "value": "common"
+    },
+    {
+      "trait_type": "Collection Tier",
+      "value": "common"
+    },
+    {
+      "trait_type": "Seed",
+      "value": 4020673381
+    },
+    {
+      "trait_type": "Final Rarity Tier",
+      "value": "common"
+    },
+    {
+      "trait_type": "Final Rarity Score",
+      "value": 8
+    },
+    {
+      "trait_type": "Body Family",
+      "value": "feline"
+    }
+  ],
+  "properties": {
+    "category": "image",
+    "files": [
+      {
+        "uri": "/nft-engine/output/images/0014.png",
+        "type": "image/png"
+      }
+    ],
+    "rarity": {
+      "tier": "common",
+      "score": 8
+    },
+    "seed": 4020673381,
+    "traitPaths": {
+      "background": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\backgrounds\\neon-alley.png",
+      "body": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\bodies\\feline-arc.png",
+      "clothing": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\clothing\\neon-trench.png",
+      "eyes": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\eyes\\predator-tilt.png",
+      "headgear": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\headgear\\samurai-halo.png",
+      "accessories": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\accessories\\neck-ring.png",
+      "effects": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\effects\\circuit-aura.png"
+    }
+  }
+}

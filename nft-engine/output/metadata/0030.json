@@ -1,0 +1,88 @@
+{
+  "tokenId": 30,
+  "uniqueId": "vessel-cyber-sentients-0030",
+  "name": "Vessel Cyber Sentients #0030",
+  "description": "Premium two-phase cNFT collection generated from handcrafted trait PNG layers.",
+  "image": "/nft-engine/output/images/0030.png",
+  "attributes": [
+    {
+      "trait_type": "Background",
+      "value": "Neon Alley"
+    },
+    {
+      "trait_type": "Body",
+      "value": "Humanoid Prime"
+    },
+    {
+      "trait_type": "Clothing",
+      "value": "Pilot Suit"
+    },
+    {
+      "trait_type": "Eyes",
+      "value": "Dual Slit"
+    },
+    {
+      "trait_type": "Headgear",
+      "value": "Crystal Diadem"
+    },
+    {
+      "trait_type": "Accessories",
+      "value": "Chest Insignia"
+    },
+    {
+      "trait_type": "Effects",
+      "value": "Glitch Shards"
+    },
+    {
+      "trait_type": "Background Rarity",
+      "value": "common"
+    },
+    {
+      "trait_type": "Body Rarity",
+      "value": "common"
+    },
+    {
+      "trait_type": "Collection Tier",
+      "value": "uncommon"
+    },
+    {
+      "trait_type": "Seed",
+      "value": 4155188523
+    },
+    {
+      "trait_type": "Final Rarity Tier",
+      "value": "uncommon"
+    },
+    {
+      "trait_type": "Final Rarity Score",
+      "value": 14
+    },
+    {
+      "trait_type": "Body Family",
+      "value": "humanoid"
+    }
+  ],
+  "properties": {
+    "category": "image",
+    "files": [
+      {
+        "uri": "/nft-engine/output/images/0030.png",
+        "type": "image/png"
+      }
+    ],
+    "rarity": {
+      "tier": "uncommon",
+      "score": 14
+    },
+    "seed": 4155188523,
+    "traitPaths": {
+      "background": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\backgrounds\\neon-alley.png",
+      "body": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\bodies\\humanoid-prime.png",
+      "clothing": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\clothing\\pilot-suit.png",
+      "eyes": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\eyes\\dual-slit.png",
+      "headgear": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\headgear\\crystal-diadem.png",
+      "accessories": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\accessories\\chest-insignia.png",
+      "effects": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\effects\\glitch-shards.png"
+    }
+  }
+}

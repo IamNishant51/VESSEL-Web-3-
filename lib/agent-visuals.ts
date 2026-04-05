@@ -198,21 +198,8 @@ export function getAgentVisualLabel(input: VisualInput): string {
  * Same agent always gets the same avatar (deterministic based on agent ID)
  */
 export function getAgentArtworkUrl(input: VisualInput, size = 1024): string {
-  try {
-    const svg = generateAgentPreviewSVG(
-      input,
-      input.personality || "",
-      input.riskLevel || "Balanced",
-      input.toolCount || 0
-    );
-
-    // Use deterministic inline SVG so card thumbnails are always visible,
-    // even when external image providers are rate-limited or blocked.
-    return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
-  } catch {
-    void size;
-    return getCyberpunkCnftAvatarUrl(input.id || input.mintAddress || input.name || "0");
-  }
+  void size;
+  return getCyberpunkCnftAvatarUrl(input.id || input.mintAddress || input.name || "0");
 }
 
 /**

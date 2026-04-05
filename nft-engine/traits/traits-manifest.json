@@ -1,0 +1,574 @@
+{
+  "generatedAt": "2026-04-05T12:45:24.311Z",
+  "canvasSize": 1024,
+  "totalTraits": 49,
+  "layers": [
+    {
+      "layer": "background",
+      "folder": "backgrounds",
+      "count": 8,
+      "traits": [
+        {
+          "id": "neon-alley",
+          "name": "Neon Alley",
+          "rarity": "common",
+          "weight": 24,
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\backgrounds\\neon-alley.png"
+        },
+        {
+          "id": "orbital-hangar",
+          "name": "Orbital Hangar",
+          "rarity": "common",
+          "weight": 22,
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\backgrounds\\orbital-hangar.png"
+        },
+        {
+          "id": "crystal-cavern",
+          "name": "Crystal Cavern",
+          "rarity": "uncommon",
+          "weight": 16,
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\backgrounds\\crystal-cavern.png"
+        },
+        {
+          "id": "ruined-temple",
+          "name": "Ruined Temple",
+          "rarity": "uncommon",
+          "weight": 14,
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\backgrounds\\ruined-temple.png"
+        },
+        {
+          "id": "data-vault",
+          "name": "Data Vault",
+          "rarity": "rare",
+          "weight": 10,
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\backgrounds\\data-vault.png"
+        },
+        {
+          "id": "storm-plaza",
+          "name": "Storm Plaza",
+          "rarity": "rare",
+          "weight": 8,
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\backgrounds\\storm-plaza.png"
+        },
+        {
+          "id": "desert-monolith",
+          "name": "Desert Monolith",
+          "rarity": "epic",
+          "weight": 4,
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\backgrounds\\desert-monolith.png"
+        },
+        {
+          "id": "arctic-station",
+          "name": "Arctic Station",
+          "rarity": "legendary",
+          "weight": 2,
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\backgrounds\\arctic-station.png"
+        }
+      ]
+    },
+    {
+      "layer": "body",
+      "folder": "bodies",
+      "count": 8,
+      "traits": [
+        {
+          "id": "humanoid-prime",
+          "name": "Humanoid Prime",
+          "rarity": "common",
+          "weight": 20,
+          "family": "humanoid",
+          "families": [
+            "humanoid"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\bodies\\humanoid-prime.png"
+        },
+        {
+          "id": "canine-runner",
+          "name": "Canine Runner",
+          "rarity": "common",
+          "weight": 18,
+          "family": "canine",
+          "families": [
+            "canine"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\bodies\\canine-runner.png"
+        },
+        {
+          "id": "feline-arc",
+          "name": "Feline Arc",
+          "rarity": "common",
+          "weight": 18,
+          "family": "feline",
+          "families": [
+            "feline"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\bodies\\feline-arc.png"
+        },
+        {
+          "id": "avian-wisp",
+          "name": "Avian Wisp",
+          "rarity": "uncommon",
+          "weight": 14,
+          "family": "avian",
+          "families": [
+            "avian"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\bodies\\avian-wisp.png"
+        },
+        {
+          "id": "mech-frame",
+          "name": "Mech Frame",
+          "rarity": "uncommon",
+          "weight": 12,
+          "family": "mech",
+          "families": [
+            "mech"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\bodies\\mech-frame.png"
+        },
+        {
+          "id": "spirit-veil",
+          "name": "Spirit Veil",
+          "rarity": "rare",
+          "weight": 8,
+          "family": "spirit",
+          "families": [
+            "spirit"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\bodies\\spirit-veil.png"
+        },
+        {
+          "id": "dragon-core",
+          "name": "Dragon Core",
+          "rarity": "rare",
+          "weight": 6,
+          "family": "dragon",
+          "families": [
+            "dragon"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\bodies\\dragon-core.png"
+        },
+        {
+          "id": "rabbit-synth",
+          "name": "Rabbit Synth",
+          "rarity": "epic",
+          "weight": 4,
+          "family": "rabbit",
+          "families": [
+            "rabbit"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\bodies\\rabbit-synth.png"
+        }
+      ]
+    },
+    {
+      "layer": "clothing",
+      "folder": "clothing",
+      "count": 7,
+      "traits": [
+        {
+          "id": "neon-trench",
+          "name": "Neon Trench",
+          "rarity": "common",
+          "weight": 20,
+          "families": [
+            "humanoid",
+            "canine",
+            "feline",
+            "rabbit"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\clothing\\neon-trench.png"
+        },
+        {
+          "id": "plated-armor",
+          "name": "Plated Armor",
+          "rarity": "common",
+          "weight": 18,
+          "families": [
+            "mech",
+            "dragon",
+            "canine"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\clothing\\plated-armor.png"
+        },
+        {
+          "id": "kimono-tech",
+          "name": "Kimono Tech",
+          "rarity": "uncommon",
+          "weight": 14,
+          "families": [
+            "humanoid",
+            "spirit",
+            "feline"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\clothing\\kimono-tech.png"
+        },
+        {
+          "id": "pilot-suit",
+          "name": "Pilot Suit",
+          "rarity": "uncommon",
+          "weight": 14,
+          "families": [
+            "avian",
+            "humanoid",
+            "rabbit"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\clothing\\pilot-suit.png"
+        },
+        {
+          "id": "monk-robe",
+          "name": "Monk Robe",
+          "rarity": "rare",
+          "weight": 10,
+          "families": [
+            "spirit",
+            "dragon",
+            "avian"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\clothing\\monk-robe.png"
+        },
+        {
+          "id": "hazard-jacket",
+          "name": "Hazard Jacket",
+          "rarity": "epic",
+          "weight": 6,
+          "families": [
+            "mech",
+            "canine",
+            "humanoid"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\clothing\\hazard-jacket.png"
+        },
+        {
+          "id": "royal-cape",
+          "name": "Royal Cape",
+          "rarity": "legendary",
+          "weight": 2,
+          "families": [
+            "universal"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\clothing\\royal-cape.png"
+        }
+      ]
+    },
+    {
+      "layer": "eyes",
+      "folder": "eyes",
+      "count": 7,
+      "traits": [
+        {
+          "id": "dual-slit",
+          "name": "Dual Slit",
+          "rarity": "common",
+          "weight": 22,
+          "families": [
+            "universal"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\eyes\\dual-slit.png"
+        },
+        {
+          "id": "tri-visor",
+          "name": "Tri Visor",
+          "rarity": "common",
+          "weight": 18,
+          "families": [
+            "universal"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\eyes\\tri-visor.png"
+        },
+        {
+          "id": "mono-orb",
+          "name": "Mono Orb",
+          "rarity": "uncommon",
+          "weight": 14,
+          "families": [
+            "mech",
+            "avian",
+            "dragon"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\eyes\\mono-orb.png"
+        },
+        {
+          "id": "runic-ring",
+          "name": "Runic Ring",
+          "rarity": "rare",
+          "weight": 10,
+          "families": [
+            "spirit",
+            "humanoid",
+            "feline"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\eyes\\runic-ring.png"
+        },
+        {
+          "id": "predator-tilt",
+          "name": "Predator Tilt",
+          "rarity": "uncommon",
+          "weight": 14,
+          "families": [
+            "canine",
+            "feline",
+            "dragon"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\eyes\\predator-tilt.png"
+        },
+        {
+          "id": "mech-grid",
+          "name": "Mech Grid",
+          "rarity": "epic",
+          "weight": 6,
+          "families": [
+            "mech",
+            "humanoid"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\eyes\\mech-grid.png"
+        },
+        {
+          "id": "dream-arc",
+          "name": "Dream Arc",
+          "rarity": "legendary",
+          "weight": 2,
+          "families": [
+            "spirit",
+            "rabbit"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\eyes\\dream-arc.png"
+        }
+      ]
+    },
+    {
+      "layer": "headgear",
+      "folder": "headgear",
+      "count": 7,
+      "traits": [
+        {
+          "id": "aegis-full-helmet",
+          "name": "Aegis Full Helmet",
+          "rarity": "common",
+          "weight": 20,
+          "families": [
+            "universal"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\headgear\\aegis-full-helmet.png"
+        },
+        {
+          "id": "samurai-halo",
+          "name": "Samurai Halo",
+          "rarity": "common",
+          "weight": 18,
+          "families": [
+            "humanoid",
+            "feline",
+            "dragon"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\headgear\\samurai-halo.png"
+        },
+        {
+          "id": "antenna-crown",
+          "name": "Antenna Crown",
+          "rarity": "uncommon",
+          "weight": 14,
+          "families": [
+            "mech",
+            "avian",
+            "universal"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\headgear\\antenna-crown.png"
+        },
+        {
+          "id": "horned-mask",
+          "name": "Horned Mask",
+          "rarity": "rare",
+          "weight": 10,
+          "families": [
+            "dragon",
+            "canine",
+            "feline"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\headgear\\horned-mask.png"
+        },
+        {
+          "id": "aviator-hood",
+          "name": "Aviator Hood",
+          "rarity": "uncommon",
+          "weight": 14,
+          "families": [
+            "avian",
+            "humanoid",
+            "rabbit"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\headgear\\aviator-hood.png"
+        },
+        {
+          "id": "crystal-diadem",
+          "name": "Crystal Diadem",
+          "rarity": "epic",
+          "weight": 6,
+          "families": [
+            "spirit",
+            "humanoid",
+            "feline"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\headgear\\crystal-diadem.png"
+        },
+        {
+          "id": "rabbit-band",
+          "name": "Rabbit Band",
+          "rarity": "legendary",
+          "weight": 2,
+          "families": [
+            "rabbit"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\headgear\\rabbit-band.png"
+        }
+      ]
+    },
+    {
+      "layer": "accessories",
+      "folder": "accessories",
+      "count": 6,
+      "traits": [
+        {
+          "id": "neck-ring",
+          "name": "Neck Ring",
+          "rarity": "common",
+          "weight": 20,
+          "families": [
+            "universal"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\accessories\\neck-ring.png"
+        },
+        {
+          "id": "chain-grid",
+          "name": "Chain Grid",
+          "rarity": "common",
+          "weight": 18,
+          "families": [
+            "universal"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\accessories\\chain-grid.png"
+        },
+        {
+          "id": "shoulder-drones",
+          "name": "Shoulder Drones",
+          "rarity": "uncommon",
+          "weight": 14,
+          "families": [
+            "mech",
+            "avian",
+            "humanoid"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\accessories\\shoulder-drones.png"
+        },
+        {
+          "id": "ear-comms",
+          "name": "Ear Comms",
+          "rarity": "uncommon",
+          "weight": 14,
+          "families": [
+            "canine",
+            "feline",
+            "rabbit",
+            "humanoid"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\accessories\\ear-comms.png"
+        },
+        {
+          "id": "chest-insignia",
+          "name": "Chest Insignia",
+          "rarity": "rare",
+          "weight": 10,
+          "families": [
+            "universal"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\accessories\\chest-insignia.png"
+        },
+        {
+          "id": "dual-katana-hilts",
+          "name": "Dual Katana Hilts",
+          "rarity": "epic",
+          "weight": 6,
+          "families": [
+            "dragon",
+            "humanoid",
+            "spirit"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\accessories\\dual-katana-hilts.png"
+        }
+      ]
+    },
+    {
+      "layer": "effects",
+      "folder": "effects",
+      "count": 6,
+      "traits": [
+        {
+          "id": "ember-rain",
+          "name": "Ember Rain",
+          "rarity": "common",
+          "weight": 18,
+          "families": [
+            "universal"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\effects\\ember-rain.png"
+        },
+        {
+          "id": "circuit-aura",
+          "name": "Circuit Aura",
+          "rarity": "common",
+          "weight": 18,
+          "families": [
+            "universal"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\effects\\circuit-aura.png"
+        },
+        {
+          "id": "glitch-shards",
+          "name": "Glitch Shards",
+          "rarity": "uncommon",
+          "weight": 14,
+          "families": [
+            "universal"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\effects\\glitch-shards.png"
+        },
+        {
+          "id": "halo-rays",
+          "name": "Halo Rays",
+          "rarity": "rare",
+          "weight": 10,
+          "families": [
+            "spirit",
+            "avian",
+            "humanoid"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\effects\\halo-rays.png"
+        },
+        {
+          "id": "smoke-veil",
+          "name": "Smoke Veil",
+          "rarity": "epic",
+          "weight": 6,
+          "families": [
+            "dragon",
+            "spirit",
+            "canine"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\effects\\smoke-veil.png"
+        },
+        {
+          "id": "lightning-loop",
+          "name": "Lightning Loop",
+          "rarity": "legendary",
+          "weight": 2,
+          "families": [
+            "mech",
+            "dragon",
+            "universal"
+          ],
+          "path": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\effects\\lightning-loop.png"
+        }
+      ]
+    }
+  ]
+}

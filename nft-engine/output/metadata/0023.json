@@ -1,0 +1,88 @@
+{
+  "tokenId": 23,
+  "uniqueId": "vessel-cyber-sentients-0023",
+  "name": "Vessel Cyber Sentients #0023",
+  "description": "Premium two-phase cNFT collection generated from handcrafted trait PNG layers.",
+  "image": "/nft-engine/output/images/0023.png",
+  "attributes": [
+    {
+      "trait_type": "Background",
+      "value": "Crystal Cavern"
+    },
+    {
+      "trait_type": "Body",
+      "value": "Spirit Veil"
+    },
+    {
+      "trait_type": "Clothing",
+      "value": "Monk Robe"
+    },
+    {
+      "trait_type": "Eyes",
+      "value": "Tri Visor"
+    },
+    {
+      "trait_type": "Headgear",
+      "value": "Aegis Full Helmet"
+    },
+    {
+      "trait_type": "Accessories",
+      "value": "Neck Ring"
+    },
+    {
+      "trait_type": "Effects",
+      "value": "Smoke Veil"
+    },
+    {
+      "trait_type": "Background Rarity",
+      "value": "uncommon"
+    },
+    {
+      "trait_type": "Body Rarity",
+      "value": "rare"
+    },
+    {
+      "trait_type": "Collection Tier",
+      "value": "uncommon"
+    },
+    {
+      "trait_type": "Seed",
+      "value": 4037598095
+    },
+    {
+      "trait_type": "Final Rarity Tier",
+      "value": "uncommon"
+    },
+    {
+      "trait_type": "Final Rarity Score",
+      "value": 15
+    },
+    {
+      "trait_type": "Body Family",
+      "value": "spirit"
+    }
+  ],
+  "properties": {
+    "category": "image",
+    "files": [
+      {
+        "uri": "/nft-engine/output/images/0023.png",
+        "type": "image/png"
+      }
+    ],
+    "rarity": {
+      "tier": "uncommon",
+      "score": 15
+    },
+    "seed": 4037598095,
+    "traitPaths": {
+      "background": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\backgrounds\\crystal-cavern.png",
+      "body": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\bodies\\spirit-veil.png",
+      "clothing": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\clothing\\monk-robe.png",
+      "eyes": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\eyes\\tri-visor.png",
+      "headgear": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\headgear\\aegis-full-helmet.png",
+      "accessories": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\accessories\\neck-ring.png",
+      "effects": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\effects\\smoke-veil.png"
+    }
+  }
+}

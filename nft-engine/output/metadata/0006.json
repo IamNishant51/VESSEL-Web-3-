@@ -1,0 +1,88 @@
+{
+  "tokenId": 6,
+  "uniqueId": "vessel-cyber-sentients-0006",
+  "name": "Vessel Cyber Sentients #0006",
+  "description": "Premium two-phase cNFT collection generated from handcrafted trait PNG layers.",
+  "image": "/nft-engine/output/images/0006.png",
+  "attributes": [
+    {
+      "trait_type": "Background",
+      "value": "Crystal Cavern"
+    },
+    {
+      "trait_type": "Body",
+      "value": "Spirit Veil"
+    },
+    {
+      "trait_type": "Clothing",
+      "value": "Kimono Tech"
+    },
+    {
+      "trait_type": "Eyes",
+      "value": "Runic Ring"
+    },
+    {
+      "trait_type": "Headgear",
+      "value": "Aegis Full Helmet"
+    },
+    {
+      "trait_type": "Accessories",
+      "value": "Dual Katana Hilts"
+    },
+    {
+      "trait_type": "Effects",
+      "value": "Halo Rays"
+    },
+    {
+      "trait_type": "Background Rarity",
+      "value": "uncommon"
+    },
+    {
+      "trait_type": "Body Rarity",
+      "value": "rare"
+    },
+    {
+      "trait_type": "Collection Tier",
+      "value": "rare"
+    },
+    {
+      "trait_type": "Seed",
+      "value": 4206031346
+    },
+    {
+      "trait_type": "Final Rarity Tier",
+      "value": "rare"
+    },
+    {
+      "trait_type": "Final Rarity Score",
+      "value": 18
+    },
+    {
+      "trait_type": "Body Family",
+      "value": "spirit"
+    }
+  ],
+  "properties": {
+    "category": "image",
+    "files": [
+      {
+        "uri": "/nft-engine/output/images/0006.png",
+        "type": "image/png"
+      }
+    ],
+    "rarity": {
+      "tier": "rare",
+      "score": 18
+    },
+    "seed": 4206031346,
+    "traitPaths": {
+      "background": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\backgrounds\\crystal-cavern.png",
+      "body": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\bodies\\spirit-veil.png",
+      "clothing": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\clothing\\kimono-tech.png",
+      "eyes": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\eyes\\runic-ring.png",
+      "headgear": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\headgear\\aegis-full-helmet.png",
+      "accessories": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\accessories\\dual-katana-hilts.png",
+      "effects": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\effects\\halo-rays.png"
+    }
+  }
+}

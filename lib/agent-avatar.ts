@@ -312,3 +312,8 @@ export function getCyberpunkAgentSVG(agentId: string): string {
     <text x="200" y="385" text-anchor="middle" font-family="monospace" font-size="8" fill="${neonSet[0]}" opacity="0.25">ID:${idHash}</text>
   </svg>`;
 }
+
+export function getCyberpunkAgentDataUrl(agentId: string): string {
+  const svg = getCyberpunkAgentSVG(agentId || "fallback-agent");
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+}

@@ -8,6 +8,7 @@ import { ArrowRight, Loader2, Menu, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useWallet } from "@solana/wallet-adapter-react";
 
+import { LandingNavigation } from "@/components/layout/landing-navigation";
 import { WalletConnectButton } from "@/components/wallet/connect-button";
 import { SmoothScrollProvider } from "@/components/layout/smooth-scroll-provider";
 import { useAgent } from "@/hooks/useAgent";
@@ -32,29 +33,6 @@ const AnimatedBeamDemo = dynamic(
     loading: () => <div className="h-[420px] sm:h-[500px]" aria-hidden="true" />,
   },
 );
-
-const navLinks: Array<{ href: string; label: string; external?: boolean }> = [
-  { href: "/agents", label: "AGENTS" },
-  { href: "/dashboard", label: "DASHBOARD" },
-  { href: "/marketplace", label: "MARKETPLACE" },
-  { href: "/forge", label: "FORGE" },
-  { href: "/preview", label: "PREVIEW" },
-  { href: "/docs", label: "DOCS" },
-];
-
-type LandingMarketplaceCard = {
-  id: string;
-  name: string;
-  rating: number;
-  reviews: string;
-  price: number;
-  currency: "SOL" | "USDC";
-  tags: string[];
-  description: string;
-  reputation: string;
-  actions: string;
-  artworkUrl: string;
-};
 
 const orchestraPillars = [
   {
@@ -91,8 +69,6 @@ export default function Home() {
   const router = useRouter();
   const { agents } = useAgent();
   const { listings } = useMarketplace();
-  const [isNavOnDark, setIsNavOnDark] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isForgeCtaLoading, setIsForgeCtaLoading] = useState(false);
   const [loaderStage, setLoaderStage] = useState<"intro" | "circle-travel" | "circle-arrived" | "text-travel" | "text-arrived" | "glow-pulse" | "fade-all" | "reveal" | "done">("intro");
   const [loaderTargets, setLoaderTargets] = useState({
@@ -112,6 +88,35 @@ export default function Home() {
   const heroCircleRef = useRef<HTMLDivElement>(null);
   const loaderTextRef = useRef<HTMLParagraphElement>(null);
 
+  useEffect(() => {
+    let ticking = false;
+    const updateNavTheme = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const probeY = window.scrollY + 56;
+        const darkSections = [forgeSectionRef.current, orchestraSectionRef.current].filter(Boolean) as HTMLElement[];
+
+        const isDarkNow = darkSections.some((section) => {
+          const start = section.offsetTop;
+          const end = start + section.offsetHeight;
+          return probeY >= start && probeY <= end;
+        });
+
+        ticking = false;
+      });
+    };
+
+    updateNavTheme();
+    window.addEventListener("scroll", updateNavTheme, { passive: true });
+    window.addEventListener("resize", updateNavTheme);
+
+    return () => {
+      window.removeEventListener("scroll", updateNavTheme);
+      window.removeEventListener("resize", updateNavTheme);
+    };
+  }, []);
+
   const totalAgents = agents.length;
   const totalListings = listings.length;
   const previewCards = useMemo(() => {
@@ -128,36 +133,6 @@ export default function Home() {
       actions: (agent.totalActions ?? 0).toLocaleString(),
       artworkUrl: getAgentArtworkUrl(agent, 960),
     }));
-  }, []);
-
-  useEffect(() => {
-    let ticking = false;
-    const updateNavTheme = () => {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(() => {
-        const probeY = window.scrollY + 56;
-        const darkSections = [forgeSectionRef.current, orchestraSectionRef.current].filter(Boolean) as HTMLElement[];
-
-        const isDarkNow = darkSections.some((section) => {
-          const start = section.offsetTop;
-          const end = start + section.offsetHeight;
-          return probeY >= start && probeY <= end;
-        });
-
-        setIsNavOnDark(isDarkNow);
-        ticking = false;
-      });
-    };
-
-    updateNavTheme();
-    window.addEventListener("scroll", updateNavTheme, { passive: true });
-    window.addEventListener("resize", updateNavTheme);
-
-    return () => {
-      window.removeEventListener("scroll", updateNavTheme);
-      window.removeEventListener("resize", updateNavTheme);
-    };
   }, []);
 
   useEffect(() => {
@@ -388,97 +363,7 @@ export default function Home() {
         transition={{ duration: 0.55, ease: "easeOut" }}
         className="relative z-30"
       >
-        <header className="fixed inset-x-0 top-0 z-50">
-          <div className="mx-auto max-w-[1320px] px-4 pt-4 sm:px-6 lg:px-10">
-            <div
-              className={`flex items-center justify-between rounded-xl px-3 py-2 backdrop-blur-md transition-colors duration-300 ${
-                isNavOnDark ? "bg-black/35" : "bg-white/45"
-              }`}
-            >
-              <motion.p
-                className={`text-[15px] font-medium tracking-[0.16em] transition-colors duration-200 ${
-                  isNavOnDark ? "text-white" : "text-black"
-                }`}
-                whileHover={{ y: -1 }}
-              >
-                VESSEL
-              </motion.p>
-              
-              <div className="hidden lg:flex items-center gap-9">
-                <nav
-                  className={`flex items-center gap-9 text-[10px] font-medium tracking-[0.14em] transition-colors duration-200 ${
-                    isNavOnDark ? "text-white" : "text-black"
-                  }`}
-                >
-                  {navLinks.map((link) =>
-                    link.external ? (
-                      <a
-                        key={link.href}
-                        href={link.href}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="relative opacity-90 transition-all duration-200 hover:-translate-y-0.5 hover:opacity-65 after:absolute after:-bottom-1 after:left-0 after:h-px after:w-0 after:bg-current after:transition-all after:duration-200 hover:after:w-full"
-                      >
-                        {link.label}
-                      </a>
-                    ) : (
-                      <Link
-                        key={link.href}
-                        href={link.href}
-                        className="relative opacity-90 transition-all duration-200 hover:-translate-y-0.5 hover:opacity-65 after:absolute after:-bottom-1 after:left-0 after:h-px after:w-0 after:bg-current after:transition-all after:duration-200 hover:after:w-full"
-                      >
-                        {link.label}
-                      </Link>
-                    ),
-                  )}
-                </nav>
-                <WalletConnectButton />
-              </div>
-
-              <button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className={`flex h-10 w-10 items-center justify-center rounded-lg lg:hidden ${
-                  isNavOnDark ? "bg-white/10 text-white" : "bg-black/10 text-black"
-                }`}
-              >
-                {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-              </button>
-            </div>
-          </div>
-        </header>
-
-        <AnimatePresence>
-          {isMobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="fixed inset-x-0 top-[72px] z-40 px-4 lg:hidden"
-            >
-              <div className={`rounded-2xl backdrop-blur-xl border p-4 ${
-                isNavOnDark ? "bg-black/80 border-white/10" : "bg-white/90 border-black/10"
-              }`}>
-                <nav className="flex flex-col gap-1">
-                  {navLinks.map((link) => (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className={`rounded-lg px-4 py-3 text-xs font-medium tracking-[0.14em] transition-colors ${
-                        isNavOnDark ? "text-white hover:bg-white/10" : "text-black hover:bg-black/5"
-                      }`}
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
-                  <div className="mt-3 border-t border-white/10 pt-3">
-                    <WalletConnectButton className="!w-full" />
-                  </div>
-                </nav>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <LandingNavigation darkSectionsRefs={[forgeSectionRef, orchestraSectionRef]} />
 
         <motion.section
           initial={{ opacity: 0, y: 30 }}
@@ -629,7 +514,7 @@ export default function Home() {
                   className="relative z-10 h-full w-full"
                 >
                   <img
-                    src="/women-hero-section-main-asset.png"
+                    src="https://ik.imagekit.io/9pfz6g8ri/VESSSEL/women-hero-section-main-asset.png"
                     alt="Vessel hero"
                     loading="eager"
                     className="h-full w-full object-contain"

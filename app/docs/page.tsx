@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ArrowRight, BookText, Braces, Cpu, Rocket, Shield, Terminal } from "lucide-react";
 
-import { AppShell } from "@/components/layout/app-shell";
+import { LandingNavigation } from "@/components/layout/landing-navigation";
 
 const sideMenu = [
   { label: "Documentation", icon: BookText, href: "#introduction" },
@@ -49,9 +49,11 @@ export default function DocsPage() {
   }, []);
 
   return (
-    <AppShell>
-      <div className="grid w-full grid-cols-1 gap-6 md:grid-cols-[230px_minmax(0,1fr)] lg:grid-cols-[250px_minmax(0,1fr)_200px] lg:gap-8">
-        <aside className="rounded-xl border border-black/10 bg-white p-4 md:sticky md:top-24 md:h-fit">
+    <>
+      <LandingNavigation forceLight />
+      <div className="min-h-screen bg-[#f5f5f6] px-4 pt-24 sm:px-6">
+      <div className="grid w-full grid-cols-1 gap-6 md:grid-cols-[230px_minmax(0,1fr)] lg:grid-cols-[250px_minmax(0,1fr)_200px] lg:gap-8 mx-auto max-w-[1320px]">
+        <aside className="rounded-xl border border-black/10 bg-white p-4 md:sticky md:top-28 md:h-fit">
           <p className="text-[12px] font-semibold tracking-[0.14em] text-black">DOCS</p>
           <p className="mt-1 text-[10px] font-medium tracking-[0.1em] text-[#ff2338]">v1.0.4-alpha</p>
 
@@ -338,6 +340,7 @@ export default function DocsPage() {
           <p className="text-[10px]">© 2026 Vessel Engine. All rights reserved.</p>
         </div>
       </footer>
-    </AppShell>
+      </div>
+    </>
   );
 }

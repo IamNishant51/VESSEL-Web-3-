@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { LandingNavigation } from "@/components/layout/landing-navigation";
+
 const sections = [
   {
     title: "1. Acceptance of Terms",
@@ -70,19 +72,9 @@ const sections = [
 export default function TermsPage() {
   return (
     <div className="min-h-screen bg-[#f5f5f6] text-[#111112]">
-      <header className="sticky top-0 z-20 border-b border-black/10 bg-[#f5f5f6]/95 backdrop-blur-sm">
-        <div className="mx-auto flex h-16 w-full max-w-[1100px] items-center justify-between px-5 sm:px-8">
-          <Link href="/" className="text-[26px] font-semibold tracking-[-0.03em] text-black">
-            VESSEL
-          </Link>
-          <div className="flex items-center gap-4 text-[12px] font-medium tracking-[0.08em]">
-            <Link href="/docs" className="text-black/60 transition-colors hover:text-black">DOCS</Link>
-            <Link href="/privacy" className="text-black/60 transition-colors hover:text-black">PRIVACY</Link>
-          </div>
-        </div>
-      </header>
+      <LandingNavigation forceLight />
 
-      <main className="mx-auto w-full max-w-[1100px] px-5 py-10 sm:px-8 sm:py-12">
+      <main className="mx-auto w-full max-w-[1100px] px-5 py-10 pt-24 sm:px-8 sm:py-12">
         <div className="rounded-xl border border-black/10 bg-white p-6 sm:p-10">
           <p className="text-[11px] font-semibold tracking-[0.14em] text-[#9e1422]">LEGAL</p>
           <h1 className="mt-2 text-[44px] font-semibold leading-[1.02] tracking-[-0.03em] text-black sm:text-[58px]">

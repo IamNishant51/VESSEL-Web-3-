@@ -33,7 +33,7 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 31536000, // 1 year
   },
   async headers() {
-    return [
+    const baseHeaders = [
       {
         source: "/:path*",
         headers: [
@@ -45,6 +45,14 @@ const nextConfig: NextConfig = {
           { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
         ],
       },
+    ];
+
+    if (process.env.NODE_ENV !== "production") {
+      return baseHeaders;
+    }
+
+    return [
+      ...baseHeaders,
       {
         source: "/_next/static/:path*",
         headers: [

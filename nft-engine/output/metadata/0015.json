@@ -1,0 +1,88 @@
+{
+  "tokenId": 15,
+  "uniqueId": "vessel-cyber-sentients-0015",
+  "name": "Vessel Cyber Sentients #0015",
+  "description": "Premium two-phase cNFT collection generated from handcrafted trait PNG layers.",
+  "image": "/nft-engine/output/images/0015.png",
+  "attributes": [
+    {
+      "trait_type": "Background",
+      "value": "Data Vault"
+    },
+    {
+      "trait_type": "Body",
+      "value": "Canine Runner"
+    },
+    {
+      "trait_type": "Clothing",
+      "value": "Neon Trench"
+    },
+    {
+      "trait_type": "Eyes",
+      "value": "Tri Visor"
+    },
+    {
+      "trait_type": "Headgear",
+      "value": "Horned Mask"
+    },
+    {
+      "trait_type": "Accessories",
+      "value": "Chain Grid"
+    },
+    {
+      "trait_type": "Effects",
+      "value": "Smoke Veil"
+    },
+    {
+      "trait_type": "Background Rarity",
+      "value": "rare"
+    },
+    {
+      "trait_type": "Body Rarity",
+      "value": "common"
+    },
+    {
+      "trait_type": "Collection Tier",
+      "value": "uncommon"
+    },
+    {
+      "trait_type": "Seed",
+      "value": 4003895762
+    },
+    {
+      "trait_type": "Final Rarity Tier",
+      "value": "uncommon"
+    },
+    {
+      "trait_type": "Final Rarity Score",
+      "value": 14
+    },
+    {
+      "trait_type": "Body Family",
+      "value": "canine"
+    }
+  ],
+  "properties": {
+    "category": "image",
+    "files": [
+      {
+        "uri": "/nft-engine/output/images/0015.png",
+        "type": "image/png"
+      }
+    ],
+    "rarity": {
+      "tier": "uncommon",
+      "score": 14
+    },
+    "seed": 4003895762,
+    "traitPaths": {
+      "background": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\backgrounds\\data-vault.png",
+      "body": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\bodies\\canine-runner.png",
+      "clothing": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\clothing\\neon-trench.png",
+      "eyes": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\eyes\\tri-visor.png",
+      "headgear": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\headgear\\horned-mask.png",
+      "accessories": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\accessories\\chain-grid.png",
+      "effects": "C:\\Users\\nisha\\Desktop\\VESSEL\\nft-engine\\traits\\effects\\smoke-veil.png"
+    }
+  }
+}

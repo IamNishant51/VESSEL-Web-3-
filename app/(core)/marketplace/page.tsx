@@ -6,7 +6,9 @@ import { Filter, Search } from "lucide-react";
 import { motion } from "framer-motion";
 import { useWallet } from "@solana/wallet-adapter-react";
 
+import { LandingNavigation } from "@/components/layout/landing-navigation";
 import { getAgentArtworkUrl, getAgentCoverGradientClass, getAgentVisualSeed } from "@/lib/agent-visuals";
+import { getCyberpunkAgentDataUrl } from "@/lib/agent-avatar";
 import { PREMADE_FREE_AGENTS } from "@/lib/premade-agents";
 import { useVesselStore } from "@/store/useVesselStore";
 import { useStoreHydrated } from "@/hooks/useStoreHydrated";
@@ -172,7 +174,9 @@ export default function MarketplacePage() {
   }
 
   return (
-    <div className="-mx-4 -mt-8 min-h-screen bg-[#f5f5f6] px-4 pb-10 pt-4 text-[#171819] sm:-mx-6 sm:px-6">
+    <>
+      <LandingNavigation forceLight />
+      <div className="-mx-4 -mt-8 min-h-screen bg-[#f5f5f6] px-4 pb-10 pt-4 text-[#171819] sm:-mx-6 sm:px-6">
       <div className="mx-auto w-full max-w-[1320px] space-y-6">
         <section className="grid gap-5 rounded-sm bg-[#ececee] p-4 sm:p-5 lg:grid-cols-[1fr_280px]">
           <div>
@@ -203,7 +207,7 @@ export default function MarketplacePage() {
           <div className="relative h-[210px] overflow-hidden rounded-xl bg-gradient-to-br from-[#131313] to-[#1f1f1f] sm:h-[260px]">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_40%,rgba(22,207,212,0.2),transparent_40%)]" />
             <img
-              src="/women-hero-section-main-asset.png"
+              src="https://ik.imagekit.io/9pfz6g8ri/VESSSEL/women-hero-section-main-asset.png"
               alt="Marketplace hero"
               loading="eager"
               className="absolute right-[-6px] top-[-8px] h-[230px] w-auto object-contain sm:right-[-10px] sm:top-[-12px] sm:h-[290px]"
@@ -241,6 +245,11 @@ export default function MarketplacePage() {
                     src={card.artworkUrl}
                     alt={`${card.name} premade artwork`}
                     loading="lazy"
+                    onError={(event) => {
+                      const target = event.currentTarget;
+                      target.onerror = null;
+                      target.src = getCyberpunkAgentDataUrl(card.id);
+                    }}
                     className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 hover:scale-[1.03]"
                   />
                   <div className="absolute left-2 top-2 rounded-full border border-black/10 bg-[#171819] px-2 py-0.5 text-[9px] font-semibold tracking-[0.1em] text-white">
@@ -370,6 +379,11 @@ export default function MarketplacePage() {
                         src={card.artworkUrl}
                         alt={`${card.name} cNFT artwork`}
                         loading="lazy"
+                        onError={(event) => {
+                          const target = event.currentTarget;
+                          target.onerror = null;
+                          target.src = getCyberpunkAgentDataUrl(card.id);
+                        }}
                         className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 hover:scale-[1.03]"
                       />
                       <div className="absolute right-2 top-2 rounded-full border border-black/10 bg-white px-2 py-0.5 text-[9px] font-semibold tracking-[0.1em] text-black/75">
@@ -492,6 +506,7 @@ export default function MarketplacePage() {
           <p className="mt-4 pb-4 text-[10px] tracking-[0.12em] text-black/50">© 2026 VESSEL ENGINE. ALL RIGHTS RESERVED.</p>
         </footer>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
