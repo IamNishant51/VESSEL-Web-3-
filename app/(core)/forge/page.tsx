@@ -358,7 +358,7 @@ export default function ForgePage() {
   return (
     <div className="-mx-4 -mt-8 min-h-screen bg-[#f5f5f6] px-4 pb-10 pt-6 text-[#161718] sm:-mx-6 sm:px-6 lg:pt-8">
       <div className="mx-auto grid w-full max-w-[1320px] grid-cols-1 gap-16 lg:grid-cols-[320px_minmax(0,1fr)]">
-        <aside className="hidden lg:block lg:sticky lg:top-24 lg:h-fit">
+        <aside className="hidden self-start lg:block lg:sticky lg:top-24 lg:h-fit">
           <div className="mb-8 flex items-center gap-2">
             <span className="inline-block rounded-full bg-[#171819]/5 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#171819]/60">Forge Module</span>
             {isDevMode && (

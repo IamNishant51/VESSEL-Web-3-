@@ -227,6 +227,17 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    // If the page is already scrolled past the hero (e.g. after reload with scroll restoration),
+    // skip the entire loading animation to prevent visual glitches
+    const isScrolledPastHero = window.scrollY > window.innerHeight * 0.5;
+
+    if (isScrolledPastHero) {
+      setLoaderStage("done");
+      setImageReveal(true);
+      setShowGlow(true);
+      return;
+    }
+
     const circleTravelTimer = window.setTimeout(() => setLoaderStage("circle-travel"), 500);
     const circleArrivedTimer = window.setTimeout(() => setLoaderStage("circle-arrived"), 1000);
     const textTravelTimer = window.setTimeout(() => setLoaderStage("text-travel"), 1150);
