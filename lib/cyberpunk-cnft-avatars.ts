@@ -1,4 +1,4 @@
-import { CYBERPUNK_CNFT_AVATARS } from "@/lib/cyberpunk-avatars";
+import { getCyberpunkAgentDataUrl } from "./agent-avatar";
 
 function hashText(value: string): number {
   let hash = 0;
@@ -8,8 +8,7 @@ function hashText(value: string): number {
   return hash;
 }
 
-export function getCyberpunkCnftAvatarUrl(agentId: string | number, fallbackIndex = 0): string {
+export function getCyberpunkCnftAvatarUrl(agentId: string | number): string {
   const normalized = typeof agentId === "number" ? String(agentId) : agentId || "0";
-  const index = hashText(normalized) % CYBERPUNK_CNFT_AVATARS.length;
-  return CYBERPUNK_CNFT_AVATARS[index] ?? CYBERPUNK_CNFT_AVATARS[fallbackIndex % CYBERPUNK_CNFT_AVATARS.length];
+  return getCyberpunkAgentDataUrl(normalized);
 }
