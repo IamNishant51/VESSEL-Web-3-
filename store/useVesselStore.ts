@@ -4,6 +4,14 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 import type { Agent, AgentPayment, AgentStats, OrchestrationResult } from "@/types/agent";
+import {
+  syncAgentToDB,
+  syncAgentsToDB,
+  deleteAgentFromDB,
+  syncListingToDB,
+  deleteListingFromDB,
+  syncTransactionToDB,
+} from "@/lib/db-sync";
 
 type Listing = Agent & { seller: string; listed: true };
 
@@ -106,6 +114,9 @@ export const useVesselStore = create<VesselStore>()(
             [prepared.id]: statsFromAgent(prepared),
           },
         }));
+
+        // Sync to MongoDB
+        void syncAgentToDB(prepared);
       },
 
       updateAgent: (agentId, updates) => {
@@ -148,6 +159,9 @@ export const useVesselStore = create<VesselStore>()(
             agentStats: nextStats,
           };
         });
+
+        // Sync to MongoDB
+        void deleteAgentFromDB(agentId);
       },
 
       getAgentById: (agentId) => {
@@ -195,6 +209,18 @@ export const useVesselStore = create<VesselStore>()(
             ? state.marketplaceListings.map((listing) => (listing.id === agent.id ? listedAgent : listing))
             : [...state.marketplaceListings, listedAgent],
         }));
+
+        // Sync to MongoDB
+        void syncListingToDB({
+          id: agent.id,
+          agentId: agent.id,
+          name: agent.name,
+          seller: sellerAddress,
+          price,
+          priceCurrency: currency,
+          isRental,
+          rentalDays,
+        });
       },
 
       removeListing: (agentId) => {
@@ -214,6 +240,9 @@ export const useVesselStore = create<VesselStore>()(
               : agent,
           ),
         }));
+
+        // Sync to MongoDB
+        void deleteListingFromDB(agentId);
       },
 
       getListingById: (agentId) => {
