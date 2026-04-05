@@ -4,6 +4,7 @@ import { clampText, isValidPublicKey, sanitizeStringArray } from "@/lib/input-va
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { runAgent } from "@/lib/agent-runner";
 import type { Agent, RunAgentRequest } from "@/types/agent";
+import { auditLog } from "@/lib/audit";
 
 const MAX_BODY_BYTES = 32 * 1024;
 const MAX_MESSAGE_CHARS = 700;
@@ -45,6 +46,7 @@ export async function POST(
     const ip = getClientIp(request);
     const limit = checkRateLimit(`run:${ip}`, { windowMs: 60_000, max: 25 });
     if (!limit.allowed) {
+      auditLog({ level: "security", event: "rate_limit_exceeded", details: { ip, endpoint: "agent-run" }, ip });
       return NextResponse.json(
         { success: false, errorCode: "RATE_LIMITED", error: "Too many requests. Try again soon." },
         {
@@ -58,9 +60,9 @@ export async function POST(
 
     const { id: agentIdFromPath } = await params;
 
-    if (!agentIdFromPath) {
+    if (!agentIdFromPath || !/^[a-zA-Z0-9_-]+$/.test(agentIdFromPath)) {
       return NextResponse.json(
-        { success: false, errorCode: "INVALID_AGENT_ID", error: "Agent ID is required" },
+        { success: false, errorCode: "INVALID_AGENT_ID", error: "Valid agent ID is required" },
         { status: 400 }
       );
     }
@@ -122,11 +124,9 @@ export async function POST(
     const result = await runAgent(agent, userMessage, userPublicKey, context);
 
     return NextResponse.json(result);
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    console.error("Agent run route error", errorMessage);
+  } catch {
     return NextResponse.json(
-      { success: false, errorCode: "RUN_ROUTE_ERROR", error: "Request failed", message: "Error executing agent." },
+      { success: false, errorCode: "RUN_ROUTE_ERROR", error: "Request failed" },
       { status: 500 }
     );
   }
