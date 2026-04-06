@@ -94,6 +94,74 @@ export const userStatsSchema = z.object({
   }),
 });
 
+export const conversationMessageSchema = z.object({
+  id: z.string(),
+  role: z.enum(["user", "assistant", "system"]),
+  content: z.string(),
+  timestamp: z.number(),
+  transactionSignature: z.string().optional(),
+  explorerUrl: z.string().optional(),
+  type: z.string().optional(),
+  toolName: z.string().optional(),
+  toolStatus: z.string().optional(),
+  toolDetails: z.record(z.unknown()).optional(),
+});
+
+export const saveConversationSchema = z.object({
+  action: z.literal("save-conversation"),
+  conversation: z.object({
+    id: agentIdSchema,
+    agentId: agentIdSchema,
+    walletAddress: publicKeySchema,
+    title: z.string().max(200),
+    messages: z.array(conversationMessageSchema),
+  }),
+});
+
+export const deleteConversationSchema = z.object({
+  action: z.literal("delete-conversation"),
+  conversationId: agentIdSchema,
+  ownerAddress: publicKeySchema,
+});
+
+export const fetchConversationsSchema = z.object({
+  action: z.literal("fetch-conversations"),
+  agentId: agentIdSchema,
+  walletAddress: publicKeySchema,
+});
+
+export const fetchConversationListSchema = z.object({
+  action: z.literal("fetch-conversation-list"),
+  agentId: agentIdSchema,
+  walletAddress: publicKeySchema,
+});
+
+export const followAgentSchema = z.object({
+  action: z.literal("follow-agent"),
+  agentId: agentIdSchema,
+});
+
+export const unfollowAgentSchema = z.object({
+  action: z.literal("unfollow-agent"),
+  agentId: agentIdSchema,
+});
+
+export const likeAgentSchema = z.object({
+  action: z.literal("like-agent"),
+  agentId: agentIdSchema,
+});
+
+export const unlikeAgentSchema = z.object({
+  action: z.literal("unlike-agent"),
+  agentId: agentIdSchema,
+});
+
+export const getSocialStatusSchema = z.object({
+  action: z.literal("get-social-status"),
+  agentId: agentIdSchema,
+  walletAddress: publicKeySchema.optional(),
+});
+
 export const dbActionSchema = z.discriminatedUnion("action", [
   saveAgentSchema,
   deleteAgentSchema,
@@ -102,11 +170,22 @@ export const dbActionSchema = z.discriminatedUnion("action", [
   saveTransactionSchema,
   bulkSaveAgentsSchema,
   userStatsSchema,
+  saveConversationSchema,
+  deleteConversationSchema,
+  fetchConversationsSchema,
+  fetchConversationListSchema,
+  followAgentSchema,
+  unfollowAgentSchema,
+  likeAgentSchema,
+  unlikeAgentSchema,
+  getSocialStatusSchema,
   z.object({ action: z.literal("fetch-agents"), walletAddress: publicKeySchema.optional() }),
   z.object({ action: z.literal("fetch-agent-by-id"), agentId: agentIdSchema }),
   z.object({ action: z.literal("fetch-listings"), seller: publicKeySchema.optional(), includeAll: z.boolean().optional() }),
   z.object({ action: z.literal("fetch-transactions"), agentId: agentIdSchema.optional(), limit: z.number().min(1).max(200).optional() }),
   z.object({ action: z.literal("fetch-user-stats"), walletAddress: publicKeySchema }),
+  z.object({ action: z.literal("fetch-user-profile"), walletAddress: publicKeySchema }),
+  z.object({ action: z.literal("update-user-profile"), walletAddress: publicKeySchema, profileData: z.any() }),
 ]);
 
 export type SaveAgentInput = z.infer<typeof saveAgentSchema>;

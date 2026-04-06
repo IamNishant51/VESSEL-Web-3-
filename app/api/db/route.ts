@@ -1,9 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextFetchEvent } from "next/server";
 
 import { connectToDatabase, isMongoDBConnected } from "@/lib/mongodb";
-import { Agent, MarketplaceListing, User, Transaction } from "@/lib/models";
+import { Agent, MarketplaceListing, User, Transaction, Conversation, Follow, Like } from "@/lib/models";
 import { dbActionSchema } from "@/lib/validation";
 import { verifyWalletAuth } from "@/lib/auth";
+import { withAuth } from "@/lib/middleware";
 
 export async function POST(request: Request) {
   try {
@@ -26,8 +27,12 @@ export async function POST(request: Request) {
 
     const { action } = validationResult.data;
 
+    // Apply authentication middleware for actions that require it
     const requiresAuth = ["save-agent", "delete-agent", "save-listing", "delete-listing", "save-transaction", "bulk-save-agents"];
     if (requiresAuth.includes(action)) {
+      // Create a mock NextRequest with the same body for the middleware
+      // In a real implementation, we'd modify the middleware to work with Request directly
+      // For now, we'll keep the existing auth logic but prepare for migration
       const authResult = await verifyWalletAuth(request as any);
       if (!authResult.valid) {
         return NextResponse.json({ error: authResult.error }, { status: authResult.status });
@@ -211,21 +216,23 @@ export async function POST(request: Request) {
         return NextResponse.json({ listings });
       }
 
-      case "save-transaction": {
-        const tx = (validationResult.data as any).tx;
+       case "save-transaction": {
+         const tx = (validationResult.data as any).tx;
 
-        await Transaction.create({
-          transactionSignature: tx.transactionSignature,
-          type: tx.type,
-          agentId: tx.agentId,
-          timestamp: tx.timestamp,
-          amount: tx.amount,
-          target: tx.target,
-          metadata: tx.metadata || {},
-        });
+         await Transaction.create({
+           transactionSignature: tx.transactionSignature,
+           type: tx.type,
+           fromAddress: tx.fromAddress,
+           toAddress: tx.toAddress,
+           agentId: tx.agentId,
+           amount: tx.amount,
+           currency: tx.currency || "SOL",
+           explorerUrl: tx.explorerUrl || "",
+           metadata: tx.metadata || {},
+         });
 
-        return NextResponse.json({ success: true });
-      }
+         return NextResponse.json({ success: true });
+       }
 
       case "fetch-transactions": {
         const { agentId, limit = 50 } = body;
@@ -255,14 +262,262 @@ export async function POST(request: Request) {
         return NextResponse.json({ success: true });
       }
 
-      case "fetch-user-stats": {
-        const { walletAddress } = body;
-        if (!walletAddress) {
-          return NextResponse.json({ error: "Missing walletAddress" }, { status: 400 });
+       case "fetch-user-stats": {
+         const { walletAddress } = body;
+         if (!walletAddress) {
+           return NextResponse.json({ error: "Missing walletAddress" }, { status: 400 });
+         }
+ 
+         const user = await User.findOne({ walletAddress }).lean();
+         return NextResponse.json({ stats: user || null });
+       }
+       
+       case "fetch-user-profile": {
+         const { walletAddress } = body;
+         if (!walletAddress) {
+           return NextResponse.json({ error: "Missing walletAddress" }, { status: 400 });
+         }
+ 
+         const user = await User.findOne({ walletAddress }).lean();
+         if (!user) {
+           return NextResponse.json({ error: "User not found" }, { status: 404 });
+         }
+         
+         // Get user's agents count and other stats
+         const agentCount = await Agent.countDocuments({ owner: walletAddress });
+         const listedAgentCount = await Agent.countDocuments({ owner: walletAddress, listed: true });
+         
+         return NextResponse.json({
+           profile: {
+             walletAddress: user.walletAddress,
+             agentCount,
+             listedAgentCount,
+             totalEarnings: user.totalEarnings,
+             createdAt: user.createdAt,
+             updatedAt: user.updatedAt,
+           }
+         });
+       }
+       
+       case "update-user-profile": {
+         const { walletAddress, profileData } = body;
+         if (!walletAddress) {
+           return NextResponse.json({ error: "Missing walletAddress" }, { status: 400 });
+         }
+         
+         // Verify the wallet making the request matches the profile being updated
+         const authResult = await verifyWalletAuth(request as any);
+         if (!authResult.valid) {
+           return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+         }
+         
+         const requestingAddress = authResult.publicKey.toBase58();
+         if (requestingAddress !== walletAddress) {
+           return NextResponse.json({ error: "Unauthorized: wallet mismatch" }, { status: 403 });
+         }
+         
+         // Update user profile (currently only walletAddress is stored, but we can extend)
+         const user = await User.findOneAndUpdate(
+           { walletAddress },
+           { 
+             $set: { 
+               // In a real app, we'd update profile fields like name, email, etc.
+               // For now, we just update the timestamp
+               updatedAt: new Date().toISOString() 
+             } 
+           },
+           { new: true }
+         ).lean();
+         
+         if (!user) {
+           return NextResponse.json({ error: "User not found" }, { status: 404 });
+         }
+         
+          return NextResponse.json({ 
+            success: true,
+            profile: {
+              walletAddress: user.walletAddress,
+              updatedAt: user.updatedAt,
+            }
+          });
         }
 
-        const user = await User.findOne({ walletAddress }).lean();
-        return NextResponse.json({ stats: user || null });
+      case "save-conversation": {
+        const conversation = (validationResult.data as any).conversation;
+        
+        await Conversation.findOneAndUpdate(
+          { id: conversation.id },
+          {
+            id: conversation.id,
+            agentId: conversation.agentId,
+            walletAddress: conversation.walletAddress,
+            title: conversation.title,
+            messages: conversation.messages,
+          },
+          { upsert: true, new: true }
+        );
+
+        return NextResponse.json({ success: true });
+      }
+
+      case "delete-conversation": {
+        const { conversationId } = validationResult.data as any;
+        
+        const existingConversation = await Conversation.findOne({ id: conversationId });
+        if (!existingConversation) {
+          return NextResponse.json({ error: "Conversation not found" }, { status: 404 });
+        }
+
+        const authResult = await verifyWalletAuth(request as any);
+        if (authResult.valid && existingConversation.walletAddress !== authResult.publicKey.toBase58()) {
+          return NextResponse.json({ error: "Unauthorized: conversation belongs to another user" }, { status: 403 });
+        }
+
+        await Conversation.deleteOne({ id: conversationId });
+        return NextResponse.json({ success: true });
+      }
+
+      case "fetch-conversations": {
+        const { agentId, walletAddress } = validationResult.data as any;
+        const query = { agentId, walletAddress };
+        const conversations = await Conversation.find(query).sort({ updatedAt: -1 }).lean();
+        return NextResponse.json({ conversations });
+      }
+
+      case "fetch-conversation-list": {
+        const { agentId, walletAddress } = validationResult.data as any;
+        const query = { agentId, walletAddress };
+        const conversations = await Conversation.find(query)
+          .sort({ updatedAt: -1 })
+          .select("id agentId title messages createdAt updatedAt")
+          .lean();
+        
+        const list = conversations.map((conv: any) => ({
+          id: conv.id,
+          agentId: conv.agentId,
+          title: conv.title,
+          messageCount: conv.messages?.length || 0,
+          preview: conv.messages?.length > 0 ? conv.messages[conv.messages.length - 1].content?.slice(0, 100) || "" : "",
+          createdAt: conv.createdAt?.getTime() || conv.createdAt,
+          updatedAt: conv.updatedAt?.getTime() || conv.updatedAt,
+        }));
+        
+        return NextResponse.json({ conversations: list });
+      }
+
+      case "follow-agent": {
+        const { agentId } = validationResult.data as any;
+        
+        const authResult = await verifyWalletAuth(request as any);
+        if (!authResult.valid) {
+          return NextResponse.json({ error: "Authentication required to follow" }, { status: 401 });
+        }
+        
+        const walletAddress = authResult.publicKey.toBase58();
+        const followId = `follow_${walletAddress}_${agentId}`;
+        
+        await Follow.findOneAndUpdate(
+          { id: followId },
+          {
+            id: followId,
+            followerWallet: walletAddress,
+            agentId,
+          },
+          { upsert: true, new: true }
+        );
+        
+        const followerCount = await Follow.countDocuments({ agentId });
+        
+        return NextResponse.json({ success: true, followerCount });
+      }
+
+      case "unfollow-agent": {
+        const { agentId } = validationResult.data as any;
+        
+        const authResult = await verifyWalletAuth(request as any);
+        if (!authResult.valid) {
+          return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+        }
+        
+        const walletAddress = authResult.publicKey.toBase58();
+        const followId = `follow_${walletAddress}_${agentId}`;
+        
+        await Follow.deleteOne({ id: followId });
+        
+        const followerCount = await Follow.countDocuments({ agentId });
+        
+        return NextResponse.json({ success: true, followerCount });
+      }
+
+      case "like-agent": {
+        const { agentId } = validationResult.data as any;
+        
+        const authResult = await verifyWalletAuth(request as any);
+        if (!authResult.valid) {
+          return NextResponse.json({ error: "Authentication required to like" }, { status: 401 });
+        }
+        
+        const walletAddress = authResult.publicKey.toBase58();
+        const likeId = `like_${walletAddress}_${agentId}`;
+        
+        await Like.findOneAndUpdate(
+          { id: likeId },
+          {
+            id: likeId,
+            walletAddress,
+            agentId,
+          },
+          { upsert: true, new: true }
+        );
+        
+        const likeCount = await Like.countDocuments({ agentId });
+        
+        return NextResponse.json({ success: true, likeCount });
+      }
+
+      case "unlike-agent": {
+        const { agentId } = validationResult.data as any;
+        
+        const authResult = await verifyWalletAuth(request as any);
+        if (!authResult.valid) {
+          return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+        }
+        
+        const walletAddress = authResult.publicKey.toBase58();
+        const likeId = `like_${walletAddress}_${agentId}`;
+        
+        await Like.deleteOne({ id: likeId });
+        
+        const likeCount = await Like.countDocuments({ agentId });
+        
+        return NextResponse.json({ success: true, likeCount });
+      }
+
+      case "get-social-status": {
+        const { agentId, walletAddress } = validationResult.data as any;
+        
+        const followerCount = await Follow.countDocuments({ agentId });
+        const likeCount = await Like.countDocuments({ agentId });
+        
+        let isFollowing = false;
+        let isLiked = false;
+        
+        if (walletAddress) {
+          const followId = `follow_${walletAddress}_${agentId}`;
+          const existingFollow = await Follow.findOne({ id: followId });
+          isFollowing = !!existingFollow;
+          
+          const likeId = `like_${walletAddress}_${agentId}`;
+          const existingLike = await Like.findOne({ id: likeId });
+          isLiked = !!existingLike;
+        }
+        
+        return NextResponse.json({
+          followers: followerCount,
+          likes: likeCount,
+          isFollowing,
+          isLiked,
+        });
       }
 
       default:

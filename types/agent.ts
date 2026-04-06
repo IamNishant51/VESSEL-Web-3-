@@ -26,6 +26,10 @@ export type Agent = {
   isRental?: boolean;
   sourceTemplateId?: string;
   isPremade?: boolean;
+  // NFT minting status
+  mintTxSignature?: string;
+  mintStatus?: "pending" | "sent" | "confirmed" | "failed";
+  mintError?: string;
 };
 
 export type AgentStats = {
@@ -67,6 +71,12 @@ export type ChatMessage = {
   explorerUrl?: string;
   payment?: AgentPayment;
   isStreaming?: boolean;
+  type?: "text" | "tool" | "transaction" | "reasoning" | "plan" | "alert";
+  toolName?: string;
+  toolStatus?: "pending" | "running" | "success" | "failed";
+  toolDetails?: Record<string, unknown>;
+  reasoningSteps?: AgentReasoningStep[];
+  planSteps?: AgentPlanStep[];
 };
 
 export type RunAgentRequest = {
@@ -164,4 +174,67 @@ export type MarketplaceListing = {
   rentalDays?: number;
   seller: string;
   createdAt: string;
+};
+
+export type UserProfile = {
+  walletAddress: string;
+  agentCount: number;
+  listedAgentCount: number;
+  totalEarnings: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ConversationMeta = {
+  id: string;
+  agentId: string;
+  walletAddress: string;
+  title: string;
+  createdAt: number;
+  updatedAt: number;
+  messageCount: number;
+};
+
+export type Conversation = {
+  id: string;
+  agentId: string;
+  walletAddress: string;
+  title: string;
+  messages: ChatMessage[];
+  createdAt: number;
+  updatedAt: number;
+};
+
+export type ConversationListItem = {
+  id: string;
+  agentId: string;
+  title: string;
+  messageCount: number;
+  preview: string;
+  createdAt: number;
+  updatedAt: number;
+};
+
+export type Follow = {
+  id: string;
+  followerWallet: string;
+  agentId: string;
+  createdAt: number;
+};
+
+export type Like = {
+  id: string;
+  walletAddress: string;
+  agentId: string;
+  createdAt: number;
+};
+
+export type SocialCounts = {
+  followers: number;
+  likes: number;
+};
+
+export type AgentWithSocial = Agent & SocialCounts & {
+  isFollowing?: boolean;
+  isLiked?: boolean;
 };

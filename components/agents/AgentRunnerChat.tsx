@@ -42,6 +42,7 @@ import { toast } from "sonner";
 
 import { useAgent } from "@/hooks/useAgent";
 import type { Agent, AgentPlanStep, AgentReasoningStep, AgentToolExecution, ChatMessage, RunAgentResponse } from "@/types/agent";
+import { syncConversationToDB, deleteConversationFromDB, fetchConversationsFromDB } from "@/lib/db-sync";
 
 type Props = {
   agent: Agent;
@@ -310,34 +311,95 @@ export function AgentRunnerChat({ agent }: Props) {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    try {
-      const raw = window.localStorage.getItem(storageKey);
-      if (!raw) {
+    
+    const loadSessions = async () => {
+      try {
+        const raw = window.localStorage.getItem(storageKey);
+        
+        const walletAddress = publicKey?.toBase58();
+        
+        if (walletAddress) {
+          try {
+            const dbConversations = await fetchConversationsFromDB(agent.id, walletAddress);
+            if (dbConversations.length > 0) {
+              const loadedFromDB = dbConversations.map((conv) => ({
+                id: conv.id,
+                title: conv.title,
+                createdAt: conv.createdAt,
+                updatedAt: conv.updatedAt,
+                messages: conv.messages as AgentMessage[],
+              }));
+              if (loadedFromDB.length > 0) {
+                setSessions(loadedFromDB);
+                setActiveSessionId(loadedFromDB[0].id);
+                window.localStorage.setItem(storageKey, JSON.stringify(loadedFromDB));
+                return;
+              }
+            }
+          } catch (e) {
+            console.warn("[Chat] Failed to load from DB:", e);
+          }
+        }
+        
+        if (!raw) {
+          const first = createNewSession(agent);
+          setSessions([first]);
+          setActiveSessionId(first.id);
+          return;
+        }
+        const parsed = JSON.parse(raw) as ChatSession[];
+        if (!Array.isArray(parsed) || parsed.length === 0) {
+          const first = createNewSession(agent);
+          setSessions([first]);
+          setActiveSessionId(first.id);
+          return;
+        }
+        setSessions(parsed);
+        setActiveSessionId(parsed[0].id);
+      } catch {
         const first = createNewSession(agent);
         setSessions([first]);
         setActiveSessionId(first.id);
-        return;
       }
-      const parsed = JSON.parse(raw) as ChatSession[];
-      if (!Array.isArray(parsed) || parsed.length === 0) {
-        const first = createNewSession(agent);
-        setSessions([first]);
-        setActiveSessionId(first.id);
-        return;
-      }
-      setSessions(parsed);
-      setActiveSessionId(parsed[0].id);
-    } catch {
-      const first = createNewSession(agent);
-      setSessions([first]);
-      setActiveSessionId(first.id);
-    }
-  }, [agent, storageKey]);
+    };
+
+    loadSessions();
+  }, [agent, storageKey, publicKey]);
 
   useEffect(() => {
     if (typeof window === "undefined" || sessions.length === 0) return;
     window.localStorage.setItem(storageKey, JSON.stringify(sessions));
-  }, [sessions, storageKey]);
+    
+    const walletAddress = publicKey?.toBase58();
+    if (!walletAddress) return;
+    
+    sessions.forEach(async (session) => {
+      try {
+        await syncConversationToDB({
+          id: session.id,
+          agentId: agent.id,
+          walletAddress,
+          title: session.title,
+          messages: session.messages.map((m) => ({
+            id: m.id,
+            role: m.role,
+            content: m.content,
+            timestamp: m.timestamp,
+            transactionSignature: m.transactionSignature,
+            explorerUrl: m.explorerUrl,
+            type: m.type,
+            toolName: m.toolName,
+            toolStatus: m.toolStatus,
+            toolDetails: m.toolDetails,
+          })),
+          createdAt: session.createdAt,
+          updatedAt: session.updatedAt,
+        });
+      } catch (e) {
+        console.warn("[Chat] Failed to sync conversation:", e);
+      }
+    });
+  }, [sessions, storageKey, agent.id, publicKey]);
 
   const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
     setTimeout(() => {
@@ -406,6 +468,12 @@ export function AgentRunnerChat({ agent }: Props) {
 
   const deleteChatSession = useCallback(
     (sessionId: string) => {
+      const walletAddress = publicKey?.toBase58();
+      if (walletAddress) {
+        deleteConversationFromDB(sessionId).catch((e) => {
+          console.warn("[Chat] Failed to delete conversation from DB:", e);
+        });
+      }
       setSessions((prev) => {
         const remaining = prev.filter((s) => s.id !== sessionId);
         if (remaining.length === 0) {
@@ -417,7 +485,7 @@ export function AgentRunnerChat({ agent }: Props) {
         return remaining;
       });
     },
-    [activeSessionId, agent],
+    [activeSessionId, agent, publicKey],
   );
 
   const appendMessage = useCallback(

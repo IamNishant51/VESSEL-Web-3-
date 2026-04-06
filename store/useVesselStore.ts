@@ -3,7 +3,7 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-import type { Agent, AgentPayment, AgentStats, OrchestrationResult } from "@/types/agent";
+import type { Agent, AgentPayment, AgentStats, OrchestrationResult, UserProfile } from "../types/agent";
 import {
   syncAgentToDB,
   syncAgentsToDB,
@@ -11,8 +11,11 @@ import {
   syncListingToDB,
   deleteListingFromDB,
   syncTransactionToDB,
-} from "@/lib/db-sync";
-import { isPremadeDerivedAgent } from "@/lib/premade-agents";
+  syncUserPreferences,
+  fetchUserPreferences,
+  type UserPreferences,
+} from "../lib/db-sync";
+import { isPremadeDerivedAgent } from "../lib/premade-agents";
 
 type Listing = Agent & { seller: string; listed: true };
 
@@ -34,6 +37,9 @@ interface VesselStore {
   usersAgents: Agent[];
   marketplaceListings: Listing[];
   agentStats: Record<string, AgentStats>;
+  userProfile: UserProfile | null;
+  isUserProfileLoading: boolean;
+  userPreferences: UserPreferences;
 
   addAgent: (agent: Agent) => void;
   updateAgent: (agentId: string, updates: Partial<Agent>) => void;
@@ -61,6 +67,14 @@ interface VesselStore {
   debitTreasuryForToolCall: (agentId: string, target: string, amount?: number, txMeta?: TxMeta) => { success: boolean; payment?: AgentPayment; error?: string };
   orchestrateAgents: (agentId1: string, agentId2: string, userPrompt: string, paymentTxMeta?: TxMeta) => OrchestrationResult;
   cleanupExpiredRentals: () => void;
+
+  // User profile functions
+  fetchUserProfile: (walletAddress: string) => Promise<void>;
+  updateUserProfile: (profileData: Partial<UserProfile>) => Promise<void>;
+
+  // User preferences functions
+  updateUserPreferences: (prefs: Partial<UserPreferences>) => Promise<void>;
+  loadUserPreferences: () => Promise<void>;
 }
 
 function upsertAgent(agents: Agent[], nextAgent: Agent): Agent[] {
@@ -100,6 +114,13 @@ export const useVesselStore = create<VesselStore>()(
       usersAgents: [],
       marketplaceListings: [],
       agentStats: {},
+      userProfile: null,
+      isUserProfileLoading: false,
+      userPreferences: {
+        theme: "dark",
+        language: "en",
+        notifications: true,
+      },
 
       addAgent: (agent) => {
         const prepared: Agent = {
@@ -552,23 +573,129 @@ export const useVesselStore = create<VesselStore>()(
             };
           }),
         }));
-      },
-    }),
-    {
-      name: "vessel-store-v3",
-      version: 3,
-      storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({
-        usersAgents: state.usersAgents.slice(0, 100),
-        marketplaceListings: state.marketplaceListings.slice(0, 200),
-        agentStats: state.agentStats,
-      }),
-      onRehydrateStorage: () => (state) => {
-        if (state) {
-          state._hasHydrated = true;
-          state.cleanupExpiredRentals();
-        }
-      },
-    },
-  ),
-);
+       },
+       // User profile functions
+       fetchUserProfile: async (walletAddress) => {
+         set({ isUserProfileLoading: true });
+         try {
+           // Fetch from MongoDB via API
+           const response = await fetch(`/api/db`, {
+             method: "POST",
+             headers: { "Content-Type": "application/json" },
+             body: JSON.stringify({
+               action: "fetch-user-profile",
+               walletAddress,
+             }),
+           });
+           
+           if (!response.ok) {
+             throw new Error(`Failed to fetch profile: ${response.status}`);
+           }
+           
+           const data = await response.json();
+           if (data.profile) {
+             set({ userProfile: data.profile, isUserProfileLoading: false });
+           } else {
+             // Create default profile if none exists
+             const defaultProfile: UserProfile = {
+               walletAddress,
+               agentCount: 0,
+               listedAgentCount: 0,
+               totalEarnings: 0,
+               createdAt: new Date().toISOString(),
+               updatedAt: new Date().toISOString(),
+             };
+             set({ userProfile: defaultProfile, isUserProfileLoading: false });
+           }
+         } catch (error) {
+           console.error("[Store] Failed to fetch user profile:", error);
+           set({ isUserProfileLoading: false });
+           // Set a default profile even on error to prevent loading state from persisting
+           const defaultProfile: UserProfile = {
+             walletAddress,
+             agentCount: 0,
+             listedAgentCount: 0,
+             totalEarnings: 0,
+             createdAt: new Date().toISOString(),
+             updatedAt: new Date().toISOString(),
+           };
+           set({ userProfile: defaultProfile, isUserProfileLoading: false });
+         }
+       },
+       
+       updateUserProfile: async (profileData) => {
+         const { walletAddress } = get().userProfile || {};
+         if (!walletAddress) {
+           throw new Error("No wallet address available for profile update");
+         }
+         
+         try {
+           const response = await fetch(`/api/db`, {
+             method: "POST",
+             headers: { "Content-Type": "application/json" },
+             body: JSON.stringify({
+               action: "update-user-profile",
+               walletAddress,
+               profileData,
+             }),
+           });
+           
+           if (!response.ok) {
+             throw new Error(`Failed to update profile: ${response.status}`);
+           }
+           
+           const data = await response.json();
+           if (data.success && data.profile) {
+             set({ userProfile: data.profile });
+           } else {
+             throw new Error("Failed to update profile");
+           }
+         } catch (error) {
+           console.error("[Store] Failed to update user profile:", error);
+           throw error;
+         }
+       },
+
+       updateUserPreferences: async (prefs) => {
+         const current = get().userPreferences;
+         const updated = { ...current, ...prefs };
+         set({ userPreferences: updated });
+
+         try {
+           await syncUserPreferences(updated);
+         } catch (error) {
+           console.error("[Store] Failed to sync user preferences:", error);
+         }
+       },
+
+       loadUserPreferences: async () => {
+         try {
+           const prefs = await fetchUserPreferences();
+           if (prefs) {
+             set({ userPreferences: prefs });
+           }
+         } catch (error) {
+           console.error("[Store] Failed to load user preferences:", error);
+         }
+       },
+     }),
+     {
+       name: "vessel-store-v3",
+       version: 3,
+       storage: createJSONStorage(() => localStorage),
+       partialize: (state) => ({
+         usersAgents: state.usersAgents.slice(0, 100),
+         marketplaceListings: state.marketplaceListings.slice(0, 200),
+         agentStats: state.agentStats,
+         userProfile: state.userProfile,
+         // Don't persist loading state
+       }),
+       onRehydrateStorage: () => (state) => {
+         if (state) {
+           state._hasHydrated = true;
+           state.cleanupExpiredRentals();
+         }
+       },
+     },
+   ),
+ );

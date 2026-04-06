@@ -1,6 +1,6 @@
 /**
  * Mongoose Models
- * Agent, MarketplaceListing, User, Transaction
+ * Agent, MarketplaceListing, User, Transaction, Conversation, Follow, Like
  */
 
 import mongoose, { Schema, Types } from "mongoose";
@@ -110,6 +110,21 @@ export interface IUserDoc {
   walletAddress: string;
   agentCount: number;
   totalEarnings: number;
+  preferences?: {
+    theme?: "light" | "dark" | "system";
+    language?: string;
+    notifications?: boolean;
+  };
+  deviceTokens?: Array<{
+    id: string;
+    ip?: string;
+    userAgent?: string;
+    lastActive: Date;
+    name?: string;
+  }>;
+  lastLogin?: Date;
+  twoFactorEnabled?: boolean;
+  premiumTier?: "free" | "pro" | "enterprise";
   createdAt: Date;
   updatedAt: Date;
 }
@@ -119,6 +134,23 @@ const UserSchema = new Schema<IUserDoc>(
     walletAddress: { type: String, required: true, unique: true, index: true },
     agentCount: { type: Number, default: 0 },
     totalEarnings: { type: Number, default: 0 },
+    preferences: {
+      theme: { type: String, enum: ["light", "dark", "system"], default: "dark" },
+      language: { type: String, default: "en" },
+      notifications: { type: Boolean, default: true },
+    },
+    deviceTokens: [
+      {
+        id: { type: String, required: true },
+        ip: String,
+        userAgent: String,
+        lastActive: { type: Date, default: Date.now },
+        name: String,
+      },
+    ],
+    lastLogin: Date,
+    twoFactorEnabled: { type: Boolean, default: false },
+    premiumTier: { type: String, enum: ["free", "pro", "enterprise"], default: "free" },
   },
   {
     timestamps: true,
@@ -177,3 +209,115 @@ TransactionSchema.index({ status: 1 });
 export const Transaction =
   (mongoose.models.Transaction as mongoose.Model<ITransactionDoc>) ||
   mongoose.model<ITransactionDoc>("Transaction", TransactionSchema);
+
+// ===== Conversation Model =====
+export interface IConversationDoc {
+  _id: Types.ObjectId;
+  id: string;
+  agentId: string;
+  walletAddress: string;
+  title: string;
+  messages: Array<{
+    id: string;
+    role: "user" | "assistant" | "system";
+    content: string;
+    timestamp: number;
+    transactionSignature?: string;
+    explorerUrl?: string;
+    type?: string;
+    toolName?: string;
+    toolStatus?: string;
+    toolDetails?: Record<string, unknown>;
+  }>;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const MessageSchema = new Schema({
+  id: { type: String, required: true },
+  role: { type: String, enum: ["user", "assistant", "system"], required: true },
+  content: { type: String, required: true },
+  timestamp: { type: Number, required: true },
+  transactionSignature: { type: String },
+  explorerUrl: { type: String },
+  type: { type: String },
+  toolName: { type: String },
+  toolStatus: { type: String },
+  toolDetails: { type: Schema.Types.Mixed },
+}, { _id: false });
+
+const ConversationSchema = new Schema<IConversationDoc>(
+  {
+    id: { type: String, required: true, unique: true, index: true },
+    agentId: { type: String, required: true, index: true },
+    walletAddress: { type: String, required: true, index: true },
+    title: { type: String, required: true, default: "New conversation" },
+    messages: { type: [MessageSchema], default: [] },
+  },
+  {
+    timestamps: true,
+    collection: "conversations",
+  }
+);
+
+ConversationSchema.index({ agentId: 1, walletAddress: 1, updatedAt: -1 });
+
+export const Conversation =
+  (mongoose.models.Conversation as mongoose.Model<IConversationDoc>) ||
+  mongoose.model<IConversationDoc>("Conversation", ConversationSchema);
+
+// ===== Follow Model =====
+export interface IFollowDoc {
+  _id: Types.ObjectId;
+  id: string;
+  followerWallet: string;
+  agentId: string;
+  createdAt: Date;
+}
+
+const FollowSchema = new Schema<IFollowDoc>(
+  {
+    id: { type: String, required: true, unique: true, index: true },
+    followerWallet: { type: String, required: true, index: true },
+    agentId: { type: String, required: true, index: true },
+  },
+  {
+    timestamps: true,
+    collection: "follows",
+  }
+);
+
+FollowSchema.index({ followerWallet: 1, agentId: 1 }, { unique: true });
+FollowSchema.index({ agentId: 1, createdAt: -1 });
+
+export const Follow =
+  (mongoose.models.Follow as mongoose.Model<IFollowDoc>) ||
+  mongoose.model<IFollowDoc>("Follow", FollowSchema);
+
+// ===== Like Model =====
+export interface ILikeDoc {
+  _id: Types.ObjectId;
+  id: string;
+  walletAddress: string;
+  agentId: string;
+  createdAt: Date;
+}
+
+const LikeSchema = new Schema<ILikeDoc>(
+  {
+    id: { type: String, required: true, unique: true, index: true },
+    walletAddress: { type: String, required: true, index: true },
+    agentId: { type: String, required: true, index: true },
+  },
+  {
+    timestamps: true,
+    collection: "likes",
+  }
+);
+
+LikeSchema.index({ walletAddress: 1, agentId: 1 }, { unique: true });
+LikeSchema.index({ agentId: 1, createdAt: -1 });
+
+export const Like =
+  (mongoose.models.Like as mongoose.Model<ILikeDoc>) ||
+  mongoose.model<ILikeDoc>("Like", LikeSchema);
