@@ -78,7 +78,7 @@ export function LandingNavigation({
       <div className="mx-auto max-w-[1320px] px-4 pt-4 sm:px-6 lg:px-10">
         <div
           className={`flex items-center justify-between rounded-xl px-3 py-2 backdrop-blur-md transition-colors duration-300 ${
-            isNavOnDark ? "bg-black/35" : "bg-white/45"
+            isNavOnDark ? "bg-black/35" : forceLight ? "bg-white/65" : "bg-white/45"
           }`}
         >
           <motion.button
