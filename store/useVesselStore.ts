@@ -40,6 +40,7 @@ interface VesselStore {
   userProfile: UserProfile | null;
   isUserProfileLoading: boolean;
   userPreferences: UserPreferences;
+  isOnline: boolean;
 
   addAgent: (agent: Agent) => void;
   updateAgent: (agentId: string, updates: Partial<Agent>) => void;
@@ -75,6 +76,9 @@ interface VesselStore {
   // User preferences functions
   updateUserPreferences: (prefs: Partial<UserPreferences>) => Promise<void>;
   loadUserPreferences: () => Promise<void>;
+
+  // Offline functions
+  setOnlineStatus: (isOnline: boolean) => void;
 }
 
 function upsertAgent(agents: Agent[], nextAgent: Agent): Agent[] {
@@ -121,6 +125,7 @@ export const useVesselStore = create<VesselStore>()(
         language: "en",
         notifications: true,
       },
+      isOnline: true,
 
       addAgent: (agent) => {
         const prepared: Agent = {
@@ -677,6 +682,10 @@ export const useVesselStore = create<VesselStore>()(
          } catch (error) {
            console.error("[Store] Failed to load user preferences:", error);
          }
+       },
+
+       setOnlineStatus: (isOnline) => {
+         set({ isOnline });
        },
      }),
      {
