@@ -1,0 +1,103 @@
+{
+  "common": {
+    "vessel": "VESSEL",
+    "tagline": "Give Your Ideas a Soul",
+    "description": "Create, deploy, and trade AI agents on Solana",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "back": "Back",
+    "next": "Next"
+  },
+  "nav": {
+    "agents": "Agents",
+    "dashboard": "Dashboard",
+    "marketplace": "Marketplace",
+    "forge": "Forge",
+    "preview": "Preview",
+    "docs": "Docs"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "auth": {
+    "connectWallet": "Connect Wallet",
+    "disconnectWallet": "Disconnect",
+    "connected": "Connected",
+    "login": "Login",
+    "logout": "Logout",
+    "signingMessage": "Signing message...",
+    "signatureRequired": "Wallet signature required"
+  },
+  "agents": {
+    "myAgents": "My Agents",
+    "createAgent": "Create Agent",
+    "agentName": "Agent Name",
+    "personality": "Personality",
+    "description": "Description",
+    "mint": "Mint",
+    "listForSale": "List for Sale",
+    "rentAgent": "Rent Agent",
+    "viewDetails": "View Details",
+    "earnings": "Earnings",
+    "reputation": "Reputation",
+    "actions": "Actions",
+    "trading": "Trading",
+    "treasury": "Treasury"
+  },
+  "marketplace": {
+    "browse": "Browse Agents",
+    "featured": "Featured",
+    "trending": "Trending",
+    "price": "Price",
+    "rental": "Rental",
+    "buy": "Buy",
+    "rent": "Rent",
+    "seller": "Seller",
+    "days": "Days",
+    "perDay": "per day",
+    "viewProfile": "View Profile"
+  },
+  "dashboard": {
+    "overview": "Overview",
+    "stats": "Statistics",
+    "agentCount": "Total Agents",
+    "totalEarnings": "Total Earnings",
+    "activeRentals": "Active Rentals",
+    "recentActivity": "Recent Activity",
+    "manageAgents": "Manage Agents",
+    "settings": "Settings"
+  },
+  "offline": {
+    "youreOffline": "You're Offline",
+    "cachedContent": "You can still view cached content, but some features require an internet connection.",
+    "goHome": "Go Home",
+    "retryConnection": "Retry Connection"
+  },
+  "settings": {
+    "preferences": "Preferences",
+    "language": "Language",
+    "theme": "Theme",
+    "notifications": "Notifications",
+    "privacy": "Privacy",
+    "security": "Security",
+    "devices": "Devices",
+    "sessions": "Sessions"
+  },
+  "errors": {
+    "notFound": "Not found",
+    "unauthorized": "Unauthorized",
+    "forbidden": "Forbidden",
+    "serverError": "Server error",
+    "tryAgain": "Try again",
+    "invalidInput": "Invalid input",
+    "networkError": "Network error"
+  }
+}

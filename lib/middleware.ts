@@ -45,7 +45,7 @@ export async function authenticateMiddleware(
     }
     
     // Attach user to request for use in route handlers
-    // @ts-ignore - extending NextRequest type
+    // @ts-expect-error - extending NextRequest type
     request.user = user;
     
     // Continue to next middleware/handler

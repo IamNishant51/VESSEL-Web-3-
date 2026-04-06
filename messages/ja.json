@@ -1,0 +1,103 @@
+{
+  "common": {
+    "vessel": "VESSEL",
+    "tagline": "あなたのアイデアに魂を吹き込む",
+    "description": "SolanaでAIエージェントを作成、デプロイ、取引する",
+    "loading": "読み込み中...",
+    "error": "エラー",
+    "success": "成功",
+    "cancel": "キャンセル",
+    "save": "保存",
+    "delete": "削除",
+    "edit": "編集",
+    "create": "作成",
+    "back": "戻る",
+    "next": "次へ"
+  },
+  "nav": {
+    "agents": "エージェント",
+    "dashboard": "ダッシュボード",
+    "marketplace": "マーケットプレイス",
+    "forge": "フォージ",
+    "preview": "プレビュー",
+    "docs": "ドキュメント"
+  },
+  "theme": {
+    "light": "ライト",
+    "dark": "ダーク",
+    "system": "システム"
+  },
+  "auth": {
+    "connectWallet": "ウォレットに接続",
+    "disconnectWallet": "切断",
+    "connected": "接続済み",
+    "login": "ログイン",
+    "logout": "ログアウト",
+    "signingMessage": "メッセージに署名中...",
+    "signatureRequired": "ウォレット署名が必要です"
+  },
+  "agents": {
+    "myAgents": "マイエージェント",
+    "createAgent": "エージェント作成",
+    "agentName": "エージェント名",
+    "personality": "性格",
+    "description": "説明",
+    "mint": "ミント",
+    "listForSale": "販売リスト",
+    "rentAgent": "エージェントをレンタル",
+    "viewDetails": "詳細を表示",
+    "earnings": "収益",
+    "reputation": "評判",
+    "actions": "アクション",
+    "trading": "トレーディング",
+    "treasury": "トレジャリー"
+  },
+  "marketplace": {
+    "browse": "エージェントを閲覧",
+    "featured": "特集",
+    "trending": "トレンド",
+    "price": "価格",
+    "rental": "レンタル",
+    "buy": "購入",
+    "rent": "レンタル",
+    "seller": "販売者",
+    "days": "日間",
+    "perDay": "1日あたり",
+    "viewProfile": "プロフィールを表示"
+  },
+  "dashboard": {
+    "overview": "概要",
+    "stats": "統計",
+    "agentCount": "合計エージェント",
+    "totalEarnings": "合計収益",
+    "activeRentals": "アクティブなレンタル",
+    "recentActivity": "最近のアクティビティ",
+    "manageAgents": "エージェントを管理",
+    "settings": "設定"
+  },
+  "offline": {
+    "youreOffline": "オフラインです",
+    "cachedContent": "キャッシュされたコンテンツは表示できますが、一部の機能にはインターネット接続が必要です。",
+    "goHome": "ホームへ移動",
+    "retryConnection": "再度接続を試みる"
+  },
+  "settings": {
+    "preferences": "環境設定",
+    "language": "言語",
+    "theme": "テーマ",
+    "notifications": "通知",
+    "privacy": "プライバシー",
+    "security": "セキュリティ",
+    "devices": "デバイス",
+    "sessions": "セッション"
+  },
+  "errors": {
+    "notFound": "見つかりません",
+    "unauthorized": "認可されていません",
+    "forbidden": "禁止されています",
+    "serverError": "サーバーエラー",
+    "tryAgain": "もう一度試す",
+    "invalidInput": "無効な入力",
+    "networkError": "ネットワークエラー"
+  }
+}

@@ -19,7 +19,7 @@ export default function OfflinePage() {
             />
           </svg>
         </div>
-        <h1 className="text-3xl font-bold text-foreground">You're Offline</h1>
+        <h1 className="text-3xl font-bold text-foreground">You&apos;re Offline</h1>
         <p className="mt-2 text-muted-foreground">
           You can still view cached content, but some features require an internet connection.
         </p>

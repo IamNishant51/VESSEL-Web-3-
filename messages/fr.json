@@ -1,0 +1,103 @@
+{
+  "common": {
+    "vessel": "VESSEL",
+    "tagline": "Donnez une Âme à Vos Idées",
+    "description": "Créez, déployez et échangez des agents IA sur Solana",
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "create": "Créer",
+    "back": "Retour",
+    "next": "Suivant"
+  },
+  "nav": {
+    "agents": "Agents",
+    "dashboard": "Tableau de Bord",
+    "marketplace": "Marché",
+    "forge": "Forge",
+    "preview": "Aperçu",
+    "docs": "Documentation"
+  },
+  "theme": {
+    "light": "Clair",
+    "dark": "Sombre",
+    "system": "Système"
+  },
+  "auth": {
+    "connectWallet": "Connecter le Portefeuille",
+    "disconnectWallet": "Déconnecter",
+    "connected": "Connecté",
+    "login": "Connexion",
+    "logout": "Déconnexion",
+    "signingMessage": "Signature du message...",
+    "signatureRequired": "Signature du portefeuille requise"
+  },
+  "agents": {
+    "myAgents": "Mes Agents",
+    "createAgent": "Créer un Agent",
+    "agentName": "Nom de l'Agent",
+    "personality": "Personnalité",
+    "description": "Description",
+    "mint": "Frapper",
+    "listForSale": "Mettre en Vente",
+    "rentAgent": "Location d'Agent",
+    "viewDetails": "Voir les Détails",
+    "earnings": "Revenus",
+    "reputation": "Réputation",
+    "actions": "Actions",
+    "trading": "Trading",
+    "treasury": "Trésor"
+  },
+  "marketplace": {
+    "browse": "Parcourir les Agents",
+    "featured": "En Vedette",
+    "trending": "Tendance",
+    "price": "Prix",
+    "rental": "Location",
+    "buy": "Acheter",
+    "rent": "Louer",
+    "seller": "Vendeur",
+    "days": "Jours",
+    "perDay": "par jour",
+    "viewProfile": "Voir le Profil"
+  },
+  "dashboard": {
+    "overview": "Aperçu",
+    "stats": "Statistiques",
+    "agentCount": "Nombre Total d'Agents",
+    "totalEarnings": "Revenus Totaux",
+    "activeRentals": "Locations Actives",
+    "recentActivity": "Activité Récente",
+    "manageAgents": "Gérer les Agents",
+    "settings": "Paramètres"
+  },
+  "offline": {
+    "youreOffline": "Vous Êtes Hors Ligne",
+    "cachedContent": "Vous pouvez toujours consulter le contenu en cache, mais certaines fonctionnalités nécessitent une connexion Internet.",
+    "goHome": "Aller à l'Accueil",
+    "retryConnection": "Réessayer la Connexion"
+  },
+  "settings": {
+    "preferences": "Préférences",
+    "language": "Langue",
+    "theme": "Thème",
+    "notifications": "Notifications",
+    "privacy": "Confidentialité",
+    "security": "Sécurité",
+    "devices": "Appareils",
+    "sessions": "Sessions"
+  },
+  "errors": {
+    "notFound": "Non trouvé",
+    "unauthorized": "Non autorisé",
+    "forbidden": "Interdit",
+    "serverError": "Erreur du serveur",
+    "tryAgain": "Réessayer",
+    "invalidInput": "Entrée invalide",
+    "networkError": "Erreur réseau"
+  }
+}

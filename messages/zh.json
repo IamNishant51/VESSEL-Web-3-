@@ -1,0 +1,103 @@
+{
+  "common": {
+    "vessel": "VESSEL",
+    "tagline": "给你的想法赋予灵魂",
+    "description": "在Solana上创建、部署和交易AI代理",
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功",
+    "cancel": "取消",
+    "save": "保存",
+    "delete": "删除",
+    "edit": "编辑",
+    "create": "创建",
+    "back": "返回",
+    "next": "下一步"
+  },
+  "nav": {
+    "agents": "代理",
+    "dashboard": "仪表板",
+    "marketplace": "市场",
+    "forge": "锻造",
+    "preview": "预览",
+    "docs": "文档"
+  },
+  "theme": {
+    "light": "浅色",
+    "dark": "深色",
+    "system": "系统"
+  },
+  "auth": {
+    "connectWallet": "连接钱包",
+    "disconnectWallet": "断开连接",
+    "connected": "已连接",
+    "login": "登录",
+    "logout": "登出",
+    "signingMessage": "正在签署消息...",
+    "signatureRequired": "需要钱包签名"
+  },
+  "agents": {
+    "myAgents": "我的代理",
+    "createAgent": "创建代理",
+    "agentName": "代理名称",
+    "personality": "个性",
+    "description": "描述",
+    "mint": "铸造",
+    "listForSale": "挂牌出售",
+    "rentAgent": "租赁代理",
+    "viewDetails": "查看详情",
+    "earnings": "收益",
+    "reputation": "声誉",
+    "actions": "操作",
+    "trading": "交易",
+    "treasury": "金库"
+  },
+  "marketplace": {
+    "browse": "浏览代理",
+    "featured": "精选",
+    "trending": "趋势",
+    "price": "价格",
+    "rental": "租赁",
+    "buy": "购买",
+    "rent": "租赁",
+    "seller": "卖家",
+    "days": "天",
+    "perDay": "每天",
+    "viewProfile": "查看资料"
+  },
+  "dashboard": {
+    "overview": "概览",
+    "stats": "统计数据",
+    "agentCount": "代理总数",
+    "totalEarnings": "总收益",
+    "activeRentals": "活跃租赁",
+    "recentActivity": "最近活动",
+    "manageAgents": "管理代理",
+    "settings": "设置"
+  },
+  "offline": {
+    "youreOffline": "你离线了",
+    "cachedContent": "你仍然可以查看缓存内容，但某些功能需要互联网连接。",
+    "goHome": "返回主页",
+    "retryConnection": "重新连接"
+  },
+  "settings": {
+    "preferences": "偏好设置",
+    "language": "语言",
+    "theme": "主题",
+    "notifications": "通知",
+    "privacy": "隐私",
+    "security": "安全",
+    "devices": "设备",
+    "sessions": "会话"
+  },
+  "errors": {
+    "notFound": "未找到",
+    "unauthorized": "未授权",
+    "forbidden": "禁止",
+    "serverError": "服务器错误",
+    "tryAgain": "重试",
+    "invalidInput": "无效输入",
+    "networkError": "网络错误"
+  }
+}
