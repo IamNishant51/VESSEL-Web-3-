@@ -1,97 +1,110 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Connection } from "@solana/web3.js";
 import { z } from "zod";
-import {
-  executeTool,
-  validateToolAccess,
-  type ToolExecutionContext,
-} from "@/lib/agent-tools";
-import { connectToDatabase } from "@/lib/mongodb";
-import { verifyToken } from "@/lib/jwt";
-import { SubscriptionModel } from "@/lib/models/subscription";
-import { getUserSubscriptionTier } from "@/lib/rate-limit";
 
-const ExecuteToolSchema = z.object({
-  agentId: z.string().min(1),
-  tool: z.enum(["transfer", "swap", "stake", "portfolio"]),
-  params: z.record(z.any()),
-  walletAddress: z.string().length(44),
-  signature: z.string(),
+import { submitSignedTransaction } from "@/lib/transaction-executor";
+import { recordSuccess, recordFailure } from "@/lib/circuit-breaker";
+import { getClientIp } from "@/lib/rate-limit";
+import { auditLog } from "@/lib/audit";
+
+const ExecuteSignedTxSchema = z.object({
+  agentId: z.string().min(1).max(64),
+  signedTransaction: z.string(), // Base64 encoded signed TX
+  tool: z.enum(["transfer", "swap", "stake"]),
+  estimatedAmount: z.number().positive().optional(),
 });
 
 export async function POST(req: NextRequest) {
+  const ip = getClientIp(req);
+
   try {
     const body = await req.json();
-    const validated = ExecuteToolSchema.parse(body);
+    const validated = ExecuteSignedTxSchema.parse(body);
 
-    // Verify JWT token
-    const token = req.headers.get("authorization")?.replace("Bearer ", "");
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // Set up connection to devnet
+    const rpcUrl = process.env.NEXT_PUBLIC_SOLANA_RPC_ENDPOINT || "https://api.devnet.solana.com";
+    const connection = new Connection(rpcUrl, "finalized");
 
-    const payload = verifyToken(token);
-    if (!payload) {
-      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
-    }
+    // Submit the signed transaction to blockchain
+    const submitResult = await submitSignedTransaction(validated.signedTransaction, connection, "devnet");
 
-    await connectToDatabase();
+    if (!submitResult.success) {
+      // Record failure for circuit breaker
+      recordFailure(validated.agentId, submitResult.error);
 
-    // Get subscription tier
-    const tier = await getUserSubscriptionTier(validated.walletAddress);
+      auditLog({
+        level: "error",
+        event: "tx_execution_failed",
+        details: {
+          agentId: validated.agentId,
+          tool: validated.tool,
+          error: submitResult.error,
+        },
+        ip,
+      });
 
-    // Check tool access
-    const { allowed, reason } = validateToolAccess(tier, validated.tool);
-    if (!allowed) {
       return NextResponse.json(
-        { error: `Tool access denied: ${reason}` },
-        { status: 403 }
-      );
-    }
-
-    // Create execution context
-    const rpcEndpoint = process.env.NEXT_PUBLIC_SOLANA_RPC_ENDPOINT || "";
-    if (!rpcEndpoint) {
-      return NextResponse.json(
-        { error: "RPC endpoint not configured" },
-        { status: 500 }
-      );
-    }
-
-    const context: ToolExecutionContext = {
-      agentId: validated.agentId,
-      userId: payload.userId,
-      walletAddress: validated.walletAddress,
-      connection: new Connection(rpcEndpoint),
-      rpcEndpoint,
-    };
-
-    // Execute tool
-    const result = await executeTool(context, validated.tool, validated.params);
-
-    // Log tool execution
-    console.log(`[Tools] ${validated.tool} executed for agent ${validated.agentId}`, {
-      success: result.success,
-      tier,
-    });
-
-    return NextResponse.json({
-      ...result,
-      tool: validated.tool,
-      agentId: validated.agentId,
-    });
-  } catch (error) {
-    console.error("[Tools] Execution error:", error);
-
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: "Invalid parameters", details: error.errors },
+        {
+          success: false,
+          error: submitResult.error,
+        },
         { status: 400 }
       );
     }
 
+    // Record success for circuit breaker
+    recordSuccess(validated.agentId, validated.estimatedAmount || 0.01);
+
+    // Log successful execution
+    console.log(`[Executor] ${validated.tool} executed successfully for agent ${validated.agentId}`, {
+      signature: submitResult.signature,
+    });
+
+    auditLog({
+      level: "info",
+      event: "tx_executed",
+      details: {
+        agentId: validated.agentId,
+        tool: validated.tool,
+        signature: submitResult.signature,
+        explorerUrl: submitResult.explorerUrl,
+      },
+      ip,
+    });
+
     return NextResponse.json(
-      { error: "Tool execution failed" },
+      {
+        success: true,
+        signature: submitResult.signature,
+        explorerUrl: submitResult.explorerUrl,
+        tool: validated.tool,
+        agentId: validated.agentId,
+        message: `✅ Transaction executed! View on Solscan: ${submitResult.explorerUrl}`,
+      },
+      { status: 200 }
+    );
+
+  } catch (error) {
+    console.error("[Executor] Error:", error);
+
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Invalid request", details: error.errors },
+        { status: 400 }
+      );
+    }
+
+    const message = error instanceof Error ? error.message : "Unknown error";
+
+    auditLog({
+      level: "error",
+      event: "executor_error",
+      details: { error: message },
+      ip,
+    });
+
+    return NextResponse.json(
+      { error: "Transaction execution failed", details: message },
       { status: 500 }
     );
   }

@@ -1,16 +1,30 @@
 import ImageKit from "imagekit";
 
-const imagekit = new ImageKit({
-  publicKey: process.env.IMAGEKIT_PUBLIC_KEY || "",
-  privateKey: process.env.IMAGEKIT_PRIVATE_KEY || "",
-  urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT || "",
-});
+const publicKey = process.env.IMAGEKIT_PUBLIC_KEY;
+const privateKey = process.env.IMAGEKIT_PRIVATE_KEY;
+const urlEndpoint = process.env.IMAGEKIT_URL_ENDPOINT;
+
+export const imagekit = (publicKey && privateKey && urlEndpoint)
+  ? new ImageKit({
+      publicKey,
+      privateKey,
+      urlEndpoint,
+    })
+  : null;
+
+export function isImageKitConfigured(): boolean {
+  return !!imagekit;
+}
 
 export async function uploadCnftImage(
   fileBuffer: Buffer,
   fileName: string,
   folder: string = "/cnft/agents"
 ): Promise<{ url: string; fileId: string }> {
+  if (!imagekit) {
+    throw new Error("ImageKit is not configured. Set IMAGEKIT_PUBLIC_KEY, IMAGEKIT_PRIVATE_KEY, and IMAGEKIT_URL_ENDPOINT environment variables.");
+  }
+
   try {
     const response = await imagekit.upload({
       file: fileBuffer.toString("base64"),
@@ -31,6 +45,10 @@ export async function uploadCnftImage(
 }
 
 export async function deleteCnftImage(fileId: string): Promise<void> {
+  if (!imagekit) {
+    throw new Error("ImageKit is not configured.");
+  }
+
   try {
     await imagekit.deleteFile(fileId);
   } catch (error) {
@@ -48,7 +66,11 @@ export function getImageKitUrl(
     format?: "webp" | "jpg" | "png";
   }
 ): string {
-  const baseUrl = `${process.env.IMAGEKIT_URL_ENDPOINT || ""}${fileId}`;
+  if (!urlEndpoint) {
+    return "";
+  }
+  
+  const baseUrl = `${urlEndpoint}${fileId}`;
   
   if (!transformations) {
     return baseUrl;
@@ -73,5 +95,3 @@ export function getImageKitUrl(
     ? `${baseUrl}?tr=${params.join(",")}`
     : baseUrl;
 }
-
-export default imagekit;

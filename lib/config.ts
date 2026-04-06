@@ -1,0 +1,77 @@
+export const AUTH_CONFIG = {
+  NONCE_EXPIRY_MS: 5 * 60 * 1000,
+  MAX_USED_NONCES: 10000,
+  MAX_NONCES_TO_CLEANUP: 5000,
+} as const;
+
+export const RATE_LIMIT_CONFIG = {
+  DEFAULT_WINDOW_MS: 60 * 1000,
+  DEFAULT_MAX_REQUESTS: 25,
+  AUTH_WINDOW_MS: 60 * 1000,
+  AUTH_MAX_REQUESTS: 10,
+  AGENT_RUN_WINDOW_MS: 60 * 1000,
+  AGENT_RUN_MAX_REQUESTS: 25,
+  API_DB_WINDOW_MS: 60 * 1000,
+  API_DB_MAX_REQUESTS: 100,
+} as const;
+
+export const CIRCUIT_BREAKER_CONFIG = {
+  FAILURE_THRESHOLD: 3,
+  COOLDOWN_MS: 5 * 60 * 1000,
+  MAX_DAILY_SPEND_SOL: 1.0,
+  MAX_SINGLE_TX_SOL: 0.5,
+  MAX_SLIPPAGE_BPS: 500,
+} as const;
+
+export const COINGECKO_CONFIG = {
+  FAILURE_THRESHOLD: 5,
+  COOLDOWN_MS: 60 * 1000,
+  RATE_LIMIT_PER_MINUTE: 15,
+  TIMEOUT_MS: 5000,
+  PRICE_CACHE_TTL_MS: 2 * 60 * 1000,
+  MARKET_SNAPSHOT_TTL_MS: 5 * 60 * 1000,
+} as const;
+
+export const TRANSACTION_CONFIG = {
+  DEFAULT_FEE_LAMPORTS: 5000,
+  PRIORITY_FEE_MICROLAMPORTS: 500,
+  MAX_RETRIES: 5,
+  PREFLIGHT_COMMITMENT: "processed" as const,
+  FINALIZED_COMMITMENT: "finalized" as const,
+  RETRY_DELAYS: [1000, 2000, 4000, 8000, 16000],
+} as const;
+
+export const VALIDATION_CONFIG = {
+  MAX_BODY_BYTES: 32 * 1024,
+  MAX_MESSAGE_CHARS: 700,
+  MAX_PROMPT_CHARS: 2000,
+  MAX_AGENT_NAME_CHARS: 64,
+  MAX_AGENT_ID_CHARS: 100,
+} as const;
+
+export const SOLANA_CONFIG = {
+  DEFAULT_NETWORK: "devnet" as const,
+  SUPPORTED_NETWORKS: ["devnet", "testnet", "mainnet"] as const,
+  MAINNET_WHITELIST_ENABLED: process.env.NEXT_PUBLIC_MAINNET_WHITELIST_ENABLED === "true",
+  RPC_URL: process.env.NEXT_PUBLIC_SOLANA_RPC_URL,
+  RPC_NETWORK: process.env.NEXT_PUBLIC_WALLET_ADAPTER_NETWORK,
+} as const;
+
+export const CACHE_CONFIG = {
+  RESPONSE_CACHE_TTL_MS: 30 * 60 * 1000,
+  MAX_RESPONSE_CACHE_SIZE: 500,
+  PRICE_CACHE_TTL_MS: 2 * 60 * 1000,
+  MARKET_SNAPSHOT_TTL_MS: 5 * 60 * 1000,
+} as const;
+
+export const JUPITER_CONFIG = {
+  API_BASE: "https://api.jup.ag/swap/v6",
+  MAX_ACCOUNTS: 20,
+  DEFAULT_SLIPPAGE_BPS: 50,
+} as const;
+
+export const EXPLORER_URLS = {
+  devnet: "https://explorer.solana.com",
+  testnet: "https://explorer.solana.com",
+  mainnet: "https://explorer.solana.com",
+} as const;

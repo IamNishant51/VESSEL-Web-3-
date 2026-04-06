@@ -1,14 +1,21 @@
 import Stripe from "stripe";
 import { SUBSCRIPTION_PLANS, SubscriptionTier } from "@/lib/models/subscription";
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error("STRIPE_SECRET_KEY is not defined");
-}
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2024-04-10",
-  typescript: true,
-});
+export const stripe = stripeSecretKey
+  ? new Stripe(stripeSecretKey, {
+      apiVersion: "2024-04-10",
+      typescript: true,
+    })
+  : null;
+
+export function getStripe(): Stripe {
+  if (!stripe) {
+    throw new Error("Stripe is not configured. Set STRIPE_SECRET_KEY environment variable.");
+  }
+  return stripe;
+}
 
 /**
  * Creates a Stripe customer for a user
@@ -19,7 +26,7 @@ export async function createStripeCustomer(
   metadata?: Record<string, string>
 ) {
   try {
-    const customer = await stripe.customers.create({
+    const customer = await getStripe().customers.create({
       email,
       metadata: {
         userId,
@@ -47,7 +54,7 @@ export async function createSubscription(
     }
 
     const plan = SUBSCRIPTION_PLANS[tier];
-    const subscription = await stripe.subscriptions.create({
+    const subscription = await getStripe().subscriptions.create({
       customer: customerId,
       items: [
         {
@@ -78,10 +85,10 @@ export async function cancelSubscription(
 ) {
   try {
     if (immediate) {
-      const subscription = await stripe.subscriptions.del(subscriptionId);
+      const subscription = await getStripe().subscriptions.cancel(subscriptionId);
       return subscription;
     } else {
-      const subscription = await stripe.subscriptions.update(subscriptionId, {
+      const subscription = await getStripe().subscriptions.update(subscriptionId, {
         metadata: {
           cancelReason: reason || "User requested",
         },
@@ -107,10 +114,10 @@ export async function updateSubscriptionTier(
       return cancelSubscription(subscriptionId, "Downgraded to free");
     }
 
-    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+    const subscription = await getStripe().subscriptions.retrieve(subscriptionId);
     const plan = SUBSCRIPTION_PLANS[newTier];
 
-    const updated = await stripe.subscriptions.update(subscriptionId, {
+    const updated = await getStripe().subscriptions.update(subscriptionId, {
       items: [
         {
           id: subscription.items.data[0].id,
@@ -132,7 +139,7 @@ export async function updateSubscriptionTier(
  */
 export async function getSubscription(subscriptionId: string) {
   try {
-    const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
+    const subscription = await getStripe().subscriptions.retrieve(subscriptionId, {
       expand: ["customer", "latest_invoice"],
     });
     return subscription;
@@ -147,7 +154,7 @@ export async function getSubscription(subscriptionId: string) {
  */
 export async function getCustomerSubscriptions(customerId: string) {
   try {
-    const subscriptions = await stripe.subscriptions.list({
+    const subscriptions = await getStripe().subscriptions.list({
       customer: customerId,
     });
     return subscriptions.data;
@@ -166,7 +173,7 @@ export function verifyWebhookSignature(
   secret: string
 ) {
   try {
-    return stripe.webhooks.constructEvent(payload, signature, secret);
+    return getStripe().webhooks.constructEvent(payload, signature, secret);
   } catch (error) {
     console.error("[Stripe] Webhook verification failed:", error);
     throw error;
@@ -188,7 +195,7 @@ export async function createCheckoutSession(
     }
 
     const plan = SUBSCRIPTION_PLANS[tier];
-    const session = await stripe.checkout.sessions.create({
+    const session = await getStripe().checkout.sessions.create({
       customer: customerId,
       line_items: [
         {
@@ -220,7 +227,7 @@ export async function createBillingPortalSession(
   returnUrl: string
 ) {
   try {
-    const session = await stripe.billingPortal.sessions.create({
+    const session = await getStripe().billingPortal.sessions.create({
       customer: customerId,
       return_url: returnUrl,
     });

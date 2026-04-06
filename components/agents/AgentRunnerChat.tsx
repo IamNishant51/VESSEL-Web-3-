@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageContent } from "./MessageContent";
+import { TransactionApprovalModal } from "./TransactionApprovalModal";
 import {
   Send,
   Loader2,
@@ -294,6 +295,8 @@ export function AgentRunnerChat({ agent }: Props) {
   const [streamingContent, setStreamingContent] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
+  const [showTxModal, setShowTxModal] = useState(false);
+  const [pendingTransaction, setPendingTransaction] = useState<any>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const streamIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -577,6 +580,29 @@ export function AgentRunnerChat({ agent }: Props) {
               step
             )
           );
+        }
+
+        // Check if this needs wallet approval
+        if (result.executionRequest?.requiresWalletApproval) {
+          setAgentState("waiting_approval");
+          setPendingTransaction({
+            tool: result.toolUsed,
+            description: result.executionRequest.description || `Execute ${result.toolUsed}`,
+            estimatedFee: 0.000005,
+            agentId: agent.id,
+            parameters: {},
+          });
+          setShowTxModal(true);
+
+          // Wait for transaction modal to complete
+          await new Promise((r) => {
+            const checkTxModal = setInterval(() => {
+              if (!showTxModal) {
+                clearInterval(checkTxModal);
+                r(null);
+              }
+            }, 100);
+          });
         }
       }
 
@@ -1120,6 +1146,20 @@ export function AgentRunnerChat({ agent }: Props) {
             </div>
           </div>
         </div>
+
+        {/* Transaction Approval Modal */}
+        <TransactionApprovalModal
+          open={showTxModal}
+          onClose={() => setShowTxModal(false)}
+          transactionData={pendingTransaction}
+          onExecute={(signature) => {
+            toast.success(`Transaction executed! Signature: ${signature.slice(0, 8)}...`);
+            setShowTxModal(false);
+          }}
+          onError={(error) => {
+            toast.error(`Transaction failed: ${error}`);
+          }}
+        />
       </div>
     </div>
   );

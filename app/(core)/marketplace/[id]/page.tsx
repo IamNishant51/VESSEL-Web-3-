@@ -7,7 +7,6 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useWallet } from "@solana/wallet-adapter-react";
 
-import { AppHeader } from "@/components/layout/app-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -292,11 +291,10 @@ export default function MarketplaceDetailPage() {
 
   return (
     <>
-      <AppHeader />
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-      className="space-y-6"
+      className="space-y-6 pt-20"
     >
       <Button
         variant="ghost"

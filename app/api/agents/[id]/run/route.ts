@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 
 import { clampText, isValidPublicKey, sanitizeStringArray } from "@/lib/input-validation";
-import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { checkRateLimitSync, getClientIp } from "@/lib/rate-limit";
 import { runAgent } from "@/lib/agent-runner";
 import type { Agent, RunAgentRequest } from "@/types/agent";
 import { auditLog } from "@/lib/audit";
+import { VALIDATION_CONFIG, RATE_LIMIT_CONFIG } from "@/lib/config";
 
-const MAX_BODY_BYTES = 32 * 1024;
-const MAX_MESSAGE_CHARS = 700;
+const MAX_BODY_BYTES = VALIDATION_CONFIG.MAX_BODY_BYTES;
+const MAX_MESSAGE_CHARS = VALIDATION_CONFIG.MAX_MESSAGE_CHARS;
 
 function sanitizeAgent(input: Partial<Agent>): Agent {
   return {
@@ -44,7 +45,7 @@ export async function POST(
 ) {
   try {
     const ip = getClientIp(request);
-    const limit = checkRateLimit(`run:${ip}`, { windowMs: 60_000, max: 25 });
+    const limit = checkRateLimitSync(`run:${ip}`, { windowMs: RATE_LIMIT_CONFIG.AGENT_RUN_WINDOW_MS, max: RATE_LIMIT_CONFIG.AGENT_RUN_MAX_REQUESTS });
     if (!limit.allowed) {
       auditLog({ level: "security", event: "rate_limit_exceeded", details: { ip, endpoint: "agent-run" }, ip });
       return NextResponse.json(

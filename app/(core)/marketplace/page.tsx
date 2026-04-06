@@ -6,7 +6,6 @@ import { Filter, Search } from "lucide-react";
 import { motion } from "framer-motion";
 import { useWallet } from "@solana/wallet-adapter-react";
 
-import { AppHeader } from "@/components/layout/app-header";
 import { getAgentArtworkUrl, getAgentCoverGradientClass, getAgentVisualSeed } from "@/lib/agent-visuals";
 import { getCyberpunkAgentDataUrl } from "@/lib/agent-avatar";
 import { PREMADE_FREE_AGENTS } from "@/lib/premade-agents";
@@ -153,7 +152,7 @@ export default function MarketplacePage() {
 
   if (!hasHydrated) {
     return (
-      <div className="-mx-4 -mt-8 min-h-screen bg-[#fafafa] px-4 pb-10 pt-4 text-[#171819] sm:-mx-6 sm:px-6">
+      <div className="-mx-4 -mt-8 min-h-screen bg-[var(--bg-base)] px-4 pb-10 pt-4 text-[var(--text-primary)] sm:-mx-6 sm:px-6">
         <div className="mx-auto w-full max-w-[1320px]">
           <div className="mb-6 flex gap-2">
             {tabs.map((t) => (
@@ -176,8 +175,7 @@ export default function MarketplacePage() {
 
   return (
     <>
-      <AppHeader />
-      <div className="-mx-4 min-h-screen bg-[#fafafa] px-4 pb-10 pt-6 text-[#171819] sm:-mx-6 sm:px-6">
+      <div className="-mx-4 min-h-screen bg-[var(--bg-base)] px-4 pb-10 pt-24 text-[var(--text-primary)] sm:-mx-6 sm:px-6">
       <div className="mx-auto w-full max-w-[1320px] space-y-6">
         <section className="grid gap-5 rounded-sm bg-[#ececee] p-4 sm:p-5 lg:grid-cols-[1fr_280px]">
           <div>
@@ -507,7 +505,7 @@ export default function MarketplacePage() {
           <p className="mt-4 pb-4 text-[10px] tracking-[0.12em] text-black/50">© 2026 VESSEL ENGINE. ALL RIGHTS RESERVED.</p>
         </footer>
       </div>
-      </div>
+    </div>
     </>
   );
 }

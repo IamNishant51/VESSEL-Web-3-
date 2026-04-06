@@ -1,26 +1,23 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import Stripe from "stripe";
 import { connectToDatabase } from "@/lib/mongodb";
-import { v4 as uuidv4 } from "uuid";
+import { getStripe, createStripeCustomer, createCheckoutSession } from "@/lib/stripe";
+import type { SubscriptionTier } from "@/lib/models/subscription";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2024-04-10",
-});
-
-// Subscription tier pricing (in cents)
-const TIER_PRICING = {
-  pro: 9900, // $99/month
-  enterprise: 29900, // $299/month
-};
-
-// Create checkout session
 export async function POST(request: Request) {
   try {
+    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+    if (!stripeSecretKey) {
+      return NextResponse.json(
+        { error: "Billing is not configured. Please contact support." },
+        { status: 503 }
+      );
+    }
+
     const { walletAddress, tier, billingEmail } = await request.json();
 
     const schema = z.object({
-      walletAddress: z.string().length(44),
+      walletAddress: z.string().min(44).max(44),
       tier: z.enum(["pro", "enterprise"]),
       billingEmail: z.string().email(),
     });
@@ -29,81 +26,35 @@ export async function POST(request: Request) {
 
     await connectToDatabase();
 
-    // Get or create Stripe customer
-    const customer = await stripe.customers.search({
-      query: `metadata["walletAddress"]:"${validated.walletAddress}"`,
-      limit: 1,
-    });
+    const customer = await createStripeCustomer(
+      validated.billingEmail,
+      validated.walletAddress
+    );
 
-    let customerId: string;
-    if (customer.data.length > 0) {
-      customerId = customer.data[0].id;
-    } else {
-      const newCustomer = await stripe.customers.create({
-        email: validated.billingEmail,
-        metadata: {
-          walletAddress: validated.walletAddress,
-        },
-      });
-      customerId = newCustomer.id;
-    }
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    const session = await createCheckoutSession(
+      customer.id,
+      validated.tier as SubscriptionTier,
+      `${baseUrl}/billing?success=true`,
+      `${baseUrl}/billing?canceled=true`
+    );
 
-    // Create or get price ID
-    let priceId = process.env[`STRIPE_PRICE_ID_${tier.toUpperCase()}`];
-
-    if (!priceId) {
-      // Create price if not available
-      const product = await stripe.products.create({
-        name: `VESSEL ${tier.charAt(0).toUpperCase() + tier.slice(1)}`,
-        description: `VESSEL ${tier} subscription`,
-        metadata: {
-          tier,
-        },
-      });
-
-      const price = await stripe.prices.create({
-        product: product.id,
-        unit_amount: TIER_PRICING[tier as keyof typeof TIER_PRICING],
-        currency: "usd",
-        recurring: {
-          interval: "month",
-          interval_count: 1,
-        },
-      });
-
-      priceId = price.id;
-    }
-
-    // Create checkout session
-    const session = await stripe.checkout.sessions.create({
-      customer: customerId,
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
-      mode: "subscription",
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/billing?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/pricing`,
-      subscription_data: {
-        metadata: {
-          walletAddress: validated.walletAddress,
-          tier,
-        },
-      },
-      customer_email: validated.billingEmail,
-    });
-
-    return NextResponse.json({
-      sessionId: session.id,
-      url: session.url,
-    });
+    return NextResponse.json({ sessionId: session.id, url: session.url });
   } catch (error) {
-    console.error("[Billing] Create checkout error:", error);
+    console.error("[Billing] Checkout error:", error);
     return NextResponse.json(
-      { error: "Failed to create checkout session" },
+      { error: error instanceof Error ? error.message : "Checkout failed" },
       { status: 500 }
     );
   }
+}
+
+export async function GET() {
+  return NextResponse.json({
+    message: "Vessel Billing API - POST to create checkout session",
+    tiers: {
+      pro: { price: "$99/month", features: ["Advanced agent tools", "Priority support", "Higher limits"] },
+      enterprise: { price: "$299/month", features: ["Everything in Pro", "Custom integrations", "Dedicated support"] },
+    },
+  });
 }

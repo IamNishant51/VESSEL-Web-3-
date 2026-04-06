@@ -1,4 +1,5 @@
 import { PricingPage } from "@/components/billing/pricing-page";
+import { LandingNavigation } from "@/components/layout/landing-navigation";
 
 export const metadata = {
   title: "Billing & Pricing - VESSEL",
@@ -6,5 +7,10 @@ export const metadata = {
 };
 
 export default function BillingPage() {
-  return <PricingPage />;
+  return (
+    <>
+      <LandingNavigation forceLight />
+      <PricingPage />
+    </>
+  );
 }

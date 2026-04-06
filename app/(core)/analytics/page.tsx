@@ -17,8 +17,7 @@ import {
   ListChecks,
 } from 'lucide-react';
 
-import { AppHeader } from '@/components/layout/app-header';
-import { useAgent } from '@/hooks/useAgent';
+import { useAgent } from "@/hooks/useAgent";
 import { useStoreHydrated } from '@/hooks/useStoreHydrated';
 import { getCyberpunkAgentDataUrl } from '@/lib/agent-avatar';
 import { useVesselStore } from '@/store/useVesselStore';
@@ -77,7 +76,7 @@ export default function AnalyticsPage() {
 
   if (!hasHydrated) {
     return (
-      <div className="-mx-4 -mt-8 min-h-screen bg-[#fafafa] px-4 pb-10 pt-4 text-[#171819] sm:-mx-6 sm:px-6">
+      <div className="-mx-4 -mt-8 min-h-screen bg-[var(--bg-base)] px-4 pb-10 pt-4 text-[var(--text-primary)] sm:-mx-6 sm:px-6">
         <div className="mx-auto w-full max-w-[1400px]">
           <div className="mb-8">
             <div className="h-10 w-48 animate-pulse rounded bg-black/10" />
@@ -129,11 +128,9 @@ export default function AnalyticsPage() {
   ];
 
   return (
-    <>
-      <AppHeader />
-      <div className="min-h-screen bg-white">
-        <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="min-h-screen bg-white pt-20">
+      <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-2xl font-bold tracking-tight text-black sm:text-[28px]">Analytics</h1>
               <p className="mt-1 text-sm text-black/40">Track your agents performance and earnings</p>
@@ -364,9 +361,8 @@ export default function AnalyticsPage() {
               <button onClick={() => router.push('/terms')} className="transition-colors hover:text-black">Terms</button>
               <button onClick={() => router.push('/privacy')} className="transition-colors hover:text-black">Privacy</button>
             </div>
-          </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

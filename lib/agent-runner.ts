@@ -929,17 +929,23 @@ export async function runAgent(
     }
 
     if (toolUsed) {
+      // Return execution request instead of error
       return {
         message:
-          `${mockResponse}\n\n⚠️ **Execution Blocked**: This agent wanted to execute an on-chain transaction (**${toolUsed}**), but the executor backend is not configured yet.\n\nSee PRODUCTION_SETUP.md → "Agent Executor Backend" for deployment instructions.`,
-        success: false,
-        errorCode: "EXECUTOR_NOT_CONFIGURED",
-        error: "EXECUTOR_NOT_CONFIGURED",
+          `${mockResponse}\n\n✅ **Ready for Execution**: Your transaction is ready to sign!\n\nThe agent wants to execute **${toolUsed}**. Click approve to proceed with signing in your wallet.`,
+        success: true,
+        errorCode: undefined,
+        error: undefined,
         toolUsed,
         reasoningSteps,
         planSteps,
         toolExecution,
-        agentState: "executing",
+        agentState: "ready_for_execution",
+        executionRequest: {
+          tool: toolUsed,
+          step: "sign", // Frontend should call /api/agents/tools/sign-tx first
+          requiresWalletApproval: true,
+        },
       };
     }
 

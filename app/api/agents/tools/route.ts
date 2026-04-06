@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-
-import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { checkRateLimitSync, getClientIp } from "@/lib/rate-limit";
+import { RATE_LIMIT_CONFIG } from "@/lib/config";
 import { fallbackTools } from "@/lib/agent-kit-fallback";
 
 type ToolsCache = {
@@ -17,11 +17,15 @@ export const revalidate = 1800;
 export async function GET(request: Request) {
   try {
     const ip = getClientIp(request);
-    const limit = checkRateLimit(`tools:${ip}`, { windowMs: 60_000, max: 30 });
+    const limit = checkRateLimitSync(`tools:${ip}`, { 
+      windowMs: RATE_LIMIT_CONFIG.DEFAULT_WINDOW_MS, 
+      max: 30 
+    });
+    
     if (!limit.allowed) {
       return NextResponse.json(
-        { error: "Too many requests.", tools: [], success: false },
-        { status: 429, headers: { "retry-after": String(limit.retryAfterSeconds) } }
+        { error: "Too many requests.", tools: fallbackTools, success: false },
+        { status: 429, headers: { "retry-after": String(limit.retryAfterSeconds ?? 60) } }
       );
     }
 

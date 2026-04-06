@@ -7,7 +7,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { toast } from "sonner";
 
-import { AppHeader } from "@/components/layout/app-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { AgentRunnerChat } from "@/components/agents/AgentRunnerChat";
@@ -157,12 +156,11 @@ export default function AgentDetailPage() {
 
   return (
     <>
-      <AppHeader />
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="flex h-[calc(100dvh-4rem)] min-h-0 flex-col overflow-hidden"
-    >
+        className="flex h-[calc(100dvh-4rem)] min-h-0 flex-col overflow-hidden pt-20"
+      >
       {/* Top Bar */}
       <div className="shrink-0 border-b border-black/8 bg-white px-4 py-2.5">
         <div className="mx-auto flex max-w-[1400px] items-center justify-between">

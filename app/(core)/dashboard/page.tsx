@@ -25,7 +25,6 @@ import {
 } from "lucide-react";
 import { useWallet } from "@solana/wallet-adapter-react";
 
-import { AppHeader } from "@/components/layout/app-header";
 import { WalletConnectButton } from "@/components/wallet/connect-button";
 import { useAgent } from "@/hooks/useAgent";
 import { useStoreHydrated } from "@/hooks/useStoreHydrated";
@@ -82,7 +81,7 @@ export default function DashboardPage() {
 
   if (!hasHydrated) {
     return (
-      <div className="-mx-4 -mt-8 min-h-screen bg-[#fafafa] px-4 pb-10 pt-4 text-[#171819] sm:-mx-6 sm:px-6">
+      <div className="-mx-4 -mt-8 min-h-screen bg-[var(--bg-base)] px-4 pb-10 pt-4 text-[var(--text-primary)] sm:-mx-6 sm:px-6">
         <div className="mx-auto w-full max-w-[1320px]">
           <div className="mb-8">
             <div className="h-14 w-64 animate-pulse rounded bg-black/10" />
@@ -151,9 +150,7 @@ export default function DashboardPage() {
   ];
 
   return (
-    <>
-      <AppHeader />
-      <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pt-20">
       <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -406,7 +403,6 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
-      </div>
-    </>
+    </div>
   );
 }

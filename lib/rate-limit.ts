@@ -1,14 +1,30 @@
-interface SimpleRateLimitUsage {
+import { RATE_LIMIT_CONFIG } from "@/lib/config";
+
+interface RateLimitUsage {
   count: number;
   resetTime: number;
 }
 
-// Store usage in memory (in production, use Redis)
-const simpleRateLimitMap = new Map<string, SimpleRateLimitUsage>();
+const memoryStore = new Map<string, RateLimitUsage>();
 
-/**
- * Extract client IP from request
- */
+function getMemoryUsage(key: string): RateLimitUsage | undefined {
+  return memoryStore.get(key);
+}
+
+function setMemoryUsage(key: string, usage: RateLimitUsage): void {
+  if (memoryStore.size > 10000) {
+    let removed = 0;
+    for (const [k, v] of memoryStore.entries()) {
+      if (Date.now() > v.resetTime) {
+        memoryStore.delete(k);
+        removed++;
+      }
+      if (removed > 2000) break;
+    }
+  }
+  memoryStore.set(key, usage);
+}
+
 export function getClientIp(request: Request): string {
   const forwarded = request.headers.get("x-forwarded-for");
   if (forwarded) {
@@ -18,30 +34,78 @@ export function getClientIp(request: Request): string {
   return request.headers.get("x-real-ip") || "unknown";
 }
 
-/**
- * Simple rate limit check (without DB)
- */
-export function checkRateLimit(
+export interface RateLimitResult {
+  allowed: boolean;
+  retryAfterSeconds?: number;
+  remaining?: number;
+}
+
+export async function checkRateLimit(
   key: string,
-  options: { windowMs: number; max: number }
-): { allowed: boolean; retryAfterSeconds?: number } {
+  options?: Partial<typeof RATE_LIMIT_CONFIG.DEFAULT_WINDOW_MS extends number ? { windowMs: number; max: number } : never>
+): Promise<RateLimitResult> {
+  const windowMs = options?.windowMs ?? RATE_LIMIT_CONFIG.DEFAULT_WINDOW_MS;
+  const max = options?.max ?? RATE_LIMIT_CONFIG.DEFAULT_MAX_REQUESTS;
+  
+  return checkRateLimitSync(key, { windowMs, max });
+}
+
+export function checkRateLimitSync(
+  key: string,
+  options?: Partial<{ windowMs: number; max: number }>
+): RateLimitResult {
+  const windowMs = options?.windowMs ?? RATE_LIMIT_CONFIG.DEFAULT_WINDOW_MS;
+  const max = options?.max ?? RATE_LIMIT_CONFIG.DEFAULT_MAX_REQUESTS;
+  
   const now = Date.now();
-  let usage = simpleRateLimitMap.get(key);
+  let usage = getMemoryUsage(key);
 
   if (!usage || now >= usage.resetTime) {
-    usage = {
+    const newUsage: RateLimitUsage = {
       count: 1,
-      resetTime: now + options.windowMs,
+      resetTime: now + windowMs,
     };
-    simpleRateLimitMap.set(key, usage);
-    return { allowed: true };
+    setMemoryUsage(key, newUsage);
+    return { allowed: true, remaining: max - 1 };
   }
 
-  if (usage.count >= options.max) {
+  if (usage.count >= max) {
     const retryAfterSeconds = Math.ceil((usage.resetTime - now) / 1000);
-    return { allowed: false, retryAfterSeconds };
+    return { allowed: false, retryAfterSeconds, remaining: 0 };
   }
 
   usage.count++;
-  return { allowed: true };
+  setMemoryUsage(key, usage);
+  return { allowed: true, remaining: max - usage.count };
+}
+
+export async function checkAuthRateLimit(key: string): Promise<RateLimitResult> {
+  return checkRateLimit(key, {
+    windowMs: RATE_LIMIT_CONFIG.AUTH_WINDOW_MS,
+    max: RATE_LIMIT_CONFIG.AUTH_MAX_REQUESTS,
+  });
+}
+
+export async function checkAgentRunRateLimit(key: string): Promise<RateLimitResult> {
+  return checkRateLimit(key, {
+    windowMs: RATE_LIMIT_CONFIG.AGENT_RUN_WINDOW_MS,
+    max: RATE_LIMIT_CONFIG.AGENT_RUN_MAX_REQUESTS,
+  });
+}
+
+export async function checkApiDbRateLimit(key: string): Promise<RateLimitResult> {
+  return checkRateLimit(key, {
+    windowMs: RATE_LIMIT_CONFIG.API_DB_WINDOW_MS,
+    max: RATE_LIMIT_CONFIG.API_DB_MAX_REQUESTS,
+  });
+}
+
+export function resetRateLimit(key: string): void {
+  memoryStore.delete(key);
+}
+
+export function getRateLimitStatus(key: string): { count: number; resetTime: number } | null {
+  const usage = getMemoryUsage(key);
+  if (!usage) return null;
+  return { count: usage.count, resetTime: usage.resetTime };
 }

@@ -79,6 +79,7 @@ interface VesselStore {
 
   // Offline functions
   setOnlineStatus: (isOnline: boolean) => void;
+  startPeriodicRentalCleanup: () => () => void;
 }
 
 function upsertAgent(agents: Agent[], nextAgent: Agent): Agent[] {
@@ -684,10 +685,22 @@ export const useVesselStore = create<VesselStore>()(
          }
        },
 
-       setOnlineStatus: (isOnline) => {
-         set({ isOnline });
-       },
-     }),
+        setOnlineStatus: (isOnline) => {
+          set({ isOnline });
+        },
+
+        startPeriodicRentalCleanup: () => {
+          if (typeof window === "undefined") {
+            return () => {};
+          }
+          
+          const intervalId = setInterval(() => {
+            get().cleanupExpiredRentals();
+          }, 60 * 60 * 1000);
+          
+          return () => clearInterval(intervalId);
+        },
+      }),
      {
        name: "vessel-store-v3",
        version: 3,

@@ -6,7 +6,6 @@ import {
   SystemProgram,
   sendAndConfirmTransaction,
 } from "@solana/web3.js";
-import { SPLToken } from "@solana/spl-token";
 
 export interface ToolExecutionContext {
   agentId: string;
@@ -21,7 +20,8 @@ export interface ToolResult {
   transactionSignature?: string;
   result?: any;
   error?: string;
-  estimatedCost?: number; // SOL
+  estimatedCost?: number;
+  explorerUrl?: string;
 }
 
 /**
@@ -196,7 +196,7 @@ export async function executeStaking(
 }
 
 /**
- * Query portfolio balance
+ * Query portfolio balance with real on-chain data
  */
 export async function queryPortfolio(
   context: ToolExecutionContext
@@ -205,18 +205,25 @@ export async function queryPortfolio(
     const connection = new Connection(context.rpcEndpoint);
     const wallet = new PublicKey(context.walletAddress);
 
-    // Get SOL balance
     const solBalance = await connection.getBalance(wallet);
 
-    // In production: Query all token accounts
-    // const tokenAccounts = await connection.getParsedTokenAccountsByOwner(wallet, { programId: TOKEN_PROGRAM_ID })
+    const tokenAccounts = await connection.getParsedTokenAccountsByOwner(wallet, {
+      programId: new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss613VQ5DA"),
+    });
+
+    const tokens = tokenAccounts.value.map((acc) => ({
+      mint: acc.account.data.parsed.info.mint,
+      balance: acc.account.data.parsed.info.tokenAmount.uiAmount,
+      decimals: acc.account.data.parsed.info.tokenAmount.decimals,
+    }));
 
     return {
       success: true,
       result: {
         wallet: context.walletAddress,
         solBalance: solBalance / LAMPORTS_PER_SOL,
-        tokens: [], // Would populate from token queries
+        tokens,
+        lastUpdated: new Date().toISOString(),
       },
     };
   } catch (error) {
@@ -225,6 +232,107 @@ export async function queryPortfolio(
       error: error instanceof Error ? error.message : "Portfolio query failed",
     };
   }
+}
+
+/**
+ * Search the web for information
+ */
+export async function webSearch(
+  query: string,
+  numResults: number = 10
+): Promise<ToolResult> {
+  try {
+    const response = await fetch("/api/agent/search", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query, numResults }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Search API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return {
+      success: true,
+      result: data,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Web search failed",
+    };
+  }
+}
+
+/**
+ * Get real-time price data
+ */
+export async function getPrices(
+  symbols: string[] = ["sol"]
+): Promise<ToolResult> {
+  try {
+    const response = await fetch("/api/agent/price", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ symbols }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Price API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return {
+      success: true,
+      result: data,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Price fetch failed",
+    };
+  }
+}
+
+/**
+ * Get market snapshot with real data
+ */
+export async function getMarketSnapshot(): Promise<ToolResult> {
+  try {
+    const pricesResult = await getPrices(["sol", "btc", "eth", "usdc", "jup"]);
+    
+    const globalResponse = await fetch("https://api.coingecko.com/api/v3/global");
+    const globalData = await globalResponse.json();
+
+    const fearGreed = calculateFearGreed(globalData.data?.market_cap_change_percentage_24h_usd || 0);
+
+    return {
+      success: true,
+      result: {
+        ...pricesResult.result,
+        global: {
+          totalMarketCap: globalData.data?.total_market_cap?.usd || 0,
+          btcDominance: globalData.data?.market_cap_percentage?.btc || 0,
+          fearGreed,
+        },
+        timestamp: new Date().toISOString(),
+      },
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Market snapshot failed",
+    };
+  }
+}
+
+function calculateFearGreed(marketChange: number): string {
+  if (marketChange > 5) return "Extreme Greed";
+  if (marketChange > 2) return "Greed";
+  if (marketChange < -5) return "Extreme Fear";
+  if (marketChange < -2) return "Fear";
+  return "Neutral";
 }
 
 /**
@@ -262,6 +370,15 @@ export async function executeTool(
     case "portfolio":
       return queryPortfolio(context);
 
+    case "websearch":
+      return webSearch(params.query, params.numResults);
+
+    case "prices":
+      return getPrices(params.symbols);
+
+    case "market":
+      return getMarketSnapshot();
+
     default:
       return {
         success: false,
@@ -274,7 +391,7 @@ export async function executeTool(
  * Get available tools for an agent
  */
 export function getAgentTools(tier: string) {
-  const baseTools = ["portfolio"];
+  const baseTools = ["portfolio", "websearch", "prices", "market"];
 
   if (tier === "free") {
     return baseTools;
@@ -284,7 +401,6 @@ export function getAgentTools(tier: string) {
     return [...baseTools, "transfer"];
   }
 
-  // enterprise
   return [...baseTools, "transfer", "swap", "stake"];
 }
 

@@ -22,7 +22,6 @@ import {
 import { useWallet } from "@solana/wallet-adapter-react";
 import { toast } from "sonner";
 
-import { AppHeader } from "@/components/layout/app-header";
 import { Button } from "@/components/ui/button";
 import { useAgent } from "@/hooks/useAgent";
 import { useStoreHydrated } from "@/hooks/useStoreHydrated";
@@ -407,18 +406,16 @@ export default function ForgePage() {
   }
 
   return (
-    <>
-      <AppHeader />
-      <div className="-mx-4 min-h-screen bg-[#fafafa] px-4 pb-10 pt-6 text-[#161718] sm:-mx-6 sm:px-6 lg:pt-8">
+    <div className="-mx-4 min-h-screen bg-[var(--bg-base)] px-4 pb-10 pt-24 text-[var(--text-primary)] sm:-mx-6 sm:px-6 lg:pt-8">
       <div className="mx-auto grid w-full max-w-[1320px] grid-cols-1 gap-16 lg:grid-cols-[320px_minmax(0,1fr)]">
         <aside className="hidden self-start lg:block lg:sticky lg:top-24 lg:h-fit">
           <div className="mb-8 flex items-center gap-2">
-            <span className="inline-block rounded-full bg-[#171819]/5 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#171819]/60">Forge Module</span>
+            <span className="inline-block rounded-full bg-[#171819]/5 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--text-primary)]/60">Forge Module</span>
             {isDevMode && (
               <span className="inline-block rounded-full bg-amber-500/10 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.15em] text-amber-600 ring-1 ring-amber-500/20">Dev Mode</span>
             )}
           </div>
-          <h1 className="mb-6 text-5xl font-bold leading-[0.9] tracking-tight text-[#171819]">
+          <h1 className="mb-6 text-5xl font-bold leading-[0.9] tracking-tight text-[var(--text-primary)]">
             Agent
             <br />
             Creator
@@ -439,27 +436,27 @@ export default function ForgePage() {
                   className={`${buttonFeedbackClass} flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-all duration-200 ${
                     isActive
                       ? "bg-[#171819] text-white shadow-lg"
-                      : "text-[#171819]/50 hover:bg-[#171819]/5 hover:text-[#171819]"
+                      : "text-[var(--text-primary)]/50 hover:bg-[#171819]/5 hover:text-[var(--text-primary)]"
                   }`}
                 >
                   <span className={`flex h-6 w-6 items-center justify-center rounded-md text-xs font-bold ${
-                    isActive ? "bg-white/20" : "bg-[#171819]/10"
+                    isActive ? "bg-[var(--bg-surface)]/20" : "bg-[#171819]/10"
                   }`}>
                     {index + 1}
                   </span>
                   <span className="text-sm font-medium">{item.label}</span>
-                  <Icon className={`ml-auto h-4 w-4 ${isActive ? "text-white/70" : "text-[#171819]/30"}`} />
+                  <Icon className={`ml-auto h-4 w-4 ${isActive ? "text-white/70" : "text-[var(--text-primary)]/30"}`} />
                 </button>
               );
             })}
           </nav>
 
-          <div className="rounded-xl border border-black/10 bg-white p-5 shadow-[0_1px_0_rgba(0,0,0,0.03)]">
+          <div className="rounded-xl border border-black/10 bg-[var(--bg-surface)] p-5 shadow-[0_1px_0_rgba(0,0,0,0.03)]">
             <div className="mb-2 flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-[#171819]" />
-              <span className="text-xs font-semibold text-[#171819]/40 uppercase tracking-[0.1em]">Info</span>
+              <span className="text-xs font-semibold text-[var(--text-primary)]/40 uppercase tracking-[0.1em]">Info</span>
             </div>
-            <p className="text-sm leading-relaxed text-[#171819]/60">
+            <p className="text-sm leading-relaxed text-[var(--text-primary)]/60">
               You are initializing a Solana-native autonomous agent. These entities possess unique private keys and the ability to execute on-chain logic.
             </p>
           </div>
@@ -470,42 +467,42 @@ export default function ForgePage() {
             <div className="space-y-3">
               <div className="inline-flex items-center gap-2">
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#171819] text-xs font-bold text-white">1</span>
-                <span className="text-xs font-medium uppercase tracking-[0.2em] text-[#171819]/50">Step One</span>
+                <span className="text-xs font-medium uppercase tracking-[0.2em] text-[var(--text-primary)]/50">Step One</span>
               </div>
-              <h2 className="text-5xl font-bold tracking-tight text-[#171819]">Name &amp; Personality</h2>
-              <p className="max-w-xl text-lg text-[#171819]/60 leading-relaxed">
+              <h2 className="text-5xl font-bold tracking-tight text-[var(--text-primary)]">Name &amp; Personality</h2>
+              <p className="max-w-xl text-lg text-[var(--text-primary)]/60 leading-relaxed">
                 Define the core essence of your agent. This data will be etched into its neural metadata.
               </p>
             </div>
 
             <div className="grid gap-6">
               <div className="group space-y-2">
-                <label className="block text-xs font-semibold uppercase tracking-[0.15em] text-[#171819]/50">Agent Designation</label>
+                <label className="block text-xs font-semibold uppercase tracking-[0.15em] text-[var(--text-primary)]/50">Agent Designation</label>
                 <input
                   value={draft.name}
                   onChange={(event) => updateDraft({ name: event.target.value })}
                   placeholder="e.g. SOL-ARBITER-01"
-                  className="w-full rounded-lg border-2 border-[#e5e5e5] bg-white px-5 py-4 text-lg font-medium text-[#171819] placeholder:text-[#171819]/30 transition focus:border-[#171819] focus:outline-none focus:ring-4 focus:ring-[#171819]/10"
+                  className="w-full rounded-lg border-2 border-[#e5e5e5] bg-[var(--bg-surface)] px-5 py-4 text-lg font-medium text-[var(--text-primary)] placeholder:text-[var(--text-primary)]/30 transition focus:border-[#171819] focus:outline-none focus:ring-4 focus:ring-[#171819]/10"
                 />
               </div>
 
               <div className="group space-y-2">
-                <label className="block text-xs font-semibold uppercase tracking-[0.15em] text-[#171819]/50">The Soul Tagline</label>
+                <label className="block text-xs font-semibold uppercase tracking-[0.15em] text-[var(--text-primary)]/50">The Soul Tagline</label>
                 <input
                   value={draft.tagline}
                   onChange={(event) => updateDraft({ tagline: event.target.value })}
                   placeholder="Give Your Ideas a Soul"
-                  className="w-full rounded-lg border-2 border-[#e5e5e5] bg-white px-5 py-4 text-lg font-medium text-[#171819] placeholder:text-[#171819]/30 transition focus:border-[#171819] focus:outline-none focus:ring-4 focus:ring-[#171819]/10"
+                  className="w-full rounded-lg border-2 border-[#e5e5e5] bg-[var(--bg-surface)] px-5 py-4 text-lg font-medium text-[var(--text-primary)] placeholder:text-[var(--text-primary)]/30 transition focus:border-[#171819] focus:outline-none focus:ring-4 focus:ring-[#171819]/10"
                 />
               </div>
 
               <div className="group space-y-2">
-                <label className="block text-xs font-semibold uppercase tracking-[0.15em] text-[#171819]/50">Behavioral Directives</label>
+                <label className="block text-xs font-semibold uppercase tracking-[0.15em] text-[var(--text-primary)]/50">Behavioral Directives</label>
                 <textarea
                   value={draft.personality}
                   onChange={(event) => updateDraft({ personality: event.target.value })}
                   placeholder="Describe how your agent should think, speak, and prioritize tasks. Use natural language to guide its logic..."
-                  className="min-h-[140px] w-full rounded-lg border-2 border-[#e5e5e5] bg-white px-5 py-4 text-base text-[#171819] placeholder:text-[#171819]/30 transition focus:border-[#171819] focus:outline-none focus:ring-4 focus:ring-[#171819]/10 resize-none"
+                  className="min-h-[140px] w-full rounded-lg border-2 border-[#e5e5e5] bg-[var(--bg-surface)] px-5 py-4 text-base text-[var(--text-primary)] placeholder:text-[var(--text-primary)]/30 transition focus:border-[#171819] focus:outline-none focus:ring-4 focus:ring-[#171819]/10 resize-none"
                 />
               </div>
             </div>
@@ -515,16 +512,16 @@ export default function ForgePage() {
             <div className="space-y-3">
               <div className="inline-flex items-center gap-2">
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#171819] text-xs font-bold text-white">2</span>
-                <span className="text-xs font-medium uppercase tracking-[0.2em] text-[#171819]/50">Step Two</span>
+                <span className="text-xs font-medium uppercase tracking-[0.2em] text-[var(--text-primary)]/50">Step Two</span>
               </div>
-              <h2 className="text-5xl font-bold tracking-tight text-[#171819]">Tools &amp; Capabilities</h2>
-              <p className="max-w-xl text-lg text-[#171819]/60 leading-relaxed">
+              <h2 className="text-5xl font-bold tracking-tight text-[var(--text-primary)]">Tools &amp; Capabilities</h2>
+              <p className="max-w-xl text-lg text-[var(--text-primary)]/60 leading-relaxed">
                 Select the permissioned modules your agent can interact with.
               </p>
             </div>
 
             {loadingTools ? (
-              <div className="rounded-xl border-2 border-[#e5e5e5] bg-white px-6 py-8 text-base text-[#171819]/50">Loading tool capabilities...</div>
+              <div className="rounded-xl border-2 border-[#e5e5e5] bg-[var(--bg-surface)] px-6 py-8 text-base text-[var(--text-primary)]/50">Loading tool capabilities...</div>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2">
                 {featuredTools.map((tool, index) => {
@@ -535,18 +532,18 @@ export default function ForgePage() {
                       onClick={() => toggleTool(tool.id)}
                       className={`${buttonFeedbackClass} group relative flex items-start gap-4 rounded-xl border-2 p-5 text-left transition-all duration-200 ${
                         selected
-                          ? "border-[#171819] bg-white shadow-lg scale-[1.02]"
-                          : "border-[#e5e5e5] bg-white hover:border-[#171819]/30 hover:shadow-md"
+                          ? "border-[#171819] bg-[var(--bg-surface)] shadow-lg scale-[1.02]"
+                          : "border-[#e5e5e5] bg-[var(--bg-surface)] hover:border-[#171819]/30 hover:shadow-md"
                       }`}
                     >
                       <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg transition-colors ${
                         selected ? "bg-[#171819]" : "bg-[#f5f5f5] group-hover:bg-[#e5e5e5]"
                       }`}>
-                        {index % 2 === 0 ? <Hammer className={`h-5 w-5 ${selected ? "text-white" : "text-[#171819]/60"}`} /> : <Banknote className={`h-5 w-5 ${selected ? "text-white" : "text-[#171819]/60"}`} />}
+                        {index % 2 === 0 ? <Hammer className={`h-5 w-5 ${selected ? "text-white" : "text-[var(--text-primary)]/60"}`} /> : <Banknote className={`h-5 w-5 ${selected ? "text-white" : "text-[var(--text-primary)]/60"}`} />}
                       </span>
                       <div className="flex-1 min-w-0">
-                        <p className="text-base font-semibold text-[#171819]">{tool.name}</p>
-                        <p className="mt-1 text-sm text-[#171819]/50">{tool.description}</p>
+                        <p className="text-base font-semibold text-[var(--text-primary)]">{tool.name}</p>
+                        <p className="mt-1 text-sm text-[var(--text-primary)]/50">{tool.description}</p>
                       </div>
                       {selected && (
                         <span className="absolute right-4 top-4 flex h-6 w-6 items-center justify-center rounded-full bg-[#171819] text-white">
@@ -570,10 +567,10 @@ export default function ForgePage() {
             <div className="space-y-3">
               <div className="inline-flex items-center gap-2">
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#171819] text-xs font-bold text-white">3</span>
-                <span className="text-xs font-medium uppercase tracking-[0.2em] text-[#171819]/50">Step Three</span>
+                <span className="text-xs font-medium uppercase tracking-[0.2em] text-[var(--text-primary)]/50">Step Three</span>
               </div>
-              <h2 className="text-5xl font-bold tracking-tight text-[#171819]">Knowledge &amp; Memory</h2>
-              <p className="max-w-xl text-lg text-[#171819]/60 leading-relaxed">
+              <h2 className="text-5xl font-bold tracking-tight text-[var(--text-primary)]">Knowledge &amp; Memory</h2>
+              <p className="max-w-xl text-lg text-[var(--text-primary)]/60 leading-relaxed">
                 Equip your agent with context and data sources it can reference.
               </p>
             </div>
@@ -593,18 +590,18 @@ export default function ForgePage() {
                     onClick={() => toggleKnowledgeSource(source.id)}
                     className={`${buttonFeedbackClass} group relative flex items-start gap-4 rounded-xl border-2 p-5 text-left transition-all duration-200 ${
                       selected
-                        ? "border-[#171819] bg-white shadow-lg scale-[1.02]"
-                        : "border-[#e5e5e5] bg-white hover:border-[#171819]/30 hover:shadow-md"
+                        ? "border-[#171819] bg-[var(--bg-surface)] shadow-lg scale-[1.02]"
+                        : "border-[#e5e5e5] bg-[var(--bg-surface)] hover:border-[#171819]/30 hover:shadow-md"
                     }`}
                   >
                     <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg transition-colors ${
                       selected ? "bg-[#171819]" : "bg-[#f5f5f5] group-hover:bg-[#e5e5e5]"
                     }`}>
-                      <Icon className={`h-5 w-5 ${selected ? "text-white" : "text-[#171819]/60"}`} />
+                      <Icon className={`h-5 w-5 ${selected ? "text-white" : "text-[var(--text-primary)]/60"}`} />
                     </span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-base font-semibold text-[#171819]">{source.name}</p>
-                      <p className="mt-1 text-sm text-[#171819]/50">{source.description}</p>
+                      <p className="text-base font-semibold text-[var(--text-primary)]">{source.name}</p>
+                      <p className="mt-1 text-sm text-[var(--text-primary)]/50">{source.description}</p>
                     </div>
                     {selected && (
                       <span className="absolute right-4 top-4 flex h-6 w-6 items-center justify-center rounded-full bg-[#171819] text-white">
@@ -619,12 +616,12 @@ export default function ForgePage() {
             </div>
 
             <div className="group space-y-2">
-              <label className="block text-xs font-semibold uppercase tracking-[0.15em] text-[#171819]/50">Custom System Instructions</label>
+              <label className="block text-xs font-semibold uppercase tracking-[0.15em] text-[var(--text-primary)]/50">Custom System Instructions</label>
               <textarea
                 value={draft.customContext || ""}
                 onChange={(event) => updateDraft({ customContext: event.target.value })}
                 placeholder="Add any custom instructions or context your agent should know..."
-                className="min-h-[120px] w-full rounded-lg border-2 border-[#e5e5e5] bg-white px-5 py-4 text-base text-[#171819] placeholder:text-[#171819]/30 transition focus:border-[#171819] focus:outline-none focus:ring-4 focus:ring-[#171819]/10 resize-none"
+                className="min-h-[120px] w-full rounded-lg border-2 border-[#e5e5e5] bg-[var(--bg-surface)] px-5 py-4 text-base text-[var(--text-primary)] placeholder:text-[var(--text-primary)]/30 transition focus:border-[#171819] focus:outline-none focus:ring-4 focus:ring-[#171819]/10 resize-none"
               />
             </div>
           </section>
@@ -633,21 +630,21 @@ export default function ForgePage() {
             <div className="space-y-3">
               <div className="inline-flex items-center gap-2">
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#171819] text-xs font-bold text-white">4</span>
-                <span className="text-xs font-medium uppercase tracking-[0.2em] text-[#171819]/50">Step Four</span>
+                <span className="text-xs font-medium uppercase tracking-[0.2em] text-[var(--text-primary)]/50">Step Four</span>
               </div>
-              <h2 className="text-5xl font-bold tracking-tight text-[#171819]">Risk &amp; Compliance</h2>
-              <p className="max-w-xl text-lg text-[#171819]/60 leading-relaxed">
+              <h2 className="text-5xl font-bold tracking-tight text-[var(--text-primary)]">Risk &amp; Compliance</h2>
+              <p className="max-w-xl text-lg text-[var(--text-primary)]/60 leading-relaxed">
                 Define guardrails and risk thresholds for autonomous operation.
               </p>
             </div>
 
             <div className="grid gap-6 sm:grid-cols-2">
               <div className="space-y-2">
-                <label className="block text-xs font-semibold uppercase tracking-[0.15em] text-[#171819]/50">Risk Tolerance</label>
+                <label className="block text-xs font-semibold uppercase tracking-[0.15em] text-[var(--text-primary)]/50">Risk Tolerance</label>
                 <select
                   value={draft.riskLevel || "medium"}
                   onChange={(event) => updateDraft({ riskLevel: event.target.value as "low" | "medium" | "high" })}
-                  className="w-full rounded-lg border-2 border-[#e5e5e5] bg-white px-5 py-4 text-lg font-semibold text-[#171819] transition focus:border-[#171819] focus:outline-none focus:ring-4 focus:ring-[#171819]/10"
+                  className="w-full rounded-lg border-2 border-[#e5e5e5] bg-[var(--bg-surface)] px-5 py-4 text-lg font-semibold text-[var(--text-primary)] transition focus:border-[#171819] focus:outline-none focus:ring-4 focus:ring-[#171819]/10"
                 >
                   <option value="low">Low - Conservative strategies only</option>
                   <option value="medium">Medium - Balanced risk/reward</option>
@@ -656,28 +653,28 @@ export default function ForgePage() {
               </div>
 
               <div className="space-y-2">
-                <label className="block text-xs font-semibold uppercase tracking-[0.15em] text-[#171819]/50">Max Slippage Tolerance</label>
+                <label className="block text-xs font-semibold uppercase tracking-[0.15em] text-[var(--text-primary)]/50">Max Slippage Tolerance</label>
                 <input
                   type="number"
                   step="0.1"
                   value={draft.maxSlippage || 1.0}
                   onChange={(event) => updateDraft({ maxSlippage: Number(event.target.value) })}
-                  className="w-full rounded-lg border-2 border-[#e5e5e5] bg-white px-5 py-4 text-lg font-semibold text-[#171819] transition focus:border-[#171819] focus:outline-none focus:ring-4 focus:ring-[#171819]/10"
+                  className="w-full rounded-lg border-2 border-[#e5e5e5] bg-[var(--bg-surface)] px-5 py-4 text-lg font-semibold text-[var(--text-primary)] transition focus:border-[#171819] focus:outline-none focus:ring-4 focus:ring-[#171819]/10"
                 />
               </div>
             </div>
 
-            <div className="rounded-xl border-2 border-[#e5e5e5] bg-white p-6">
+            <div className="rounded-xl border-2 border-[#e5e5e5] bg-[var(--bg-surface)] p-6">
               <div className="mb-4 flex items-center gap-2">
-                <Gauge className="h-5 w-5 text-[#171819]/60" />
-                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#171819]/50">Risk Guardrails</p>
+                <Gauge className="h-5 w-5 text-[var(--text-primary)]/60" />
+                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[var(--text-primary)]/50">Risk Guardrails</p>
               </div>
               <div className="flex flex-wrap items-center gap-3">
                 {["Auto-pause on anomaly", "Require approval > $100", "Daily loss limit 5%", "Weekly review"].map((guardrail) => (
                   <button
                     key={guardrail}
                     onClick={() => toggleGuardrail(guardrail)}
-                    className={`${buttonFeedbackClass} inline-flex items-center gap-1.5 rounded-full border-2 border-[#e5e5e5] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-[#171819]/70 transition-all hover:border-[#171819] hover:text-[#171819]`}
+                    className={`${buttonFeedbackClass} inline-flex items-center gap-1.5 rounded-full border-2 border-[#e5e5e5] bg-[var(--bg-surface)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-[var(--text-primary)]/70 transition-all hover:border-[#171819] hover:text-[var(--text-primary)]`}
                   >
                     <span className="h-1.5 w-1.5 rounded-full bg-[#14F195]" />
                     {guardrail}
@@ -691,46 +688,46 @@ export default function ForgePage() {
             <div className="space-y-3">
               <div className="inline-flex items-center gap-2">
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#171819] text-xs font-bold text-white">5</span>
-                <span className="text-xs font-medium uppercase tracking-[0.2em] text-[#171819]/50">Step Five</span>
+                <span className="text-xs font-medium uppercase tracking-[0.2em] text-[var(--text-primary)]/50">Step Five</span>
               </div>
-              <h2 className="text-5xl font-bold tracking-tight text-[#171819]">Spending &amp; Limits</h2>
-              <p className="max-w-xl text-lg text-[#171819]/60 leading-relaxed">
+              <h2 className="text-5xl font-bold tracking-tight text-[var(--text-primary)]">Spending &amp; Limits</h2>
+              <p className="max-w-xl text-lg text-[var(--text-primary)]/60 leading-relaxed">
                 Establish the safety rails for the agent&apos;s financial autonomy.
               </p>
             </div>
 
             <div className="grid gap-6 sm:grid-cols-2">
               <div className="space-y-2">
-                <label className="block text-xs font-semibold uppercase tracking-[0.15em] text-[#171819]/50">Max Transaction [SOL]</label>
+                <label className="block text-xs font-semibold uppercase tracking-[0.15em] text-[var(--text-primary)]/50">Max Transaction [SOL]</label>
                 <input
                   type="number"
                   value={draft.maxSolPerTx}
                   onChange={(event) => updateDraft({ maxSolPerTx: Number(event.target.value) })}
-                  className="w-full rounded-lg border-2 border-[#e5e5e5] bg-white px-5 py-4 text-lg font-semibold text-[#171819] transition focus:border-[#171819] focus:outline-none focus:ring-4 focus:ring-[#171819]/10"
+                  className="w-full rounded-lg border-2 border-[#e5e5e5] bg-[var(--bg-surface)] px-5 py-4 text-lg font-semibold text-[var(--text-primary)] transition focus:border-[#171819] focus:outline-none focus:ring-4 focus:ring-[#171819]/10"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="block text-xs font-semibold uppercase tracking-[0.15em] text-[#171819]/50">Weekly Budget [SOL]</label>
+                <label className="block text-xs font-semibold uppercase tracking-[0.15em] text-[var(--text-primary)]/50">Weekly Budget [SOL]</label>
                 <input
                   type="number"
                   value={draft.weeklyBudgetUsdc}
                   onChange={(event) => updateDraft({ weeklyBudgetUsdc: Number(event.target.value) })}
-                  className="w-full rounded-lg border-2 border-[#e5e5e5] bg-white px-5 py-4 text-lg font-semibold text-[#171819] transition focus:border-[#171819] focus:outline-none focus:ring-4 focus:ring-[#171819]/10"
+                  className="w-full rounded-lg border-2 border-[#e5e5e5] bg-[var(--bg-surface)] px-5 py-4 text-lg font-semibold text-[var(--text-primary)] transition focus:border-[#171819] focus:outline-none focus:ring-4 focus:ring-[#171819]/10"
                 />
               </div>
             </div>
 
-            <div className="rounded-xl border-2 border-[#e5e5e5] bg-white p-6">
+            <div className="rounded-xl border-2 border-[#e5e5e5] bg-[var(--bg-surface)] p-6">
               <div className="mb-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#171819]/50">Allowed Actions White-list</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[var(--text-primary)]/50">Allowed Actions White-list</p>
               </div>
               <div className="flex flex-wrap items-center gap-3">
                 {draft.allowedActions.map((action) => (
                   <button
                     key={action}
                     onClick={() => toggleAction(action)}
-                    className={`${buttonFeedbackClass} inline-flex items-center gap-1.5 rounded-full border-2 border-[#e5e5e5] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-[#171819]/70 transition-all hover:border-[#171819] hover:text-[#171819]`}
+                    className={`${buttonFeedbackClass} inline-flex items-center gap-1.5 rounded-full border-2 border-[#e5e5e5] bg-[var(--bg-surface)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-[var(--text-primary)]/70 transition-all hover:border-[#171819] hover:text-[var(--text-primary)]`}
                   >
                     <span className="h-1.5 w-1.5 rounded-full bg-[#14F195]" />
                     {action.replace(/\s+/g, "_").toUpperCase()}
@@ -742,7 +739,7 @@ export default function ForgePage() {
                     onChange={(event) => setCustomAction(event.target.value)}
                     onKeyDown={(e) => { if (e.key === "Enter") addCustomAction(); }}
                     placeholder="custom action"
-                    className="h-10 w-40 rounded-full border-2 border-[#e5e5e5] bg-white px-4 text-xs font-medium text-[#171819] placeholder:text-[#171819]/30 transition focus:border-[#171819] focus:outline-none focus:ring-4 focus:ring-[#171819]/10"
+                    className="h-10 w-40 rounded-full border-2 border-[#e5e5e5] bg-[var(--bg-surface)] px-4 text-xs font-medium text-[var(--text-primary)] placeholder:text-[var(--text-primary)]/30 transition focus:border-[#171819] focus:outline-none focus:ring-4 focus:ring-[#171819]/10"
                   />
                   <button
                     onClick={addCustomAction}
@@ -759,29 +756,29 @@ export default function ForgePage() {
             <div className="space-y-3">
               <div className="inline-flex items-center gap-2">
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#171819] text-xs font-bold text-white">6</span>
-                <span className="text-xs font-medium uppercase tracking-[0.2em] text-[#171819]/50">Final Step</span>
+                <span className="text-xs font-medium uppercase tracking-[0.2em] text-[var(--text-primary)]/50">Final Step</span>
               </div>
-              <h2 className="text-5xl font-bold tracking-tight text-[#171819]">Final Verification</h2>
-              <p className="max-w-xl text-lg text-[#171819]/60 leading-relaxed">
+              <h2 className="text-5xl font-bold tracking-tight text-[var(--text-primary)]">Final Verification</h2>
+              <p className="max-w-xl text-lg text-[var(--text-primary)]/60 leading-relaxed">
                 Review the configuration before deploying to the Solana mainnet.
               </p>
             </div>
 
-            <div className="overflow-hidden rounded-2xl border border-black/10 bg-white shadow-[0_10px_28px_rgba(0,0,0,0.08)]">
+            <div className="overflow-hidden rounded-2xl border border-black/10 bg-[var(--bg-surface)] shadow-[0_10px_28px_rgba(0,0,0,0.08)]">
               <div className="flex flex-col gap-6 p-6 sm:flex-row sm:items-center">
                 <div className="flex h-28 w-28 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#171819] to-[#333333]">
                   <Bot className="h-12 w-12 text-white" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h3 className="text-2xl font-bold tracking-tight text-[#171819]">{draft.name || "SOL-ARBITER-01"}</h3>
-                  <p className="mt-1 text-base text-[#171819]/50">
+                  <h3 className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">{draft.name || "SOL-ARBITER-01"}</h3>
+                  <p className="mt-1 text-base text-[var(--text-primary)]/50">
                     {draft.tagline || "Give Your Ideas a Soul"}
                   </p>
                   <div className="mt-3 flex flex-wrap items-center gap-3">
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f5f5f5] px-3 py-1.5 text-xs font-semibold text-[#171819]">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f5f5f5] px-3 py-1.5 text-xs font-semibold text-[var(--text-primary)]">
                       <ShieldCheck className="h-3.5 w-3.5" /> LOGIC: ENABLED
                     </span>
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f5f5f5] px-3 py-1.5 text-xs font-semibold text-[#171819]">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f5f5f5] px-3 py-1.5 text-xs font-semibold text-[var(--text-primary)]">
                       <Wallet className="h-3.5 w-3.5" /> SAFETY: HIGH
                     </span>
                     {mintSignature && (
@@ -795,25 +792,25 @@ export default function ForgePage() {
 
               <div className="grid gap-4 border-t border-black/8 bg-[#fcfcfc] p-6 sm:grid-cols-2">
                 <div className="space-y-1">
-                  <p className="text-xs font-medium uppercase tracking-[0.1em] text-[#171819]/40">Tools</p>
-                  <p className="text-sm font-medium text-[#171819]">{selectedToolNames.join(", ") || "None"}</p>
+                  <p className="text-xs font-medium uppercase tracking-[0.1em] text-[var(--text-primary)]/40">Tools</p>
+                  <p className="text-sm font-medium text-[var(--text-primary)]">{selectedToolNames.join(", ") || "None"}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs font-medium uppercase tracking-[0.1em] text-[#171819]/40">Risk Level</p>
-                  <p className="text-sm font-medium text-[#171819]">{draft.riskLevel}</p>
+                  <p className="text-xs font-medium uppercase tracking-[0.1em] text-[var(--text-primary)]/40">Risk Level</p>
+                  <p className="text-sm font-medium text-[var(--text-primary)]">{draft.riskLevel}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs font-medium uppercase tracking-[0.1em] text-[#171819]/40">Max Transaction</p>
-                  <p className="text-sm font-medium text-[#171819]">{draft.maxSolPerTx} SOL</p>
+                  <p className="text-xs font-medium uppercase tracking-[0.1em] text-[var(--text-primary)]/40">Max Transaction</p>
+                  <p className="text-sm font-medium text-[var(--text-primary)]">{draft.maxSolPerTx} SOL</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs font-medium uppercase tracking-[0.1em] text-[#171819]/40">Daily Budget</p>
-                  <p className="text-sm font-medium text-[#171819]">{draft.dailyBudgetUsdc}</p>
+                  <p className="text-xs font-medium uppercase tracking-[0.1em] text-[var(--text-primary)]/40">Daily Budget</p>
+                  <p className="text-sm font-medium text-[var(--text-primary)]">{draft.dailyBudgetUsdc}</p>
                 </div>
                 {mintAddress && (
                   <div className="space-y-1 sm:col-span-2">
-                    <p className="text-xs font-medium uppercase tracking-[0.1em] text-[#171819]/40">Mint Address</p>
-                    <p className="break-all text-xs font-mono text-[#171819]/70">{mintAddress}</p>
+                    <p className="text-xs font-medium uppercase tracking-[0.1em] text-[var(--text-primary)]/40">Mint Address</p>
+                    <p className="break-all text-xs font-mono text-[var(--text-primary)]/70">{mintAddress}</p>
                   </div>
                 )}
               </div>
@@ -821,7 +818,7 @@ export default function ForgePage() {
 
             <div className={`rounded-xl border p-4 ${mintPreflight.ready ? "border-emerald-200 bg-emerald-50/60" : "border-amber-200 bg-amber-50/70"}`}>
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[#171819]/60">Mint Preflight</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[var(--text-primary)]/60">Mint Preflight</p>
                 <button
                   onClick={async () => {
                     setMintPreflight((prev) => ({ ...prev, loading: true }));
@@ -851,7 +848,7 @@ export default function ForgePage() {
                       });
                     }
                   }}
-                  className="rounded-md border border-black/10 bg-white px-2.5 py-1 text-[11px] font-medium text-[#171819] hover:bg-black/5"
+                  className="rounded-md border border-black/10 bg-[var(--bg-surface)] px-2.5 py-1 text-[11px] font-medium text-[var(--text-primary)] hover:bg-black/5"
                 >
                   {mintPreflight.loading ? "Checking..." : "Recheck"}
                 </button>
@@ -859,7 +856,7 @@ export default function ForgePage() {
 
               <div className="mt-3 space-y-1.5">
                 {mintPreflight.checks.map((check) => (
-                  <div key={check.name} className="flex items-start gap-2 text-xs text-[#171819]/75">
+                  <div key={check.name} className="flex items-start gap-2 text-xs text-[var(--text-primary)]/75">
                     <span className={`mt-0.5 h-2 w-2 rounded-full ${check.ok ? "bg-emerald-600" : "bg-amber-600"}`} />
                     <span>
                       {check.name}: {check.detail}
@@ -867,7 +864,7 @@ export default function ForgePage() {
                   </div>
                 ))}
                 {mintPreflight.checks.length === 0 && (
-                  <p className="text-xs text-[#171819]/60">No preflight checks returned yet.</p>
+                  <p className="text-xs text-[var(--text-primary)]/60">No preflight checks returned yet.</p>
                 )}
               </div>
             </div>
@@ -907,7 +904,7 @@ export default function ForgePage() {
               <Button
                 onClick={() => void handleDeploy()}
                 disabled={isDeploying}
-                className={`${buttonFeedbackClass} h-11 gap-2 rounded-lg border border-black/15 bg-white px-4 text-sm font-semibold text-[#171819] transition hover:border-[#171819] hover:shadow-md disabled:opacity-70`}
+                className={`${buttonFeedbackClass} h-11 gap-2 rounded-lg border border-black/15 bg-[var(--bg-surface)] px-4 text-sm font-semibold text-[var(--text-primary)] transition hover:border-[#171819] hover:shadow-md disabled:opacity-70`}
               >
                 {isDeploying ? (
                   <>
@@ -938,6 +935,5 @@ export default function ForgePage() {
         </div>
       </footer>
     </div>
-    </>
   );
 }

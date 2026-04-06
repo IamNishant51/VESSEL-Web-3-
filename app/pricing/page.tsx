@@ -6,6 +6,8 @@ import { Check } from "lucide-react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { toast } from "sonner";
 
+import { LandingNavigation } from "@/components/layout/landing-navigation";
+
 const PLANS = [
   {
     name: "Free",
@@ -93,27 +95,29 @@ export default function PricingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-foreground mb-4">
-            Simple, Transparent Pricing
-          </h1>
-          <p className="text-xl text-muted-foreground">
-            Choose the plan that works best for your needs
-          </p>
-        </div>
+    <>
+      <LandingNavigation forceLight />
+      <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold text-foreground mb-4">
+              Simple, Transparent Pricing
+            </h1>
+            <p className="text-xl text-muted-foreground">
+              Choose the plan that works best for your needs
+            </p>
+          </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-6">
-          {PLANS.map((plan, idx) => (
-            <div
-              key={idx}
-              className={`rounded-2xl border transition-all ${
-                plan.highlighted
-                  ? "border-primary bg-primary/5 scale-105 md:scale-100 md:shadow-lg"
-                  : "border-border bg-card"
-              } p-8`}
-            >
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-6">
+            {PLANS.map((plan, idx) => (
+              <div
+                key={idx}
+                className={`rounded-2xl border transition-all ${
+                  plan.highlighted
+                    ? "border-primary bg-primary/5 scale-105 md:scale-100 md:shadow-lg"
+                    : "border-border bg-card"
+                } p-8`}
+              >
               {plan.highlighted && (
                 <div className="mb-4 inline-block bg-primary px-3 py-1 rounded-full text-sm font-semibold text-primary-foreground">
                   Most Popular
@@ -163,9 +167,10 @@ export default function PricingPage() {
                 ))}
               </div>
             </div>
-          ))}
+              ))}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
