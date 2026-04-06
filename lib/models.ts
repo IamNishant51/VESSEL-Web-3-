@@ -321,3 +321,67 @@ LikeSchema.index({ agentId: 1, createdAt: -1 });
 export const Like =
   (mongoose.models.Like as mongoose.Model<ILikeDoc>) ||
   mongoose.model<ILikeDoc>("Like", LikeSchema);
+
+// ===== Subscription Model =====
+export type SubscriptionTier = "free" | "pro" | "enterprise";
+
+export interface ISubscriptionDoc {
+  _id: Types.ObjectId;
+  id: string;
+  walletAddress: string;
+  tier: SubscriptionTier;
+  stripeCustomerId: string;
+  stripeSubscriptionId?: string;
+  stripePriceId?: string;
+  status: "active" | "inactive" | "canceled" | "past_due";
+  currentPeriodStart: Date;
+  currentPeriodEnd: Date;
+  cancelAtPeriodEnd: boolean;
+  canceledAt?: Date;
+  features: {
+    maxAgents: number;
+    maxRentals: number;
+    maxDailyApiCalls: number;
+    prioritySupport: boolean;
+    advancedAnalytics: boolean;
+  };
+  billingEmail: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const SubscriptionSchema = new Schema<ISubscriptionDoc>(
+  {
+    id: { type: String, required: true, unique: true, index: true },
+    walletAddress: { type: String, required: true, index: true },
+    tier: { type: String, enum: ["free", "pro", "enterprise"], default: "free" },
+    stripeCustomerId: { type: String, required: true, unique: true },
+    stripeSubscriptionId: { type: String, sparse: true, index: true },
+    stripePriceId: { type: String, sparse: true },
+    status: { type: String, enum: ["active", "inactive", "canceled", "past_due"], default: "inactive" },
+    currentPeriodStart: { type: Date, required: true },
+    currentPeriodEnd: { type: Date, required: true },
+    cancelAtPeriodEnd: { type: Boolean, default: false },
+    canceledAt: { type: Date, sparse: true },
+    features: {
+      maxAgents: { type: Number, default: 3 },
+      maxRentals: { type: Number, default: 0 },
+      maxDailyApiCalls: { type: Number, default: 100 },
+      prioritySupport: { type: Boolean, default: false },
+      advancedAnalytics: { type: Boolean, default: false },
+    },
+    billingEmail: { type: String, required: true },
+  },
+  {
+    timestamps: true,
+    collection: "subscriptions",
+  }
+);
+
+SubscriptionSchema.index({ walletAddress: 1 });
+SubscriptionSchema.index({ stripeCustomerId: 1 });
+SubscriptionSchema.index({ tier: 1, status: 1 });
+
+export const Subscription =
+  (mongoose.models.Subscription as mongoose.Model<ISubscriptionDoc>) ||
+  mongoose.model<ISubscriptionDoc>("Subscription", SubscriptionSchema);

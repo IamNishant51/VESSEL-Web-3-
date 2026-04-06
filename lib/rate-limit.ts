@@ -1,85 +1,169 @@
-type RateLimitOptions = {
-  windowMs: number;
-  max: number;
-};
+import { SubscriptionModel, SUBSCRIPTION_PLANS, type SubscriptionTier } from "@/lib/models/subscription";
+import { connectToDatabase } from "@/lib/mongodb";
 
-type Bucket = {
-  count: number;
-  resetAt: number;
-};
-
-const buckets = new Map<string, Bucket>();
-const MAX_BUCKETS = 50000;
-const CLEANUP_THRESHOLD = 2;
-
-function nowMs() {
-  return Date.now();
+interface RateLimitUsage {
+  conversationsToday: number;
+  apiCallsThisMonth: number;
+  lastResetDate: Date;
 }
 
-export type RateLimitResult = {
-  allowed: boolean;
-  remaining: number;
-  retryAfterSeconds: number;
-};
+// Store usage in memory (in production, use Redis)
+const usageMap = new Map<string, RateLimitUsage>();
 
-function cleanupExpiredBuckets(now: number): void {
-  if (buckets.size < MAX_BUCKETS) return;
-
-  const cutoff = now - CLEANUP_THRESHOLD * 60000;
-  let deleted = 0;
-
-  for (const [key, bucket] of buckets.entries()) {
-    if (bucket.resetAt < cutoff) {
-      buckets.delete(key);
-      deleted++;
-      if (deleted > 10000) break;
-    }
+/**
+ * Get user's subscription tier
+ */
+export async function getUserSubscriptionTier(userId: string): Promise<SubscriptionTier> {
+  try {
+    await connectToDatabase();
+    const subscription = await SubscriptionModel.findOne({ userId });
+    return subscription?.tier || "free";
+  } catch (error) {
+    console.warn("[RateLimit] Failed to get subscription tier:", error);
+    return "free";
   }
 }
 
-export function checkRateLimit(key: string, options: RateLimitOptions): RateLimitResult {
-  const now = nowMs();
-  const existing = buckets.get(key);
+/**
+ * Check if user can perform an action based on tier limits
+ */
+export async function checkRateLimit(
+  userId: string,
+  action: "conversation" | "api_call" | "agent_create"
+): Promise<{ allowed: boolean; remaining?: number; limit?: number }> {
+  const tier = await getUserSubscriptionTier(userId);
+  const plan = SUBSCRIPTION_PLANS[tier];
 
-  if (!existing || now >= existing.resetAt) {
-    buckets.set(key, {
-      count: 1,
-      resetAt: now + options.windowMs,
-    });
+  // Get current usage
+  let usage = usageMap.get(userId);
+  if (!usage) {
+    usage = {
+      conversationsToday: 0,
+      apiCallsThisMonth: 0,
+      lastResetDate: new Date(),
+    };
+    usageMap.set(userId, usage);
+  }
 
-    cleanupExpiredBuckets(now);
+  // Reset usage if needed
+  const now = new Date();
+  const daysSinceReset = Math.floor(
+    (now.getTime() - usage.lastResetDate.getTime()) / (1000 * 60 * 60 * 24)
+  );
 
+  if (daysSinceReset >= 1) {
+    usage.conversationsToday = 0;
+  }
+
+  if (daysSinceReset >= 30) {
+    usage.apiCallsThisMonth = 0;
+  }
+
+  // Check limits
+  if (action === "conversation") {
+    if (usage.conversationsToday >= plan.limits.conversationsPerDay) {
+      return {
+        allowed: false,
+        remaining: 0,
+        limit: plan.limits.conversationsPerDay,
+      };
+    }
     return {
       allowed: true,
-      remaining: Math.max(0, options.max - 1),
-      retryAfterSeconds: Math.ceil(options.windowMs / 1000),
+      remaining: plan.limits.conversationsPerDay - usage.conversationsToday - 1,
+      limit: plan.limits.conversationsPerDay,
     };
   }
 
-  if (existing.count >= options.max) {
+  if (action === "api_call") {
+    if (usage.apiCallsThisMonth >= plan.limits.apiCallsPerMonth) {
+      return {
+        allowed: false,
+        remaining: 0,
+        limit: plan.limits.apiCallsPerMonth,
+      };
+    }
     return {
-      allowed: false,
-      remaining: 0,
-      retryAfterSeconds: Math.max(1, Math.ceil((existing.resetAt - now) / 1000)),
+      allowed: true,
+      remaining: plan.limits.apiCallsPerMonth - usage.apiCallsThisMonth - 1,
+      limit: plan.limits.apiCallsPerMonth,
     };
   }
 
-  existing.count += 1;
-  buckets.set(key, existing);
+  if (action === "agent_create") {
+    return { allowed: true };
+  }
+
+  return { allowed: true };
+}
+
+/**
+ * Increment usage counter after action
+ */
+export function recordUsage(userId: string, action: "conversation" | "api_call") {
+  const usage = usageMap.get(userId);
+  if (!usage) return;
+
+  if (action === "conversation") {
+    usage.conversationsToday++;
+  } else if (action === "api_call") {
+    usage.apiCallsThisMonth++;
+  }
+}
+
+/**
+ * Check subscription status and access to features
+ */
+export async function checkFeatureAccess(
+  userId: string,
+  feature: keyof typeof SUBSCRIPTION_PLANS.free.limits
+): Promise<boolean> {
+  const tier = await getUserSubscriptionTier(userId);
+  const plan = SUBSCRIPTION_PLANS[tier];
+
+  const featureValue = (plan.limits as any)[feature];
+  if (typeof featureValue === "boolean") {
+    return featureValue;
+  }
+
+  return featureValue > 0;
+}
+
+/**
+ * Middleware to check rate limits for API routes
+ */
+export async function withRateLimitCheck(
+  userId: string,
+  action: "conversation" | "api_call" = "api_call"
+) {
+  const { allowed, remaining, limit } = await checkRateLimit(userId, action);
+
+  if (!allowed) {
+    return {
+      error: `Rate limit exceeded. Limit: ${limit}`,
+      statusCode: 429,
+    };
+  }
+
+  recordUsage(userId, action);
 
   return {
-    allowed: true,
-    remaining: Math.max(0, options.max - existing.count),
-    retryAfterSeconds: Math.max(1, Math.ceil((existing.resetAt - now) / 1000)),
+    success: true,
+    remaining,
+    limit,
   };
 }
 
-export function getClientIp(request: Request): string {
-  const forwardedFor = request.headers.get("x-forwarded-for");
-  if (forwardedFor) {
-    return forwardedFor.split(",")[0]?.trim() || "unknown";
-  }
+/**
+ * Get user's tier info
+ */
+export async function getUserTierInfo(userId: string) {
+  const tier = await getUserSubscriptionTier(userId);
+  const plan = SUBSCRIPTION_PLANS[tier];
 
-  const realIp = request.headers.get("x-real-ip");
-  return realIp?.trim() || "unknown";
+  return {
+    tier,
+    plan,
+    limits: plan.limits,
+  };
 }

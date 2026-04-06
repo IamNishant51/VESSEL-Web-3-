@@ -44,6 +44,7 @@ const nextConfig: NextConfig = {
         net: false,
         tls: false,
         crypto: false,
+        dns: false,
       };
     }
 
@@ -52,6 +53,8 @@ const nextConfig: NextConfig = {
       "bigint-buffer",
       "bufferutil",
       "utf-8-validate",
+      "dns",
+      "mongodb",
     ];
 
     config.module = {
