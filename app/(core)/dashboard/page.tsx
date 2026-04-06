@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import { useWallet } from "@solana/wallet-adapter-react";
 
-import { LandingNavigation } from "@/components/layout/landing-navigation";
+import { AppHeader } from "@/components/layout/app-header";
 import { WalletConnectButton } from "@/components/wallet/connect-button";
 import { useAgent } from "@/hooks/useAgent";
 import { useStoreHydrated } from "@/hooks/useStoreHydrated";
@@ -152,7 +152,7 @@ export default function DashboardPage() {
 
   return (
     <>
-      <LandingNavigation forceLight />
+      <AppHeader />
       <div className="min-h-screen bg-white">
       <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8">
         {/* Header */}

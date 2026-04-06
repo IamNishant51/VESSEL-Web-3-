@@ -8,7 +8,6 @@ import { ArrowRight, Loader2, Menu, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useWallet } from "@solana/wallet-adapter-react";
 
-import { LandingNavigation } from "@/components/layout/landing-navigation";
 import { WalletConnectButton } from "@/components/wallet/connect-button";
 import { SmoothScrollProvider } from "@/components/layout/smooth-scroll-provider";
 import { useAgent } from "@/hooks/useAgent";
@@ -364,8 +363,6 @@ export default function Home() {
         transition={{ duration: 0.55, ease: "easeOut" }}
         className="relative z-30"
       >
-        <LandingNavigation darkSectionsRefs={[forgeSectionRef, orchestraSectionRef]} />
-
         <motion.section
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}

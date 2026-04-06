@@ -2,9 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import {
   Banknote,
   Bot,
+  Brain,
   CircleDollarSign,
   Hammer,
   Loader2,
@@ -13,11 +15,14 @@ import {
   Sparkles,
   Wallet,
   Wrench,
+  Zap,
+  FileText,
+  Gauge,
 } from "lucide-react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { toast } from "sonner";
 
-import { LandingNavigation } from "@/components/layout/landing-navigation";
+import { AppHeader } from "@/components/layout/app-header";
 import { Button } from "@/components/ui/button";
 import { useAgent } from "@/hooks/useAgent";
 import { useStoreHydrated } from "@/hooks/useStoreHydrated";
@@ -27,9 +32,16 @@ import { initialForgeDraft } from "@/types/agent";
 import type { Agent } from "@/types/agent";
 import { useVesselStore } from "@/store/useVesselStore";
 
+const ForgeBeamDemo = dynamic(
+  () => import("@/components/landing/forge-beam-demo").then((m) => m.ForgeBeamDemo),
+  { ssr: false },
+);
+
 const moduleItems = [
   { id: "identity", label: "IDENTITY", icon: Bot },
   { id: "tools", label: "TOOLS", icon: Wrench },
+  { id: "knowledge", label: "KNOWLEDGE", icon: Brain },
+  { id: "risk", label: "RISK", icon: ShieldCheck },
   { id: "economy", label: "ECONOMY", icon: CircleDollarSign },
   { id: "deployment", label: "DEPLOYMENT", icon: Rocket },
 ];
@@ -113,7 +125,7 @@ export default function ForgePage() {
   }, []);
 
   useEffect(() => {
-    const sectionIds = ["section-identity", "section-tools", "section-economy", "section-deployment"];
+    const sectionIds = ["section-identity", "section-tools", "section-knowledge", "section-risk", "section-economy", "section-deployment"];
     const observers: IntersectionObserver[] = [];
 
     const observerOptions = {
@@ -189,6 +201,24 @@ export default function ForgePage() {
     }
 
     updateDraft({ allowedActions: [...draft.allowedActions, action] });
+  }
+
+  function toggleKnowledgeSource(id: string) {
+    const sources = draft.knowledgeSources || [];
+    if (sources.includes(id)) {
+      updateDraft({ knowledgeSources: sources.filter((s) => s !== id) });
+      return;
+    }
+    updateDraft({ knowledgeSources: [...sources, id] });
+  }
+
+  function toggleGuardrail(guardrail: string) {
+    const guardrails = draft.guardrails || [];
+    if (guardrails.includes(guardrail)) {
+      updateDraft({ guardrails: guardrails.filter((g) => g !== guardrail) });
+      return;
+    }
+    updateDraft({ guardrails: [...guardrails, guardrail] });
   }
 
   function addCustomAction() {
@@ -378,8 +408,8 @@ export default function ForgePage() {
 
   return (
     <>
-      <LandingNavigation forceLight />
-      <div className="-mx-4 -mt-8 min-h-screen bg-[#fafafa] px-4 pb-10 pt-6 text-[#161718] sm:-mx-6 sm:px-6 lg:pt-8">
+      <AppHeader />
+      <div className="-mx-4 min-h-screen bg-[#fafafa] px-4 pb-10 pt-6 text-[#161718] sm:-mx-6 sm:px-6 lg:pt-8">
       <div className="mx-auto grid w-full max-w-[1320px] grid-cols-1 gap-16 lg:grid-cols-[320px_minmax(0,1fr)]">
         <aside className="hidden self-start lg:block lg:sticky lg:top-24 lg:h-fit">
           <div className="mb-8 flex items-center gap-2">
@@ -532,11 +562,136 @@ export default function ForgePage() {
             )}
           </section>
 
-          <section id="section-economy" className="space-y-8">
+          <div className="my-8 flex justify-center">
+            <ForgeBeamDemo className="-mt-4" />
+          </div>
+
+          <section id="section-knowledge" className="space-y-8">
             <div className="space-y-3">
               <div className="inline-flex items-center gap-2">
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#171819] text-xs font-bold text-white">3</span>
                 <span className="text-xs font-medium uppercase tracking-[0.2em] text-[#171819]/50">Step Three</span>
+              </div>
+              <h2 className="text-5xl font-bold tracking-tight text-[#171819]">Knowledge &amp; Memory</h2>
+              <p className="max-w-xl text-lg text-[#171819]/60 leading-relaxed">
+                Equip your agent with context and data sources it can reference.
+              </p>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              {[
+                { id: "price-feeds", name: "Price Feeds", description: "Real-time oracle data from Pyth Network", icon: Zap },
+                { id: "on-chain-data", name: "On-Chain Data", description: "Token balances, positions, and transaction history", icon: FileText },
+                { id: "defi-protocols", name: "DeFi Protocols", description: "Jupiter, Orca, Raydium liquidity pools", icon: Banknote },
+                { id: "custom-context", name: "Custom Context", description: "Upload PDFs, docs, or custom instructions", icon: Brain },
+              ].map((source) => {
+                const selected = draft.knowledgeSources?.includes(source.id);
+                const Icon = source.icon;
+                return (
+                  <button
+                    key={source.id}
+                    onClick={() => toggleKnowledgeSource(source.id)}
+                    className={`${buttonFeedbackClass} group relative flex items-start gap-4 rounded-xl border-2 p-5 text-left transition-all duration-200 ${
+                      selected
+                        ? "border-[#171819] bg-white shadow-lg scale-[1.02]"
+                        : "border-[#e5e5e5] bg-white hover:border-[#171819]/30 hover:shadow-md"
+                    }`}
+                  >
+                    <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg transition-colors ${
+                      selected ? "bg-[#171819]" : "bg-[#f5f5f5] group-hover:bg-[#e5e5e5]"
+                    }`}>
+                      <Icon className={`h-5 w-5 ${selected ? "text-white" : "text-[#171819]/60"}`} />
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-base font-semibold text-[#171819]">{source.name}</p>
+                      <p className="mt-1 text-sm text-[#171819]/50">{source.description}</p>
+                    </div>
+                    {selected && (
+                      <span className="absolute right-4 top-4 flex h-6 w-6 items-center justify-center rounded-full bg-[#171819] text-white">
+                        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="group space-y-2">
+              <label className="block text-xs font-semibold uppercase tracking-[0.15em] text-[#171819]/50">Custom System Instructions</label>
+              <textarea
+                value={draft.customContext || ""}
+                onChange={(event) => updateDraft({ customContext: event.target.value })}
+                placeholder="Add any custom instructions or context your agent should know..."
+                className="min-h-[120px] w-full rounded-lg border-2 border-[#e5e5e5] bg-white px-5 py-4 text-base text-[#171819] placeholder:text-[#171819]/30 transition focus:border-[#171819] focus:outline-none focus:ring-4 focus:ring-[#171819]/10 resize-none"
+              />
+            </div>
+          </section>
+
+          <section id="section-risk" className="space-y-8">
+            <div className="space-y-3">
+              <div className="inline-flex items-center gap-2">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#171819] text-xs font-bold text-white">4</span>
+                <span className="text-xs font-medium uppercase tracking-[0.2em] text-[#171819]/50">Step Four</span>
+              </div>
+              <h2 className="text-5xl font-bold tracking-tight text-[#171819]">Risk &amp; Compliance</h2>
+              <p className="max-w-xl text-lg text-[#171819]/60 leading-relaxed">
+                Define guardrails and risk thresholds for autonomous operation.
+              </p>
+            </div>
+
+            <div className="grid gap-6 sm:grid-cols-2">
+              <div className="space-y-2">
+                <label className="block text-xs font-semibold uppercase tracking-[0.15em] text-[#171819]/50">Risk Tolerance</label>
+                <select
+                  value={draft.riskLevel || "medium"}
+                  onChange={(event) => updateDraft({ riskLevel: event.target.value as "low" | "medium" | "high" })}
+                  className="w-full rounded-lg border-2 border-[#e5e5e5] bg-white px-5 py-4 text-lg font-semibold text-[#171819] transition focus:border-[#171819] focus:outline-none focus:ring-4 focus:ring-[#171819]/10"
+                >
+                  <option value="low">Low - Conservative strategies only</option>
+                  <option value="medium">Medium - Balanced risk/reward</option>
+                  <option value="high">High - Aggressive maximum growth</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-xs font-semibold uppercase tracking-[0.15em] text-[#171819]/50">Max Slippage Tolerance</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={draft.maxSlippage || 1.0}
+                  onChange={(event) => updateDraft({ maxSlippage: Number(event.target.value) })}
+                  className="w-full rounded-lg border-2 border-[#e5e5e5] bg-white px-5 py-4 text-lg font-semibold text-[#171819] transition focus:border-[#171819] focus:outline-none focus:ring-4 focus:ring-[#171819]/10"
+                />
+              </div>
+            </div>
+
+            <div className="rounded-xl border-2 border-[#e5e5e5] bg-white p-6">
+              <div className="mb-4 flex items-center gap-2">
+                <Gauge className="h-5 w-5 text-[#171819]/60" />
+                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#171819]/50">Risk Guardrails</p>
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                {["Auto-pause on anomaly", "Require approval > $100", "Daily loss limit 5%", "Weekly review"].map((guardrail) => (
+                  <button
+                    key={guardrail}
+                    onClick={() => toggleGuardrail(guardrail)}
+                    className={`${buttonFeedbackClass} inline-flex items-center gap-1.5 rounded-full border-2 border-[#e5e5e5] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-[#171819]/70 transition-all hover:border-[#171819] hover:text-[#171819]`}
+                  >
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#14F195]" />
+                    {guardrail}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <section id="section-economy" className="space-y-8">
+            <div className="space-y-3">
+              <div className="inline-flex items-center gap-2">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#171819] text-xs font-bold text-white">5</span>
+                <span className="text-xs font-medium uppercase tracking-[0.2em] text-[#171819]/50">Step Five</span>
               </div>
               <h2 className="text-5xl font-bold tracking-tight text-[#171819]">Spending &amp; Limits</h2>
               <p className="max-w-xl text-lg text-[#171819]/60 leading-relaxed">
@@ -603,7 +758,7 @@ export default function ForgePage() {
           <section id="section-deployment" className="space-y-8">
             <div className="space-y-3">
               <div className="inline-flex items-center gap-2">
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#171819] text-xs font-bold text-white">4</span>
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#171819] text-xs font-bold text-white">6</span>
                 <span className="text-xs font-medium uppercase tracking-[0.2em] text-[#171819]/50">Final Step</span>
               </div>
               <h2 className="text-5xl font-bold tracking-tight text-[#171819]">Final Verification</h2>

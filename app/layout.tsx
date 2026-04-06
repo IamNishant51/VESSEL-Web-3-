@@ -4,7 +4,6 @@ import { Toaster } from "sonner";
 
 import { VesselWalletProvider } from "@/components/wallet/wallet-provider";
 import { NavigationProgress } from "@/components/layout/navigation-progress";
-import { ThemeProvider } from "@/components/providers/theme-provider";
 import { OfflineProvider } from "@/components/providers/offline-provider";
 
 import "./globals.css";
@@ -41,21 +40,19 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
       <body suppressHydrationWarning className="min-h-full bg-background font-sans text-foreground">
-        <ThemeProvider>
-          <OfflineProvider>
-            <VesselWalletProvider>
-              <NavigationProgress />
-              {children}
-              <Toaster
-                position="top-right"
-                richColors
-                toastOptions={{
-                  className: "border border-white/10 bg-[#111111] text-zinc-100 dark:border-white/10 dark:bg-[#111111] dark:text-zinc-100",
-                }}
-              />
-            </VesselWalletProvider>
-          </OfflineProvider>
-        </ThemeProvider>
+        <OfflineProvider>
+          <VesselWalletProvider>
+            <NavigationProgress />
+            {children}
+            <Toaster
+              position="top-right"
+              richColors
+              toastOptions={{
+                className: "border border-white/10 bg-[#111111] text-zinc-100 dark:border-white/10 dark:bg-[#111111] dark:text-zinc-100",
+              }}
+            />
+          </VesselWalletProvider>
+        </OfflineProvider>
       </body>
     </html>
   );

@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import Stripe from "stripe";
 import { connectToDatabase } from "@/lib/mongodb";
-import { Subscription } from "@/lib/models";
 import { v4 as uuidv4 } from "uuid";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -31,7 +30,7 @@ export async function POST(request: Request) {
     await connectToDatabase();
 
     // Get or create Stripe customer
-    let customer = await stripe.customers.search({
+    const customer = await stripe.customers.search({
       query: `metadata["walletAddress"]:"${validated.walletAddress}"`,
       limit: 1,
     });

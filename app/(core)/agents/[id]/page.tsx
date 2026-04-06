@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { toast } from "sonner";
 
-import { LandingNavigation } from "@/components/layout/landing-navigation";
+import { AppHeader } from "@/components/layout/app-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { AgentRunnerChat } from "@/components/agents/AgentRunnerChat";
@@ -157,7 +157,7 @@ export default function AgentDetailPage() {
 
   return (
     <>
-      <LandingNavigation forceLight />
+      <AppHeader />
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

@@ -140,18 +140,22 @@ export type ForgeTool = {
   category: ToolCategory;
 };
 
-export type RiskLevel = "Conservative" | "Balanced" | "Aggressive";
+export type RiskLevel = "Conservative" | "Balanced" | "Aggressive" | "low" | "medium" | "high";
 
 export type ForgeDraft = {
   name: string;
   personality: string;
   tagline: string;
   tools: string[];
+  knowledgeSources: string[];
+  customContext: string;
+  riskLevel: RiskLevel;
+  maxSlippage: number;
   maxSolPerTx: number;
   dailyBudgetUsdc: number;
   weeklyBudgetUsdc: number;
   allowedActions: string[];
-  riskLevel: RiskLevel;
+  guardrails: string[];
 };
 
 export const initialForgeDraft: ForgeDraft = {
@@ -159,11 +163,15 @@ export const initialForgeDraft: ForgeDraft = {
   personality: "",
   tagline: "Give Your Ideas a Soul",
   tools: [],
+  knowledgeSources: [],
+  customContext: "",
+  riskLevel: "Balanced",
+  maxSlippage: 1.0,
   maxSolPerTx: 1.2,
   dailyBudgetUsdc: 120,
   weeklyBudgetUsdc: 700,
   allowedActions: ["Swap", "Stake"],
-  riskLevel: "Balanced",
+  guardrails: [],
 };
 
 export type MarketplaceListing = {

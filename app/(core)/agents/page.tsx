@@ -8,7 +8,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
 
-import { LandingNavigation } from "@/components/layout/landing-navigation";
+import { AppHeader } from "@/components/layout/app-header";
 import { WalletConnectButton } from "@/components/wallet/connect-button";
 import { useAgent } from "@/hooks/useAgent";
 import { useStoreHydrated } from "@/hooks/useStoreHydrated";
@@ -300,8 +300,8 @@ export default function AgentsPage() {
 
   return (
     <>
-      <LandingNavigation forceLight />
-      <div className="-mx-4 -mt-8 min-h-screen bg-[#fafafa] px-4 pb-10 pt-20 text-[#171819] sm:-mx-6 sm:px-6">
+      <AppHeader />
+      <div className="-mx-4 min-h-screen bg-[#fafafa] px-4 pb-10 pt-6 text-[#171819] sm:-mx-6 sm:px-6">
       <div className="mx-auto w-full max-w-[1320px]">
         <div className="mb-6 space-y-3">
           <div className="flex items-center justify-between gap-2 overflow-x-auto pb-1">
