@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
+import { persist } from "zustand/middleware";
 
 import type { Agent, AgentPayment, AgentStats, OrchestrationResult, UserProfile } from "../types/agent";
 import {
@@ -691,7 +691,28 @@ export const useVesselStore = create<VesselStore>()(
      {
        name: "vessel-store-v3",
        version: 3,
-       storage: createJSONStorage(() => localStorage),
+       storage: {
+        getItem: (name) => {
+          try {
+            const item = localStorage.getItem(name);
+            return item ? JSON.parse(item) : null;
+          } catch (error) {
+            console.error("[Store] Failed to parse localStorage:", error);
+            localStorage.removeItem(name);
+            return null;
+          }
+        },
+        setItem: (name, value) => {
+          try {
+            localStorage.setItem(name, JSON.stringify(value));
+          } catch (error) {
+            console.error("[Store] Failed to save to localStorage:", error);
+          }
+        },
+        removeItem: (name) => {
+          localStorage.removeItem(name);
+        },
+      },
        partialize: (state) => ({
          usersAgents: state.usersAgents.slice(0, 100),
          marketplaceListings: state.marketplaceListings.slice(0, 200),
