@@ -9,6 +9,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useWallet } from "@solana/wallet-adapter-react";
 
 import { WalletConnectButton } from "@/components/wallet/connect-button";
+import { LandingNavigation } from "@/components/layout/landing-navigation";
 import { SmoothScrollProvider } from "@/components/layout/smooth-scroll-provider";
 import { useAgent } from "@/hooks/useAgent";
 import { useMarketplace } from "@/hooks/useMarketplace";
@@ -303,6 +304,7 @@ export default function Home() {
   return (
     <SmoothScrollProvider>
       <main className="bg-black text-white antialiased [text-rendering:optimizeLegibility]">
+      <LandingNavigation darkSectionsRefs={[forgeSectionRef, orchestraSectionRef]} />
       <AnimatePresence>
         {loaderStage !== "done" && loaderStage !== "reveal" && (
           <motion.div

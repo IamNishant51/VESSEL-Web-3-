@@ -691,7 +691,7 @@ export const useVesselStore = create<VesselStore>()(
      {
        name: "vessel-store-v3",
        version: 3,
-       storage: {
+       storage: typeof window !== "undefined" ? {
         getItem: (name) => {
           try {
             const item = localStorage.getItem(name);
@@ -712,7 +712,7 @@ export const useVesselStore = create<VesselStore>()(
         removeItem: (name) => {
           localStorage.removeItem(name);
         },
-      },
+      } : undefined,
        partialize: (state) => ({
          usersAgents: state.usersAgents.slice(0, 100),
          marketplaceListings: state.marketplaceListings.slice(0, 200),
