@@ -11,6 +11,18 @@ interface RateLimitUsage {
 const usageMap = new Map<string, RateLimitUsage>();
 
 /**
+ * Extract client IP from request
+ */
+export function getClientIp(request: Request): string {
+  const forwarded = request.headers.get("x-forwarded-for");
+  if (forwarded) {
+    return forwarded.split(",")[0].trim();
+  }
+
+  return request.headers.get("x-real-ip") || "unknown";
+}
+
+/**
  * Get user's subscription tier
  */
 export async function getUserSubscriptionTier(userId: string): Promise<SubscriptionTier> {
@@ -121,7 +133,7 @@ export async function checkFeatureAccess(
   const tier = await getUserSubscriptionTier(userId);
   const plan = SUBSCRIPTION_PLANS[tier];
 
-  const featureValue = (plan.limits as any)[feature];
+  const featureValue = (plan.limits as Record<string, boolean | number>)[feature];
   if (typeof featureValue === "boolean") {
     return featureValue;
   }
