@@ -95,6 +95,11 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  // Skip non-http(s) schemes (chrome-extension, data, etc)
+  if (!url.protocol.startsWith("http")) {
+    return; // Let browser handle it
+  }
+
   // Cache-first strategy for static assets
   if (CACHE_FIRST_URLS.some((pattern) => url.pathname.includes(pattern))) {
     event.respondWith(

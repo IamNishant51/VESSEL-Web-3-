@@ -1,13 +1,5 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import createIntlMiddleware from "next-intl/middleware";
-
-// i18n middleware
-const intlMiddleware = createIntlMiddleware({
-  locales: ["en", "es", "fr", "ja", "zh"],
-  defaultLocale: "en",
-  localePrefix: "as-needed",
-});
 
 // Edge-compatible rate limiter using request context (no memory leak)
 const RATE_LIMIT_MAP = new Map<string, { count: number; resetAt: number }>();
@@ -44,12 +36,6 @@ const ALLOWED_ORIGINS = [
 ];
 
 export function middleware(request: NextRequest) {
-  // Apply i18n middleware first
-  const intlResponse = intlMiddleware(request);
-  if (intlResponse) {
-    return intlResponse;
-  }
-
   const { pathname, origin } = request.nextUrl;
   const userAgent = request.headers.get("user-agent") || "";
   // Use Next.js platform-provided IP instead of client-controllable headers
@@ -77,7 +63,7 @@ export function middleware(request: NextRequest) {
   );
   response.headers.set(
     "Content-Security-Policy",
-    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https: ik.imagekit.io; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https: *.solana.com *.helius.xyz *.rpcpool.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https: ik.imagekit.io; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https: *.solana.com *.helius.xyz *.rpcpool.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
   );
 
   // CORS headers for API routes
@@ -184,9 +170,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Match i18n routes
-    "/(en|es|fr|ja|zh)/:path*",
-    // Match all other request paths except:
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$|manifest.json|sw.js).*)",
   ],
 };
