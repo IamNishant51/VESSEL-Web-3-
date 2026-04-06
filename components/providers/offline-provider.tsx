@@ -10,35 +10,48 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     setMounted(true);
 
-    // Register service worker
+    // Register service worker - gracefully handle registration errors
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker
         .register("/sw.js", { scope: "/" })
         .then((reg) => {
-          console.log("Service Worker registered", reg);
+          console.log("✓ Service Worker registered successfully", reg);
+
+          // Check for updates periodically
+          setInterval(() => {
+            reg.update().catch((error) => {
+              console.warn("[SW] Update check failed:", error);
+            });
+          }, 60000); // Check every minute
         })
         .catch((err) => {
-          console.warn("Service Worker registration failed:", err);
+          console.warn("[SW] Registration failed (this is OK in development):", err.message);
+          // Service worker registration failure is non-critical
+          // App will still work, just without offline support
         });
     }
 
     // Track online/offline status
     const handleOnline = () => {
       setOnlineStatus(true);
-      console.log("App is online");
+      console.log("✓ App is online");
 
       // Trigger background sync when back online
       if ("serviceWorker" in navigator && "SyncManager" in window) {
-        navigator.serviceWorker.ready.then((reg) => {
-          reg.sync.register("sync-conversations").catch(console.error);
-          reg.sync.register("sync-preferences").catch(console.error);
-        });
+        navigator.serviceWorker.ready
+          .then((reg) => {
+            reg.sync.register("sync-conversations").catch(console.error);
+            reg.sync.register("sync-preferences").catch(console.error);
+          })
+          .catch((error) => {
+            console.warn("[Sync] Background sync unavailable:", error);
+          });
       }
     };
 
     const handleOffline = () => {
       setOnlineStatus(false);
-      console.log("App is offline");
+      console.log("⚠ App is offline - using cached content");
     };
 
     window.addEventListener("online", handleOnline);
