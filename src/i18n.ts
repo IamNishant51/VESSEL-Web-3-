@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 const locales = ["en", "es", "fr", "ja", "zh"] as const;
 
 export function isValidLocale(locale: string): locale is (typeof locales)[number] {
-  return locales.includes(locale as any);
+  return locales.includes(locale as (typeof locales)[number]);
 }
 
 export default getRequestConfig(async ({ locale }) => {

@@ -1,5 +1,13 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import createIntlMiddleware from "next-intl/middleware";
+
+// i18n middleware
+const intlMiddleware = createIntlMiddleware({
+  locales: ["en", "es", "fr", "ja", "zh"],
+  defaultLocale: "en",
+  localePrefix: "as-needed",
+});
 
 // Edge-compatible rate limiter using request context (no memory leak)
 const RATE_LIMIT_MAP = new Map<string, { count: number; resetAt: number }>();
@@ -36,6 +44,12 @@ const ALLOWED_ORIGINS = [
 ];
 
 export function middleware(request: NextRequest) {
+  // Apply i18n middleware first
+  const intlResponse = intlMiddleware(request);
+  if (intlResponse) {
+    return intlResponse;
+  }
+
   const { pathname, origin } = request.nextUrl;
   const userAgent = request.headers.get("user-agent") || "";
   // Use Next.js platform-provided IP instead of client-controllable headers
@@ -170,13 +184,9 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public files (robots.txt, sitemap.xml, etc.)
-     */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    // Match i18n routes
+    "/(en|es|fr|ja|zh)/:path*",
+    // Match all other request paths except:
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$|manifest.json|sw.js).*)",
   ],
 };

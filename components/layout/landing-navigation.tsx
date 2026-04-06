@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 import { WalletConnectButton } from "@/components/wallet/connect-button";
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
+import { LanguageSelector } from "@/components/ui/language-selector";
 
 const navLinks: Array<{ href: string; label: string; external?: boolean }> = [
   { href: "/agents", label: "AGENTS" },
@@ -131,6 +132,7 @@ export function LandingNavigation({
                 );
               })}
             </nav>
+            <LanguageSelector />
             <AnimatedThemeToggler />
             <WalletConnectButton />
           </div>
