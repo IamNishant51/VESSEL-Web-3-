@@ -4,6 +4,7 @@ import { Toaster } from "sonner";
 
 import { VesselWalletProvider } from "@/components/wallet/wallet-provider";
 import { NavigationProgress } from "@/components/layout/navigation-progress";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 
 import "./globals.css";
 import "@solana/wallet-adapter-react-ui/styles.css";
@@ -30,19 +31,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark h-full antialiased">
+    <html lang="en" className="dark h-full antialiased" suppressHydrationWarning>
       <body suppressHydrationWarning className="min-h-full bg-background font-sans text-foreground">
-        <VesselWalletProvider>
-          <NavigationProgress />
-          {children}
-          <Toaster
-            position="top-right"
-            richColors
-            toastOptions={{
-              className: "border border-white/10 bg-[#111111] text-zinc-100",
-            }}
-          />
-        </VesselWalletProvider>
+        <ThemeProvider>
+          <VesselWalletProvider>
+            <NavigationProgress />
+            {children}
+            <Toaster
+              position="top-right"
+              richColors
+              toastOptions={{
+                className: "border border-white/10 bg-[#111111] text-zinc-100 dark:border-white/10 dark:bg-[#111111] dark:text-zinc-100",
+              }}
+            />
+          </VesselWalletProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

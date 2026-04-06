@@ -7,6 +7,7 @@ import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { WalletConnectButton } from "@/components/wallet/connect-button";
+import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
 
 const navLinks: Array<{ href: string; label: string; external?: boolean }> = [
   { href: "/agents", label: "AGENTS" },
@@ -130,6 +131,7 @@ export function LandingNavigation({
                 );
               })}
             </nav>
+            <AnimatedThemeToggler />
             <WalletConnectButton />
           </div>
 
