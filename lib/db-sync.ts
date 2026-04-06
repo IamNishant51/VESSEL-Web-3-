@@ -333,5 +333,4 @@ export async function getDevices(): Promise<Array<{
     console.warn("[DB] Failed to fetch devices:", e);
     return [];
   }
-  }
 }
