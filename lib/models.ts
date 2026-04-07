@@ -58,6 +58,11 @@ const AgentSchema = new Schema<IAgentDoc>(
 AgentSchema.index({ owner: 1, listed: 1 });
 AgentSchema.index({ reputation: -1 });
 AgentSchema.index({ totalActions: -1 });
+// Composite indexes for common query patterns
+AgentSchema.index({ owner: 1, createdAt: -1 }); // User agent listings
+AgentSchema.index({ listed: 1, reputation: -1 }); // Marketplace browsing sorted by reputation
+AgentSchema.index({ listed: 1, totalActions: -1 }); // Marketplace browsing sorted by activity
+AgentSchema.index({ name: 1, owner: 1 }); // Search by name for owner
 
 export const Agent =
   (mongoose.models.Agent as mongoose.Model<IAgentDoc>) ||
@@ -99,6 +104,10 @@ const MarketplaceListingSchema = new Schema<IMarketplaceListingDoc>(
 
 MarketplaceListingSchema.index({ seller: 1 });
 MarketplaceListingSchema.index({ price: 1 });
+// Composite indexes for common query patterns
+MarketplaceListingSchema.index({ listed: 1, price: 1 }); // Active listings sorted by price
+MarketplaceListingSchema.index({ seller: 1, createdAt: -1 }); // Seller's listings
+MarketplaceListingSchema.index({ agentId: 1, listed: 1 }); // Agent listings status
 
 export const MarketplaceListing =
   (mongoose.models.MarketplaceListing as mongoose.Model<IMarketplaceListingDoc>) ||
@@ -157,6 +166,10 @@ const UserSchema = new Schema<IUserDoc>(
     collection: "users",
   }
 );
+
+// Composite indexes for User model
+UserSchema.index({ premiumTier: 1, createdAt: -1 }); // Premium user lookups
+UserSchema.index({ walletAddress: 1, lastLogin: -1 }); // Recent active users
 
 export const User =
   (mongoose.models.User as mongoose.Model<IUserDoc>) ||

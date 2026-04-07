@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PublicKey } from "@solana/web3.js";
 import nacl from "tweetnacl";
+import { redisGet, redisSet } from "@/lib/redis";
 
 const NONCE_EXPIRY_MS = 5 * 60 * 1000;
-const usedNonces = new Set<string>();
+const usedNonces = new Map<string, number>();
+const NONCE_PREFIX = "auth:nonce:";
 
 export type AuthResult = {
   valid: true;
@@ -16,27 +18,41 @@ export type AuthResult = {
   error: string;
 };
 
-function isNonceValid(nonce: string, timestamp: number): boolean {
+function cleanupExpiredNonces(): void {
   const now = Date.now();
+  for (const [nonce, timestamp] of usedNonces.entries()) {
+    if (now - timestamp > NONCE_EXPIRY_MS) {
+      usedNonces.delete(nonce);
+    }
+  }
+  
+  if (usedNonces.size > 10000) {
+    const sortedByTime = Array.from(usedNonces.entries()).sort((a, b) => a[1] - b[1]);
+    const toRemove = sortedByTime.slice(0, Math.ceil(sortedByTime.length / 2));
+    for (const [nonce] of toRemove) {
+      usedNonces.delete(nonce);
+    }
+  }
+}
+
+async function isNonceValid(nonce: string, timestamp: number): Promise<boolean> {
+  const now = Date.now();
+  const nonceKey = `${NONCE_PREFIX}${nonce}`;
   
   if (Math.abs(now - timestamp) > NONCE_EXPIRY_MS) {
     return false;
   }
   
-  if (usedNonces.has(nonce)) {
+  const redisNonce = await redisGet<number>(nonceKey);
+  if (redisNonce || usedNonces.has(nonce)) {
     return false;
   }
   
-  usedNonces.add(nonce);
+  usedNonces.set(nonce, now);
+  await redisSet(nonceKey, now, Math.ceil(NONCE_EXPIRY_MS / 1000));
   
-  if (usedNonces.size > 10000) {
-    const oldEntries = usedNonces.values();
-    let removed = 0;
-    for (const entry of oldEntries) {
-      if (removed > 5000) break;
-      usedNonces.delete(entry);
-      removed++;
-    }
+  if (usedNonces.size > 5000) {
+    cleanupExpiredNonces();
   }
   
   return true;
@@ -78,7 +94,7 @@ export async function verifyWalletAuth(request: NextRequest, requireSignature = 
       return { valid: false, status: 401, error: "Invalid timestamp" };
     }
 
-    if (!isNonceValid(nonce, timestamp)) {
+    if (!(await isNonceValid(nonce, timestamp))) {
       return { valid: false, status: 401, error: "Invalid or expired nonce" };
     }
 

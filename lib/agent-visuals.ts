@@ -9,10 +9,15 @@ import {
   type ArtResult,
   type AgentTraits,
   type ColorPalette,
-} from "@/lib/generative-art";
-import { getCyberpunkCnftAvatarUrl } from "@/lib/cyberpunk-cnft-avatars";
+} from "./generative-art";
+import { getCyberpunkCnftAvatarUrl } from "./cyberpunk-cnft-avatars";
 
-type VisualInput = Pick<Agent, "id" | "name" | "mintAddress" | "personality" | "riskLevel"> & {
+type VisualInput = {
+  id?: string;
+  name?: string;
+  mintAddress?: string;
+  personality?: string;
+  riskLevel?: string;
   toolCount?: number;
 };
 

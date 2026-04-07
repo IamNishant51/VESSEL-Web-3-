@@ -7,14 +7,18 @@ export async function GET(request: NextRequest) {
   try {
     await connectToDatabase();
 
-    // Authenticate user
     const authResult = await authenticateMiddleware(request);
-    if (!authResult.userId) {
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+    if ("error" in authResult) {
+      return NextResponse.json({ error: authResult.error }, { status: 500 });
+    }
+    if (!("user" in authResult)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Fetch user from database
-    const user = await User.findById(authResult.userId);
+    const user = await User.findById(authResult.payload.userId);
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
@@ -51,9 +55,14 @@ export async function PATCH(request: NextRequest) {
   try {
     await connectToDatabase();
 
-    // Authenticate user
     const authResult = await authenticateMiddleware(request);
-    if (!authResult.userId) {
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+    if ("error" in authResult) {
+      return NextResponse.json({ error: authResult.error }, { status: 500 });
+    }
+    if (!("user" in authResult)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -65,13 +74,11 @@ export async function PATCH(request: NextRequest) {
       };
     };
 
-    // Fetch and update user
-    const user = await User.findById(authResult.userId);
+    const user = await User.findById(authResult.payload.userId);
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Update preferences
     if (body.preferences) {
       user.preferences = {
         ...user.preferences,
@@ -101,9 +108,14 @@ export async function DELETE(request: NextRequest) {
   try {
     await connectToDatabase();
 
-    // Authenticate user
     const authResult = await authenticateMiddleware(request);
-    if (!authResult.userId) {
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+    if ("error" in authResult) {
+      return NextResponse.json({ error: authResult.error }, { status: 500 });
+    }
+    if (!("user" in authResult)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -117,8 +129,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Remove device from user's deviceTokens
-    const user = await User.findById(authResult.userId);
+    const user = await User.findById(authResult.payload.userId);
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }

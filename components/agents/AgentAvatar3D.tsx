@@ -15,9 +15,9 @@ type ParticleFieldProps = {
 
 function ParticleField({ count, color, spread, seed }: ParticleFieldProps) {
   const meshRef = useRef<THREE.Points>(null);
-  const rng = new SeededRandom(seed);
 
   const positions = useMemo(() => {
+    const rng = new SeededRandom(seed);
     const pos = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
       pos[i * 3] = rng.nextFloat(-spread, spread);
@@ -25,7 +25,7 @@ function ParticleField({ count, color, spread, seed }: ParticleFieldProps) {
       pos[i * 3 + 2] = rng.nextFloat(-spread, spread);
     }
     return pos;
-  }, [count, spread, seed, rng]);
+  }, [count, spread, seed]);
 
   useFrame((_, delta) => {
     if (!meshRef.current) return;
@@ -94,7 +94,6 @@ type SoulOrbProps = {
 
 function SoulOrb({ color, accentColor, distort, speed, seed }: SoulOrbProps) {
   const meshRef = useRef<THREE.Mesh>(null);
-  const rng = new SeededRandom(seed);
 
   useFrame((_, delta) => {
     if (!meshRef.current) return;

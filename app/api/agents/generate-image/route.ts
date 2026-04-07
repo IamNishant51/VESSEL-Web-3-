@@ -10,7 +10,7 @@ type RiskLevel = "Conservative" | "Balanced" | "Aggressive";
 export async function POST(request: Request) {
   try {
     const ip = getClientIp(request);
-    const limit = checkRateLimit(`gen-img:${ip}`, { windowMs: 60_000, max: 10 });
+    const limit = await checkRateLimit(`gen-img:${ip}`, { windowMs: 60_000, max: 10 });
 
     if (!limit.allowed) {
       return NextResponse.json(

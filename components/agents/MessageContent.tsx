@@ -2,14 +2,15 @@
 
 import { memo } from "react";
 
-let elementId = 0;
-function nextKey(): string {
-  return `msg-${elementId++}`;
-}
-
 function parseContent(content: string): React.ReactNode {
-  const lines = content.split("\n");
   const elements: React.ReactNode[] = [];
+  let keyCounter = 0;
+
+  function nextKey(): string {
+    return `msg-${keyCounter++}`;
+  }
+
+  const lines = content.split("\n");
   let i = 0;
 
   while (i < lines.length) {

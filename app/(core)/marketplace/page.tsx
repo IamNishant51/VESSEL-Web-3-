@@ -152,7 +152,7 @@ export default function MarketplacePage() {
 
   if (!hasHydrated) {
     return (
-      <div className="-mx-4 -mt-8 min-h-screen bg-[var(--bg-base)] px-4 pb-10 pt-4 text-[var(--text-primary)] sm:-mx-6 sm:px-6">
+      <div className="-mx-4 -mt-8 min-h-screen overflow-x-clip bg-[var(--bg-base)] px-4 pb-10 pt-4 text-[var(--text-primary)] sm:-mx-6 sm:px-6">
         <div className="mx-auto w-full max-w-[1320px]">
           <div className="mb-6 flex gap-2">
             {tabs.map((t) => (
@@ -175,11 +175,11 @@ export default function MarketplacePage() {
 
   return (
     <>
-      <div className="-mx-4 min-h-screen bg-[var(--bg-base)] px-4 pb-10 pt-24 text-[var(--text-primary)] sm:-mx-6 sm:px-6">
+      <div className="min-h-screen overflow-x-clip bg-[var(--bg-base)] px-4 pb-10 pt-24 text-[var(--text-primary)] sm:px-6 sm:pb-12">
       <div className="mx-auto w-full max-w-[1320px] space-y-6">
         <section className="grid gap-5 rounded-sm bg-[#ececee] p-4 sm:p-5 lg:grid-cols-[1fr_280px]">
           <div>
-            <h1 className="text-[40px] font-semibold leading-[0.94] tracking-[-0.03em] text-[#1d1f21] sm:text-[52px] lg:text-[64px]">
+            <h1 className="text-[28px] font-semibold leading-[0.94] tracking-[-0.03em] text-[#1d1f21] sm:text-[40px] lg:text-[56px]">
               Agent Souls
               <br />
               <span className="text-[#171819] tracking-[0.01em]">MARKETPLACE</span>
@@ -190,13 +190,13 @@ export default function MarketplacePage() {
             <div className="mt-5 flex flex-wrap items-center gap-3">
               <button
                 onClick={() => router.push("/agents")}
-                className="inline-flex h-10 cursor-pointer items-center rounded-[4px] bg-[#171819] px-5 text-[12px] font-semibold tracking-[0.06em] text-white transition-colors hover:bg-[#111111]"
+                className="btn-press btn-cta inline-flex h-10 cursor-pointer items-center rounded-[4px] bg-[#171819] px-5 text-[12px] font-semibold tracking-[0.06em] text-white transition-colors hover:bg-[#111111]"
               >
                 Sell Your Agent →
               </button>
               <button
                 onClick={() => window.scrollTo({ top: 420, behavior: "smooth" })}
-                className="inline-flex h-10 cursor-pointer items-center rounded-[4px] border border-black/10 bg-white px-5 text-[12px] font-semibold tracking-[0.06em] text-black/80 transition-colors hover:bg-black/5"
+                className="btn-press btn-secondary inline-flex h-10 cursor-pointer items-center rounded-[4px] border border-black/10 bg-white px-5 text-[12px] font-semibold tracking-[0.06em] text-black/80 transition-colors hover:bg-black/5"
               >
                 View Collections
               </button>
@@ -251,17 +251,17 @@ export default function MarketplacePage() {
                     }}
                     className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 hover:scale-[1.03]"
                   />
-                  <div className="absolute left-2 top-2 rounded-full border border-black/10 bg-[#171819] px-2 py-0.5 text-[9px] font-semibold tracking-[0.1em] text-white">
+                  <div className="absolute left-2 top-2 rounded-full border border-black/10 bg-[#171819] px-2 py-1 text-[10px] font-semibold tracking-[0.1em] text-white">
                     FREE
                   </div>
-                  <div className="absolute right-2 top-2 rounded-full border border-black/10 bg-white px-2 py-0.5 text-[9px] font-semibold tracking-[0.1em] text-black/75">
+                  <div className="absolute right-2 top-2 rounded-full border border-black/10 bg-white px-2 py-1 text-[10px] font-semibold tracking-[0.1em] text-black/75">
                     PREMADE
                   </div>
                   <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/35 to-transparent" />
                 </div>
 
                 <div className="mt-3 flex items-start justify-between gap-3">
-                  <p className="min-w-0 truncate text-[22px] font-semibold tracking-[-0.02em] text-black sm:text-[31px]">{card.name}</p>
+                  <p className="min-w-0 truncate text-[18px] font-semibold tracking-[-0.02em] text-black sm:text-[26px]">{card.name}</p>
                   <span className="text-[11px] text-black/55">FREE</span>
                 </div>
                 <p className="mt-1 text-[12px] text-black/62">Owner: <span className="break-all text-[#171819]">{card.owner}</span></p>
@@ -271,11 +271,11 @@ export default function MarketplacePage() {
 
                 <div className="mt-3 grid grid-cols-2 gap-2 rounded-[4px] bg-[#f2f3f4] p-2">
                   <div>
-                    <p className="text-[9px] font-semibold tracking-[0.1em] text-black/45">REPUTATION</p>
+                    <p className="text-[10px] font-semibold tracking-[0.1em] text-black/45">REPUTATION</p>
                     <p className="mt-1 text-[16px] font-semibold text-black">★ {card.reputation.toFixed(1)}</p>
                   </div>
                   <div>
-                    <p className="text-[9px] font-semibold tracking-[0.1em] text-black/45">ROLE</p>
+                    <p className="text-[10px] font-semibold tracking-[0.1em] text-black/45">ROLE</p>
                     <p className="mt-1 text-[16px] font-semibold text-black">{card.name.split(" ")[1] || "Agent"}</p>
                   </div>
                 </div>
@@ -283,7 +283,7 @@ export default function MarketplacePage() {
                 <div className="mt-3 grid grid-cols-1 gap-2">
                   <button
                     onClick={() => router.push(`/marketplace/${card.id}`)}
-                    className="h-9 cursor-pointer rounded-[4px] bg-[#171819] text-[12px] font-semibold text-white hover:bg-[#111111]"
+                    className="btn-press btn-cta min-h-[44px] cursor-pointer rounded-[4px] bg-[#171819] text-[12px] font-semibold text-white hover:bg-[#111111]"
                   >
                     Use for Free
                   </button>
@@ -320,12 +320,12 @@ export default function MarketplacePage() {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search agents..."
-                  className="h-10 w-full rounded-[4px] border border-black/10 bg-white pl-9 pr-3 text-[12px] text-black outline-none focus:border-[#171819]"
+                  className="min-h-[44px] w-full rounded-[4px] border border-black/10 bg-white pl-9 pr-3 text-[13px] text-black outline-none focus:border-[#171819]"
                 />
               </div>
               <button
                 onClick={() => setDescendingPrice((v) => !v)}
-                className="inline-flex h-10 shrink-0 cursor-pointer items-center gap-2 rounded-[4px] border border-black/10 bg-white px-3 text-[12px] font-semibold text-black/70 hover:bg-black/5"
+                className="btn-press inline-flex min-h-[44px] shrink-0 cursor-pointer items-center gap-2 rounded-[4px] border border-black/10 bg-white px-3 text-[12px] font-semibold text-black/70 hover:bg-black/5"
               >
                 <Filter className="h-3.5 w-3.5" />
                 {descendingPrice ? "Filters" : "Price ↑"}
@@ -344,7 +344,7 @@ export default function MarketplacePage() {
               <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
                 <button
                   onClick={() => router.push("/agents")}
-                  className="inline-flex h-10 items-center rounded-[4px] bg-[#171819] px-5 text-[12px] font-semibold tracking-[0.06em] text-white transition-colors hover:bg-[#111111]"
+                  className="btn-press btn-cta inline-flex h-10 items-center rounded-[4px] bg-[#171819] px-5 text-[12px] font-semibold tracking-[0.06em] text-white transition-colors hover:bg-[#111111]"
                 >
                   GO TO AGENTS
                 </button>
@@ -353,7 +353,7 @@ export default function MarketplacePage() {
                     setActiveTab("all");
                     setQuery("");
                   }}
-                  className="inline-flex h-10 items-center rounded-[4px] border border-black/10 bg-[#f1f2f3] px-5 text-[12px] font-semibold tracking-[0.06em] text-black/80 transition-colors hover:bg-black/5"
+                  className="btn-press btn-secondary inline-flex h-10 items-center rounded-[4px] border border-black/10 bg-[#f1f2f3] px-5 text-[12px] font-semibold tracking-[0.06em] text-black/80 transition-colors hover:bg-black/5"
                 >
                   RESET FILTERS
                 </button>
@@ -385,14 +385,14 @@ export default function MarketplacePage() {
                         }}
                         className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 hover:scale-[1.03]"
                       />
-                      <div className="absolute right-2 top-2 rounded-full border border-black/10 bg-white px-2 py-0.5 text-[9px] font-semibold tracking-[0.1em] text-black/75">
+                      <div className="absolute right-2 top-2 rounded-full border border-black/10 bg-white px-2 py-1 text-[10px] font-semibold tracking-[0.1em] text-black/75">
                         {card.tag}
                       </div>
                       <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/35 to-transparent" />
                     </div>
 
                     <div className="mt-3 flex items-start justify-between gap-3">
-                      <p className="min-w-0 truncate text-[22px] font-semibold tracking-[-0.02em] text-black sm:text-[31px]">{card.name}</p>
+                      <p className="min-w-0 truncate text-[18px] font-semibold tracking-[-0.02em] text-black sm:text-[26px]">{card.name}</p>
                       <span className="text-[11px] text-black/55">#{(idx + 1) * 1112}</span>
                     </div>
                     <p className="mt-1 text-[12px] text-black/62">Owner: <span className="break-all text-[#171819]">{card.owner}</span></p>
@@ -402,20 +402,20 @@ export default function MarketplacePage() {
 
                     <div className="mt-3 grid grid-cols-2 gap-2 rounded-[4px] bg-[#f2f3f4] p-2">
                       <div>
-                        <p className="text-[9px] font-semibold tracking-[0.1em] text-black/45">REPUTATION</p>
+                        <p className="text-[10px] font-semibold tracking-[0.1em] text-black/45">REPUTATION</p>
                         <p className="mt-1 text-[16px] font-semibold text-black">★ {card.reputation.toFixed(1)}</p>
                       </div>
                       <div>
-                        <p className="text-[9px] font-semibold tracking-[0.1em] text-black/45">VOLUME</p>
+                        <p className="text-[10px] font-semibold tracking-[0.1em] text-black/45">VOLUME</p>
                         <p className="mt-1 text-[16px] font-semibold text-black">{card.volume}</p>
                       </div>
                     </div>
 
                     <div className="mt-3 flex items-end justify-between">
                       <div>
-                        <p className="text-[9px] font-semibold tracking-[0.1em] text-black/45">FLOOR PRICE</p>
-                        <p className="text-[31px] font-semibold leading-none tracking-[-0.02em] text-black sm:text-[39px]">
-                          {card.floorSol.toFixed(1)}<span className="text-[16px]"> {card.priceCurrency || "SOL"}</span>
+                        <p className="text-[10px] font-semibold tracking-[0.1em] text-black/45">FLOOR PRICE</p>
+                        <p className="text-[24px] font-semibold leading-none tracking-[-0.02em] text-black sm:text-[32px]">
+                          {card.floorSol.toFixed(1)}<span className="text-[14px]"> {card.priceCurrency || "SOL"}</span>
                         </p>
                       </div>
                       <p className="text-[10px] text-black/55 sm:text-[11px]">≈ ${toUsd(card.floorSol)}</p>
@@ -426,13 +426,13 @@ export default function MarketplacePage() {
                         <>
                           <button
                             onClick={() => router.push(`/marketplace/${card.id}?action=buy`)}
-                            className="h-9 cursor-pointer rounded-[4px] bg-[#171819] text-[12px] font-semibold text-white hover:bg-black"
+                            className="btn-press btn-cta min-h-[44px] cursor-pointer rounded-[4px] bg-[#171819] text-[12px] font-semibold text-white hover:bg-black"
                           >
                             Buy Now
                           </button>
                           <button
                             onClick={() => router.push(`/marketplace/${card.id}?action=rent`)}
-                            className="h-9 cursor-pointer rounded-[4px] border border-black/10 bg-[#f1f2f3] text-[12px] font-semibold text-black/80 hover:bg-black/5"
+                            className="btn-press btn-secondary min-h-[44px] cursor-pointer rounded-[4px] border border-black/10 bg-[#f1f2f3] text-[12px] font-semibold text-black/80 hover:bg-black/5"
                           >
                             Rent
                           </button>
@@ -441,13 +441,13 @@ export default function MarketplacePage() {
                         <>
                           <button
                             onClick={() => router.push(`/agents/${card.id}`)}
-                            className="h-9 cursor-pointer rounded-[4px] bg-[#171819] text-[12px] font-semibold text-white hover:bg-[#111111]"
+                            className="btn-press btn-cta min-h-[44px] cursor-pointer rounded-[4px] bg-[#171819] text-[12px] font-semibold text-white hover:bg-[#111111]"
                           >
                             Open Agent
                           </button>
                           <button
                             onClick={() => removeListing(card.id)}
-                            className="h-9 cursor-pointer rounded-[4px] border border-black/10 bg-[#f1f2f3] text-[12px] font-semibold text-black/80 hover:bg-black/5"
+                            className="btn-press btn-secondary min-h-[44px] cursor-pointer rounded-[4px] border border-black/10 bg-[#f1f2f3] text-[12px] font-semibold text-black/80 hover:bg-black/5"
                           >
                             Unlist
                           </button>
@@ -456,13 +456,13 @@ export default function MarketplacePage() {
                         <>
                           <button
                             onClick={() => router.push(`/agents/${card.id}`)}
-                            className="h-9 cursor-pointer rounded-[4px] bg-[#171819] text-[12px] font-semibold text-white hover:bg-[#111111]"
+                            className="btn-press btn-cta min-h-[44px] cursor-pointer rounded-[4px] bg-[#171819] text-[12px] font-semibold text-white hover:bg-[#111111]"
                           >
                             Open Agent
                           </button>
                           <button
                             onClick={() => router.push("/agents")}
-                            className="h-9 cursor-pointer rounded-[4px] border border-black/10 bg-[#f1f2f3] text-[12px] font-semibold text-black/80 hover:bg-black/5"
+                            className="btn-press btn-secondary min-h-[44px] cursor-pointer rounded-[4px] border border-black/10 bg-[#f1f2f3] text-[12px] font-semibold text-black/80 hover:bg-black/5"
                           >
                             My Agents
                           </button>
@@ -479,7 +479,7 @@ export default function MarketplacePage() {
                 {canLoadMore ? (
                   <button
                     onClick={() => setVisibleCount((count) => count + 8)}
-                    className="inline-flex h-10 w-full cursor-pointer items-center justify-center rounded-[4px] border border-black/10 bg-white px-5 text-[12px] font-semibold tracking-[0.08em] text-black/70 transition-colors hover:bg-black/5 sm:w-auto"
+                    className="btn-press btn-secondary inline-flex min-h-[44px] w-full cursor-pointer items-center justify-center rounded-[4px] border border-black/10 bg-white px-5 text-[12px] font-semibold tracking-[0.08em] text-black/70 transition-colors hover:bg-black/5 sm:w-auto"
                   >
                     LOAD MORE AGENTS
                   </button>

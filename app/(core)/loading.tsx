@@ -1,6 +1,6 @@
 export default function CoreLoading() {
   return (
-    <div className="-mx-4 -mt-8 min-h-screen bg-[#fafafa] px-4 pb-10 pt-4 text-[#171819] sm:-mx-6 sm:px-6">
+    <div className="-mx-4 -mt-8 min-h-screen overflow-x-clip bg-[#fafafa] px-4 pb-10 pt-4 text-[#171819] sm:-mx-6 sm:px-6">
       <div className="mx-auto w-full max-w-[1320px]">
         <div className="mb-6 h-10 w-[260px] animate-pulse rounded-[4px] bg-black/10" />
 

@@ -55,7 +55,7 @@ export default function AgentDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="flex h-[calc(100dvh-4rem)] items-center justify-center">
+      <div className="flex h-[100dvh] items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="h-10 w-10 animate-pulse rounded-full bg-black/10" />
           <div className="h-4 w-32 animate-pulse rounded bg-black/8" />
@@ -66,7 +66,7 @@ export default function AgentDetailPage() {
 
   if (!agent) {
     return (
-      <div className="flex h-[calc(100dvh-4rem)] items-center justify-center">
+      <div className="flex h-[100dvh] items-center justify-center">
         <div className="max-w-md space-y-6 text-center">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#ff2338]/10">
             <AlertCircle className="h-6 w-6 text-[#ff2338]" />
@@ -159,7 +159,7 @@ export default function AgentDetailPage() {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="flex h-[calc(100dvh-4rem)] min-h-0 flex-col overflow-hidden pt-20"
+        className="flex h-full min-h-0 flex-col overflow-hidden"
       >
       {/* Top Bar */}
       <div className="shrink-0 border-b border-black/8 bg-white px-4 py-2.5">

@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,7 @@ export function ListAgentModal({
   const [durationDays, setDurationDays] = useState("7");
   const [isRental, setIsRental] = useState(false);
   const [isListing, setIsListing] = useState(false);
+  const listScrollRef = useRef<HTMLDivElement>(null);
 
   const addListing = useVesselStore((state) => state.addListing);
 
@@ -54,6 +56,13 @@ export function ListAgentModal({
   if (!isOpen) return null;
 
   const availableAgents = agents.filter((agent) => !agent.listed && !agent.isRental && !isPremadeDerivedAgent(agent));
+  const availableAgentsVirtualizer = useVirtualizer({
+    count: availableAgents.length,
+    getScrollElement: () => listScrollRef.current,
+    estimateSize: () => 78,
+    overscan: 6,
+    getItemKey: (index) => availableAgents[index]?.id ?? index,
+  });
 
   const resetState = () => {
     setStep("select");
@@ -155,25 +164,34 @@ export function ListAgentModal({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -8 }}
                     className="space-y-3 max-h-96 overflow-y-auto"
+                    ref={listScrollRef}
                   >
                     {availableAgents.length === 0 ? (
                       <p className="text-center text-zinc-400 text-sm">
                         No agents available to list. All your agents are either already listed or rented.
                       </p>
                     ) : (
-                      availableAgents.map((agent) => (
-                        <button
-                          key={agent.id}
-                          onClick={() => handleSelectAgent(agent)}
-                          disabled={isListing}
-                          className="w-full p-3 rounded-lg border border-white/10 bg-[#0A0A0A] text-left cursor-pointer hover:border-[#14F195]/40 hover:bg-[#0A0A0A]/80 transition-all disabled:opacity-60"
-                        >
-                          <h4 className="font-semibold text-white">{agent.name}</h4>
-                          <p className="text-xs text-zinc-400 mt-1 line-clamp-1">
-                            {agent.personality}
-                          </p>
-                        </button>
-                      ))
+                      <div className="relative" style={{ height: availableAgentsVirtualizer.getTotalSize() }}>
+                        {availableAgentsVirtualizer.getVirtualItems().map((virtualItem) => {
+                          const agent = availableAgents[virtualItem.index];
+                          if (!agent) return null;
+
+                          return (
+                            <button
+                              key={agent.id}
+                              onClick={() => handleSelectAgent(agent)}
+                              disabled={isListing}
+                              className="absolute left-0 w-full p-3 rounded-lg border border-white/10 bg-[#0A0A0A] text-left cursor-pointer hover:border-[#14F195]/40 hover:bg-[#0A0A0A]/80 transition-all disabled:opacity-60"
+                              style={{ transform: `translateY(${virtualItem.start}px)` }}
+                            >
+                              <h4 className="font-semibold text-white">{agent.name}</h4>
+                              <p className="text-xs text-zinc-400 mt-1 line-clamp-1">
+                                {agent.personality}
+                              </p>
+                            </button>
+                          );
+                        })}
+                      </div>
                     )}
                   </motion.div>
                 ) : (

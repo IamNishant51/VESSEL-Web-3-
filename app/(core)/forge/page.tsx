@@ -330,7 +330,7 @@ export default function ForgePage() {
         systemPrompt,
       });
 
-      toast.success(`Agent Soul minted successfully${isDevMode ? " (dev mode — no on-chain transaction)" : ` on-chain. ${result.explorerUrl ?? "Simulation complete"}`}`);
+      toast.success(`Agent Soul minted successfully${result.explorerUrl ? `. ${result.explorerUrl}` : ""}`);
     } catch (error) {
       const message = (() => {
         if (error instanceof Error) {
@@ -406,14 +406,11 @@ export default function ForgePage() {
   }
 
   return (
-    <div className="-mx-4 min-h-screen bg-[var(--bg-base)] px-4 pb-10 pt-24 text-[var(--text-primary)] sm:-mx-6 sm:px-6 lg:pt-8">
-      <div className="mx-auto grid w-full max-w-[1320px] grid-cols-1 gap-16 lg:grid-cols-[320px_minmax(0,1fr)]">
-        <aside className="hidden self-start lg:block lg:sticky lg:top-24 lg:h-fit">
+    <div className="min-h-screen overflow-x-clip bg-[var(--bg-base)] px-4 pb-10 pt-24 text-[var(--text-primary)] sm:px-6 sm:pt-28 lg:pt-32">
+      <div className="mx-auto grid w-full max-w-[1320px] grid-cols-1 gap-8 lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[320px_minmax(0,1fr)]">
+        <aside className="hidden self-start lg:block lg:sticky lg:top-28 lg:h-fit">
           <div className="mb-8 flex items-center gap-2">
             <span className="inline-block rounded-full bg-[#171819]/5 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--text-primary)]/60">Forge Module</span>
-            {isDevMode && (
-              <span className="inline-block rounded-full bg-amber-500/10 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.15em] text-amber-600 ring-1 ring-amber-500/20">Dev Mode</span>
-            )}
           </div>
           <h1 className="mb-6 text-5xl font-bold leading-[0.9] tracking-tight text-[var(--text-primary)]">
             Agent
@@ -462,14 +459,14 @@ export default function ForgePage() {
           </div>
         </aside>
 
-        <main className="space-y-20 lg:pl-2">
+        <main className="space-y-16 lg:space-y-20 lg:pl-2">
           <section id="section-identity" className="space-y-8">
             <div className="space-y-3">
               <div className="inline-flex items-center gap-2">
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#171819] text-xs font-bold text-white">1</span>
                 <span className="text-xs font-medium uppercase tracking-[0.2em] text-[var(--text-primary)]/50">Step One</span>
               </div>
-              <h2 className="text-5xl font-bold tracking-tight text-[var(--text-primary)]">Name &amp; Personality</h2>
+              <h2 className="text-[28px] font-bold tracking-tight text-[var(--text-primary)] sm:text-[36px] lg:text-5xl">Name &amp; Personality</h2>
               <p className="max-w-xl text-lg text-[var(--text-primary)]/60 leading-relaxed">
                 Define the core essence of your agent. This data will be etched into its neural metadata.
               </p>
@@ -482,7 +479,7 @@ export default function ForgePage() {
                   value={draft.name}
                   onChange={(event) => updateDraft({ name: event.target.value })}
                   placeholder="e.g. SOL-ARBITER-01"
-                  className="w-full rounded-lg border-2 border-[#e5e5e5] bg-[var(--bg-surface)] px-5 py-4 text-lg font-medium text-[var(--text-primary)] placeholder:text-[var(--text-primary)]/30 transition focus:border-[#171819] focus:outline-none focus:ring-4 focus:ring-[#171819]/10"
+                  className="w-full rounded-lg border-2 border-[#e5e5e5] bg-[var(--bg-surface)] px-4 py-3 text-base font-medium text-[var(--text-primary)] placeholder:text-[var(--text-primary)]/30 transition focus:border-[#171819] focus:outline-none focus:ring-4 focus:ring-[#171819]/10 sm:px-5 sm:py-4 sm:text-lg"
                 />
               </div>
 
@@ -492,7 +489,7 @@ export default function ForgePage() {
                   value={draft.tagline}
                   onChange={(event) => updateDraft({ tagline: event.target.value })}
                   placeholder="Give Your Ideas a Soul"
-                  className="w-full rounded-lg border-2 border-[#e5e5e5] bg-[var(--bg-surface)] px-5 py-4 text-lg font-medium text-[var(--text-primary)] placeholder:text-[var(--text-primary)]/30 transition focus:border-[#171819] focus:outline-none focus:ring-4 focus:ring-[#171819]/10"
+                  className="w-full rounded-lg border-2 border-[#e5e5e5] bg-[var(--bg-surface)] px-4 py-3 text-base font-medium text-[var(--text-primary)] placeholder:text-[var(--text-primary)]/30 transition focus:border-[#171819] focus:outline-none focus:ring-4 focus:ring-[#171819]/10 sm:px-5 sm:py-4 sm:text-lg"
                 />
               </div>
 
@@ -514,7 +511,7 @@ export default function ForgePage() {
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#171819] text-xs font-bold text-white">2</span>
                 <span className="text-xs font-medium uppercase tracking-[0.2em] text-[var(--text-primary)]/50">Step Two</span>
               </div>
-              <h2 className="text-5xl font-bold tracking-tight text-[var(--text-primary)]">Tools &amp; Capabilities</h2>
+              <h2 className="text-[28px] font-bold tracking-tight text-[var(--text-primary)] sm:text-[36px] lg:text-5xl">Tools &amp; Capabilities</h2>
               <p className="max-w-xl text-lg text-[var(--text-primary)]/60 leading-relaxed">
                 Select the permissioned modules your agent can interact with.
               </p>
@@ -569,7 +566,7 @@ export default function ForgePage() {
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#171819] text-xs font-bold text-white">3</span>
                 <span className="text-xs font-medium uppercase tracking-[0.2em] text-[var(--text-primary)]/50">Step Three</span>
               </div>
-              <h2 className="text-5xl font-bold tracking-tight text-[var(--text-primary)]">Knowledge &amp; Memory</h2>
+              <h2 className="text-[28px] font-bold tracking-tight text-[var(--text-primary)] sm:text-[36px] lg:text-5xl">Knowledge &amp; Memory</h2>
               <p className="max-w-xl text-lg text-[var(--text-primary)]/60 leading-relaxed">
                 Equip your agent with context and data sources it can reference.
               </p>
@@ -632,7 +629,7 @@ export default function ForgePage() {
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#171819] text-xs font-bold text-white">4</span>
                 <span className="text-xs font-medium uppercase tracking-[0.2em] text-[var(--text-primary)]/50">Step Four</span>
               </div>
-              <h2 className="text-5xl font-bold tracking-tight text-[var(--text-primary)]">Risk &amp; Compliance</h2>
+              <h2 className="text-[28px] font-bold tracking-tight text-[var(--text-primary)] sm:text-[36px] lg:text-5xl">Risk &amp; Compliance</h2>
               <p className="max-w-xl text-lg text-[var(--text-primary)]/60 leading-relaxed">
                 Define guardrails and risk thresholds for autonomous operation.
               </p>
@@ -690,7 +687,7 @@ export default function ForgePage() {
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#171819] text-xs font-bold text-white">5</span>
                 <span className="text-xs font-medium uppercase tracking-[0.2em] text-[var(--text-primary)]/50">Step Five</span>
               </div>
-              <h2 className="text-5xl font-bold tracking-tight text-[var(--text-primary)]">Spending &amp; Limits</h2>
+              <h2 className="text-[28px] font-bold tracking-tight text-[var(--text-primary)] sm:text-[36px] lg:text-5xl">Spending &amp; Limits</h2>
               <p className="max-w-xl text-lg text-[var(--text-primary)]/60 leading-relaxed">
                 Establish the safety rails for the agent&apos;s financial autonomy.
               </p>
@@ -758,7 +755,7 @@ export default function ForgePage() {
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#171819] text-xs font-bold text-white">6</span>
                 <span className="text-xs font-medium uppercase tracking-[0.2em] text-[var(--text-primary)]/50">Final Step</span>
               </div>
-              <h2 className="text-5xl font-bold tracking-tight text-[var(--text-primary)]">Final Verification</h2>
+              <h2 className="text-[28px] font-bold tracking-tight text-[var(--text-primary)] sm:text-[36px] lg:text-5xl">Final Verification</h2>
               <p className="max-w-xl text-lg text-[var(--text-primary)]/60 leading-relaxed">
                 Review the configuration before deploying to the Solana mainnet.
               </p>
@@ -782,8 +779,8 @@ export default function ForgePage() {
                       <Wallet className="h-3.5 w-3.5" /> SAFETY: HIGH
                     </span>
                     {mintSignature && (
-                      <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ${isDevMode ? "bg-amber-500/10 text-amber-600" : "bg-[#14F195]/10 text-[#14F195]"}`}>
-                        {isDevMode ? "MINTED: DEV MODE" : "MINTED: ON-CHAIN"}
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-[#14F195]/10 px-3 py-1.5 text-xs font-semibold text-[#14F195]">
+                        MINTED: ON-CHAIN
                       </span>
                     )}
                   </div>
@@ -885,13 +882,13 @@ export default function ForgePage() {
               <Button
                 onClick={() => void handleMint()}
                 disabled={isMinting || (!isDevMode && (mintPreflight.loading || !mintPreflight.ready || isBraveWallet))}
-                className={`${buttonFeedbackClass} h-11 gap-2 rounded-lg border border-[#171819] bg-[#171819] px-4 text-sm font-semibold text-white transition hover:bg-[#111111] hover:shadow-md disabled:opacity-60`}
+                className={`btn-press btn-cta h-11 gap-2 rounded-lg border border-[#171819] bg-[#171819] px-4 text-sm font-semibold text-white transition hover:bg-[#111111] hover:shadow-md disabled:opacity-60 ${isMinting ? "btn-loading" : ""}`}
               >
                 <Sparkles className={`h-5 w-5 ${isMinting ? "animate-pulse" : ""}`} />
                 {isMinting
                   ? "Minting..."
                   : isDevMode
-                    ? "Mint (Dev Mode — No SOL Required)"
+                    ? "Mint as Compressed NFT"
                     : isBraveWallet
                       ? "Switch Wallet to Mint"
                     : mintPreflight.loading
@@ -904,7 +901,7 @@ export default function ForgePage() {
               <Button
                 onClick={() => void handleDeploy()}
                 disabled={isDeploying}
-                className={`${buttonFeedbackClass} h-11 gap-2 rounded-lg border border-black/15 bg-[var(--bg-surface)] px-4 text-sm font-semibold text-[var(--text-primary)] transition hover:border-[#171819] hover:shadow-md disabled:opacity-70`}
+                className={`btn-press btn-secondary h-11 gap-2 rounded-lg border border-black/15 bg-[var(--bg-surface)] px-4 text-sm font-semibold text-[var(--text-primary)] transition hover:border-[#171819] hover:shadow-md disabled:opacity-70 ${isDeploying ? "btn-loading" : ""}`}
               >
                 {isDeploying ? (
                   <>

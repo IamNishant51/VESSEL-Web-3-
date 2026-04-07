@@ -120,7 +120,16 @@ export type RunAgentResponse = {
   reasoningSteps?: AgentReasoningStep[];
   planSteps?: AgentPlanStep[];
   toolExecution?: AgentToolExecution;
-  agentState?: "idle" | "thinking" | "planning" | "executing" | "waiting_approval" | "error";
+  agentState?: "idle" | "thinking" | "planning" | "executing" | "waiting_approval" | "ready_for_execution" | "error";
+  executionRequest?: {
+    tool: string;
+    step: string;
+    requiresWalletApproval: boolean;
+    description?: string;
+    estimatedFee?: number;
+    agentId?: string;
+    parameters?: Record<string, unknown>;
+  };
 };
 
 export type ToolCategory =

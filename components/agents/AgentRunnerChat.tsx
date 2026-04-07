@@ -586,11 +586,12 @@ export function AgentRunnerChat({ agent }: Props) {
         if (result.executionRequest?.requiresWalletApproval) {
           setAgentState("waiting_approval");
           setPendingTransaction({
-            tool: result.toolUsed,
+            tool: result.toolUsed as any,
             description: result.executionRequest.description || `Execute ${result.toolUsed}`,
-            estimatedFee: 0.000005,
+            estimatedFee: result.executionRequest.estimatedFee || 0.000005,
             agentId: agent.id,
-            parameters: {},
+            parameters: result.executionRequest.parameters || {},
+            estimatedOutput: result.toolExecution?.details || {},
           });
           setShowTxModal(true);
 
@@ -703,7 +704,7 @@ export function AgentRunnerChat({ agent }: Props) {
   ];
 
   return (
-    <div className="relative flex h-[100dvh] min-h-0 flex-col bg-white sm:h-full">
+    <div className="relative flex h-full min-h-0 flex-col overflow-hidden bg-white lg:flex-row">
       {/* Mobile sidebar overlay */}
       <AnimatePresence>
         {showSidebar && (
@@ -767,9 +768,9 @@ export function AgentRunnerChat({ agent }: Props) {
       </AnimatePresence>
 
       {/* Main Area */}
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         {/* Header */}
-        <div className="shrink-0 border-b border-black/8 bg-white px-3 py-2 sm:px-4 sm:py-2.5">
+        <div className="shrink-0 border-b border-black/8 bg-white px-3 py-2.5 sm:px-4">
           <div className="flex items-center justify-between">
             <div className="flex min-w-0 items-center gap-2 sm:gap-3">
               <button
@@ -812,7 +813,7 @@ export function AgentRunnerChat({ agent }: Props) {
           className="relative min-h-0 flex-1 overflow-y-auto bg-white"
         >
           {!hasUserMessages ? (
-            <div className="flex h-full flex-col items-center justify-center px-3 py-6 sm:py-12">
+            <div className="flex h-full flex-col items-center justify-center px-4 py-8 sm:px-6 sm:py-12">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -825,7 +826,7 @@ export function AgentRunnerChat({ agent }: Props) {
                   </div>
                   <div className={`absolute -bottom-1 -right-1 h-3 w-3 rounded-full border-2 border-white sm:h-4 sm:w-4 ${stateColors[agentState]}`} />
                 </div>
-                <h3 className="text-base font-semibold tracking-[-0.02em] text-black sm:text-[20px]">
+                <h3 className="text-center text-base font-semibold tracking-[-0.02em] text-black sm:text-[20px]">
                   What should I work on?
                 </h3>
                 <p className="mt-1.5 max-w-[400px] text-center text-[11px] leading-relaxed text-black/40 sm:mt-2 sm:max-w-[480px] sm:text-[13px]">
@@ -843,13 +844,13 @@ export function AgentRunnerChat({ agent }: Props) {
                         setInput(action.prompt);
                         inputRef.current?.focus();
                       }}
-                      className="group flex items-start gap-2 rounded-xl border border-black/8 bg-white p-2.5 text-left transition-all duration-150 hover:border-black/15 hover:bg-black/[0.02] hover:shadow-sm sm:gap-3 sm:p-3.5"
+                      className="group flex items-start gap-2 rounded-xl border border-black/8 bg-white p-3 text-left text-sm transition-all duration-150 hover:border-black/15 hover:bg-black/[0.02] hover:shadow-sm sm:gap-3 sm:p-3.5"
                     >
                       <div className="mt-0.5 shrink-0 rounded-md bg-black/[0.04] p-1.5 text-black/40 transition-colors group-hover:text-black/60">
                         {action.icon}
                       </div>
                       <div className="min-w-0">
-                        <p className="text-[11px] font-medium text-black/60 group-hover:text-black/80">
+                        <p className="text-[12px] font-medium text-black/60 group-hover:text-black/80">
                           {action.label}
                         </p>
                       </div>
@@ -859,7 +860,7 @@ export function AgentRunnerChat({ agent }: Props) {
               </motion.div>
             </div>
           ) : (
-            <div className="mx-auto max-w-[800px] px-3 py-4 sm:px-4 sm:py-6">
+            <div className="mx-auto w-full max-w-[800px] px-4 py-4 sm:px-6 sm:py-6">
               <AnimatePresence initial={false}>
                 {messages.map((msg) => (
                   <motion.div
@@ -1105,7 +1106,7 @@ export function AgentRunnerChat({ agent }: Props) {
 
         {/* Input */}
         <div className="shrink-0 border-t border-black/8 bg-white px-2 py-2 sm:px-4 sm:py-3">
-          <div className="mx-auto max-w-[800px]">
+          <div className="mx-auto w-full max-w-[800px]">
             <div className="flex items-end gap-1.5 rounded-2xl border border-black/10 bg-white p-1.5 transition-colors focus-within:border-black/20 focus-within:shadow-sm sm:p-2">
               <textarea
                 ref={inputRef}

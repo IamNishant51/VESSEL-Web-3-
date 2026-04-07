@@ -8,11 +8,16 @@ interface JwtPayload {
   exp?: number;
 }
 
-// Secret keys for JWT signing - in production, use environment variables
-const JWT_SECRET =
-  process.env.JWT_SECRET || "your-super-secret-jwt-key-change-in-production";
-const JWT_REFRESH_SECRET =
-  process.env.JWT_REFRESH_SECRET || "your-super-secret-refresh-key-change-in-production";
+const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
+
+if (!JWT_SECRET || JWT_SECRET === "your-super-secret-jwt-key-change-in-production") {
+  throw new Error("JWT_SECRET environment variable is required and must be changed from default in production");
+}
+
+if (!JWT_REFRESH_SECRET || JWT_REFRESH_SECRET === "your-super-secret-refresh-key-change-in-production") {
+  throw new Error("JWT_REFRESH_SECRET environment variable is required and must be changed from default in production");
+}
 
 const JWT_EXPIRES_IN = "7d"; // Token expiration time
 const JWT_REFRESH_EXPIRES_IN = "30d"; // Refresh token expiration time
@@ -26,7 +31,7 @@ export function generateToken(user: IUserDoc): string {
     walletAddress: user.walletAddress,
   };
 
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+  return jwt.sign(payload, JWT_SECRET!, { expiresIn: JWT_EXPIRES_IN });
 }
 
 /**
@@ -38,7 +43,7 @@ export function generateRefreshToken(user: IUserDoc): string {
     walletAddress: user.walletAddress,
   };
 
-  return jwt.sign(payload, JWT_REFRESH_SECRET, { expiresIn: JWT_REFRESH_EXPIRES_IN });
+  return jwt.sign(payload, JWT_REFRESH_SECRET!, { expiresIn: JWT_REFRESH_EXPIRES_IN });
 }
 
 /**
@@ -46,8 +51,8 @@ export function generateRefreshToken(user: IUserDoc): string {
  */
 export function verifyToken(token: string): JwtPayload | null {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    return decoded as JwtPayload;
+    const decoded = jwt.verify(token, JWT_SECRET!);
+    return decoded as unknown as JwtPayload;
   } catch (error) {
     return null;
   }
@@ -58,8 +63,8 @@ export function verifyToken(token: string): JwtPayload | null {
  */
 export function verifyRefreshToken(token: string): JwtPayload | null {
   try {
-    const decoded = jwt.verify(token, JWT_REFRESH_SECRET);
-    return decoded as JwtPayload;
+    const decoded = jwt.verify(token, JWT_REFRESH_SECRET!);
+    return decoded as unknown as JwtPayload;
   } catch (error) {
     return null;
   }

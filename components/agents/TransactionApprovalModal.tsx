@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, memo } from "react";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { WalletNotConnectedError } from "@solana/wallet-adapter-base";
 import { Transaction } from "@solana/web3.js";
@@ -30,7 +30,7 @@ interface TransactionApprovalModalProps {
   onError?: (error: string) => void;
 }
 
-export function TransactionApprovalModal({
+export const TransactionApprovalModal = memo(function TransactionApprovalModal({
   open,
   onClose,
   transactionData,
@@ -263,4 +263,4 @@ export function TransactionApprovalModal({
       </SheetContent>
     </Sheet>
   );
-}
+});

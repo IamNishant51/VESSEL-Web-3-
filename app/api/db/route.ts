@@ -5,12 +5,16 @@ import { Agent, MarketplaceListing, User, Transaction, Conversation, Follow, Lik
 import { dbActionSchema } from "@/lib/validation";
 import { verifyWalletAuth } from "@/lib/auth";
 import { withAuth } from "@/lib/middleware";
+import { validatePaginationParams, calculateSkipLimit, buildPaginatedResponse } from "@/lib/pagination";
+import { withMongoTransaction } from "@/lib/mongo-transaction";
 
 export async function POST(request: Request) {
   try {
     if (!isMongoDBConnected()) {
       await connectToDatabase();
     }
+
+    const authRequest = request.clone();
 
     const body = await request.json().catch(() => null);
     if (!body) {
@@ -33,7 +37,7 @@ export async function POST(request: Request) {
       // Create a mock NextRequest with the same body for the middleware
       // In a real implementation, we'd modify the middleware to work with Request directly
       // For now, we'll keep the existing auth logic but prepare for migration
-      const authResult = await verifyWalletAuth(request as any);
+      const authResult = await verifyWalletAuth(authRequest as any);
       if (!authResult.valid) {
         return NextResponse.json({ error: authResult.error }, { status: authResult.status });
       }
@@ -56,101 +60,120 @@ export async function POST(request: Request) {
       case "save-agent": {
         const agent = (validationResult.data as any).agent;
 
-        const existingAgent = await Agent.findOne({ id: agent.id });
-        if (existingAgent && existingAgent.owner !== agent.owner) {
-          return NextResponse.json({ error: "Unauthorized: agent belongs to another user" }, { status: 403 });
-        }
+        return await withMongoTransaction(async (session) => {
+          const sessionOptions = session ? { session } : {};
+          const existingAgent = await Agent.findOne({ id: agent.id }).session(session ?? null);
+          if (existingAgent && existingAgent.owner !== agent.owner) {
+            return NextResponse.json({ error: "Unauthorized: agent belongs to another user" }, { status: 403 });
+          }
 
-        await Agent.findOneAndUpdate(
-          { id: agent.id },
-          {
-            id: agent.id,
-            name: agent.name,
-            tagline: agent.tagline || "",
-            personality: agent.personality || "",
-            owner: agent.owner || "",
-            riskLevel: agent.riskLevel || "Balanced",
-            dailyBudgetUsdc: agent.dailyBudgetUsdc || 100,
-            maxSolPerTx: agent.maxSolPerTx || 0.5,
-            allowedActions: agent.allowedActions || [],
-            tools: agent.tools || [],
-            treasuryBalance: agent.treasuryBalance ?? 10,
-            earnings: agent.earnings ?? 0,
-            totalActions: agent.totalActions ?? 0,
-            reputation: agent.reputation ?? 80,
-            listed: !!agent.listed,
-            isRental: !!agent.isRental,
-            mintAddress: agent.mintAddress || "",
-          },
-          { upsert: true, new: true }
-        );
+          await Agent.findOneAndUpdate(
+            { id: agent.id },
+            {
+              id: agent.id,
+              name: agent.name,
+              tagline: agent.tagline || "",
+              personality: agent.personality || "",
+              owner: agent.owner || "",
+              riskLevel: agent.riskLevel || "Balanced",
+              dailyBudgetUsdc: agent.dailyBudgetUsdc || 100,
+              maxSolPerTx: agent.maxSolPerTx || 0.5,
+              allowedActions: agent.allowedActions || [],
+              tools: agent.tools || [],
+              treasuryBalance: agent.treasuryBalance ?? 10,
+              earnings: agent.earnings ?? 0,
+              totalActions: agent.totalActions ?? 0,
+              reputation: agent.reputation ?? 80,
+              listed: !!agent.listed,
+              isRental: !!agent.isRental,
+              mintAddress: agent.mintAddress || "",
+            },
+            { upsert: true, new: true, ...sessionOptions }
+          );
 
-        return NextResponse.json({ success: true });
+          return NextResponse.json({ success: true });
+        });
       }
 
       case "bulk-save-agents": {
         const agents = (validationResult.data as any).agents;
 
-        for (const agent of agents) {
-          const existingAgent = await Agent.findOne({ id: agent.id });
-          if (existingAgent && existingAgent.owner !== agent.owner) {
-            return NextResponse.json({ error: `Unauthorized: agent ${agent.id} belongs to another user` }, { status: 403 });
+        return await withMongoTransaction(async (session) => {
+          const sessionOptions = session ? { session } : {};
+
+          for (const agent of agents) {
+            const existingAgent = await Agent.findOne({ id: agent.id }).session(session ?? null);
+            if (existingAgent && existingAgent.owner !== agent.owner) {
+              return NextResponse.json({ error: `Unauthorized: agent ${agent.id} belongs to another user` }, { status: 403 });
+            }
           }
-        }
 
-        const ops = agents.map((agent: Record<string, unknown>) => ({
-          updateOne: {
-            filter: { id: String(agent.id) },
-            update: {
-              $set: {
-                name: String(agent.name || ""),
-                tagline: String(agent.tagline || ""),
-                personality: String(agent.personality || ""),
-                owner: String(agent.owner || ""),
-                riskLevel: String(agent.riskLevel || "Balanced"),
-                dailyBudgetUsdc: Number(agent.dailyBudgetUsdc) || 100,
-                maxSolPerTx: Number(agent.maxSolPerTx) || 0.5,
-                allowedActions: Array.isArray(agent.allowedActions) ? agent.allowedActions : [],
-                tools: Array.isArray(agent.tools) ? agent.tools : [],
-                treasuryBalance: Number(agent.treasuryBalance) ?? 10,
-                earnings: Number(agent.earnings) ?? 0,
-                totalActions: Number(agent.totalActions) ?? 0,
-                reputation: Number(agent.reputation) ?? 80,
-                listed: !!agent.listed,
-                isRental: !!agent.isRental,
-                mintAddress: String(agent.mintAddress || ""),
+          const ops = agents.map((agent: Record<string, unknown>) => ({
+            updateOne: {
+              filter: { id: String(agent.id) },
+              update: {
+                $set: {
+                  name: String(agent.name || ""),
+                  tagline: String(agent.tagline || ""),
+                  personality: String(agent.personality || ""),
+                  owner: String(agent.owner || ""),
+                  riskLevel: String(agent.riskLevel || "Balanced"),
+                  dailyBudgetUsdc: Number(agent.dailyBudgetUsdc) || 100,
+                  maxSolPerTx: Number(agent.maxSolPerTx) || 0.5,
+                  allowedActions: Array.isArray(agent.allowedActions) ? agent.allowedActions : [],
+                  tools: Array.isArray(agent.tools) ? agent.tools : [],
+                  treasuryBalance: Number(agent.treasuryBalance) ?? 10,
+                  earnings: Number(agent.earnings) ?? 0,
+                  totalActions: Number(agent.totalActions) ?? 0,
+                  reputation: Number(agent.reputation) ?? 80,
+                  listed: !!agent.listed,
+                  isRental: !!agent.isRental,
+                  mintAddress: String(agent.mintAddress || ""),
+                },
               },
+              upsert: true,
             },
-            upsert: true,
-          },
-        }));
+          }));
 
-        await Agent.bulkWrite(ops);
-        return NextResponse.json({ success: true, count: agents.length });
+          await Agent.bulkWrite(ops, sessionOptions);
+          return NextResponse.json({ success: true, count: agents.length });
+        });
       }
 
       case "delete-agent": {
         const { agentId } = validationResult.data as any;
 
-        const existingAgent = await Agent.findOne({ id: agentId });
-        if (!existingAgent) {
-          return NextResponse.json({ error: "Agent not found" }, { status: 404 });
-        }
+        return await withMongoTransaction(async (session) => {
+          const sessionOptions = session ? { session } : {};
+          const existingAgent = await Agent.findOne({ id: agentId }).session(session ?? null);
+          if (!existingAgent) {
+            return NextResponse.json({ error: "Agent not found" }, { status: 404 });
+          }
 
-        const authResult = await verifyWalletAuth(request as any);
-        if (authResult.valid && existingAgent.owner !== authResult.publicKey.toBase58()) {
-          return NextResponse.json({ error: "Unauthorized: agent belongs to another user" }, { status: 403 });
-        }
+          const authResult = await verifyWalletAuth(authRequest as any);
+          if (authResult.valid && existingAgent.owner !== authResult.publicKey.toBase58()) {
+            return NextResponse.json({ error: "Unauthorized: agent belongs to another user" }, { status: 403 });
+          }
 
-        await Agent.deleteOne({ id: agentId });
-        return NextResponse.json({ success: true });
+          await Agent.deleteOne({ id: agentId }, sessionOptions);
+          return NextResponse.json({ success: true });
+        });
       }
 
       case "fetch-agents": {
-        const { walletAddress } = body;
+        const { walletAddress, page, limit } = body;
+        const { page: pageNum, limit: limitNum, sort } = validatePaginationParams({ page, limit });
+        const { skip } = calculateSkipLimit(pageNum, limitNum);
+
         const query = walletAddress ? { owner: walletAddress } : {};
-        const agents = await Agent.find(query).sort({ createdAt: -1 }).lean();
-        return NextResponse.json({ agents });
+        
+        const [agents, total] = await Promise.all([
+          Agent.find(query).sort(sort).skip(skip).limit(limitNum).lean(),
+          Agent.countDocuments(query),
+        ]);
+
+        const response = buildPaginatedResponse(agents, pageNum, limitNum, total);
+        return NextResponse.json(response);
       }
 
       case "fetch-agent-by-id": {
@@ -170,75 +193,104 @@ export async function POST(request: Request) {
       case "save-listing": {
         const listing = (validationResult.data as any).listing;
 
-        const existingListing = await MarketplaceListing.findOne({ id: listing.id });
-        if (existingListing && existingListing.seller !== listing.seller) {
-          return NextResponse.json({ error: "Unauthorized: listing belongs to another user" }, { status: 403 });
-        }
+        return await withMongoTransaction(async (session) => {
+          const sessionOptions = session ? { session } : {};
+          const existingListing = await MarketplaceListing.findOne({ id: listing.id }).session(session ?? null);
+          if (existingListing && existingListing.seller !== listing.seller) {
+            return NextResponse.json({ error: "Unauthorized: listing belongs to another user" }, { status: 403 });
+          }
 
-        await MarketplaceListing.findOneAndUpdate(
-          { id: listing.id },
-          {
-            id: listing.id,
-            seller: listing.seller,
-            price: listing.price,
-            currency: listing.currency || "SOL",
-            isRental: !!listing.isRental,
-            rentalDays: listing.rentalDays,
-            listedAt: new Date().toISOString(),
-          },
-          { upsert: true, new: true }
-        );
+          await MarketplaceListing.findOneAndUpdate(
+            { id: listing.id },
+            {
+              id: listing.id,
+              seller: listing.seller,
+              price: listing.price,
+              currency: listing.currency || "SOL",
+              isRental: !!listing.isRental,
+              rentalDays: listing.rentalDays,
+              listedAt: new Date().toISOString(),
+            },
+            { upsert: true, new: true, ...sessionOptions }
+          );
 
-        return NextResponse.json({ success: true });
+          return NextResponse.json({ success: true });
+        });
       }
 
       case "delete-listing": {
         const { agentId } = validationResult.data as any;
 
-        const existingListing = await MarketplaceListing.findOne({ id: agentId });
-        if (!existingListing) {
-          return NextResponse.json({ error: "Listing not found" }, { status: 404 });
-        }
+        return await withMongoTransaction(async (session) => {
+          const sessionOptions = session ? { session } : {};
+          const existingListing = await MarketplaceListing.findOne({ id: agentId }).session(session ?? null);
+          if (!existingListing) {
+            return NextResponse.json({ error: "Listing not found" }, { status: 404 });
+          }
 
-        const authResult = await verifyWalletAuth(request as any);
-        if (authResult.valid && existingListing.seller !== authResult.publicKey.toBase58()) {
-          return NextResponse.json({ error: "Unauthorized: listing belongs to another user" }, { status: 403 });
-        }
+          const authResult = await verifyWalletAuth(authRequest as any);
+          if (authResult.valid && existingListing.seller !== authResult.publicKey.toBase58()) {
+            return NextResponse.json({ error: "Unauthorized: listing belongs to another user" }, { status: 403 });
+          }
 
-        await MarketplaceListing.deleteOne({ id: agentId });
-        return NextResponse.json({ success: true });
+          await MarketplaceListing.deleteOne({ id: agentId }, sessionOptions);
+          return NextResponse.json({ success: true });
+        });
       }
 
       case "fetch-listings": {
-        const { seller, includeAll } = body;
+        const { seller, includeAll, page, limit } = body;
+        const { page: pageNum, limit: limitNum, sort } = validatePaginationParams({ page, limit });
+        const { skip } = calculateSkipLimit(pageNum, limitNum);
+
         const query = seller ? { seller } : includeAll ? {} : {};
-        const listings = await MarketplaceListing.find(query).sort({ listedAt: -1 }).lean();
-        return NextResponse.json({ listings });
+        
+        const [listings, total] = await Promise.all([
+          MarketplaceListing.find(query).sort(sort).skip(skip).limit(limitNum).lean(),
+          MarketplaceListing.countDocuments(query),
+        ]);
+
+        const response = buildPaginatedResponse(listings, pageNum, limitNum, total);
+        return NextResponse.json(response);
       }
 
        case "save-transaction": {
          const tx = (validationResult.data as any).tx;
 
-         await Transaction.create({
-           transactionSignature: tx.transactionSignature,
-           type: tx.type,
-           fromAddress: tx.fromAddress,
-           toAddress: tx.toAddress,
-           agentId: tx.agentId,
-           amount: tx.amount,
-           currency: tx.currency || "SOL",
-           explorerUrl: tx.explorerUrl || "",
-           metadata: tx.metadata || {},
-         });
+         return await withMongoTransaction(async (session) => {
+           const sessionOptions = session ? { session } : {};
+           await Transaction.create([
+             {
+               transactionSignature: tx.transactionSignature,
+               type: tx.type,
+               fromAddress: tx.fromAddress,
+               toAddress: tx.toAddress,
+               agentId: tx.agentId,
+               amount: tx.amount,
+               currency: tx.currency || "SOL",
+               explorerUrl: tx.explorerUrl || "",
+               metadata: tx.metadata || {},
+             },
+           ], sessionOptions);
 
-         return NextResponse.json({ success: true });
+           return NextResponse.json({ success: true });
+         });
        }
 
       case "fetch-transactions": {
-        const { agentId, limit = 50 } = body;
+        const { agentId, page, limit } = body;
+        const { page: pageNum, limit: limitNum, sort } = validatePaginationParams({ page, limit });
+        const { skip } = calculateSkipLimit(pageNum, limitNum);
+
         const query = agentId ? { agentId } : {};
-        const transactions = await Transaction.find(query).sort({ timestamp: -1 }).limit(limit).lean();
-        return NextResponse.json({ transactions });
+        
+        const [transactions, total] = await Promise.all([
+          Transaction.find(query).sort(sort).skip(skip).limit(limitNum).lean(),
+          Transaction.countDocuments(query),
+        ]);
+
+        const response = buildPaginatedResponse(transactions, pageNum, limitNum, total);
+        return NextResponse.json(response);
       }
 
       case "user-stats": {
@@ -306,7 +358,7 @@ export async function POST(request: Request) {
          }
          
          // Verify the wallet making the request matches the profile being updated
-         const authResult = await verifyWalletAuth(request as any);
+         const authResult = await verifyWalletAuth(authRequest as any);
          if (!authResult.valid) {
            return NextResponse.json({ error: authResult.error }, { status: authResult.status });
          }
@@ -344,37 +396,43 @@ export async function POST(request: Request) {
 
       case "save-conversation": {
         const conversation = (validationResult.data as any).conversation;
-        
-        await Conversation.findOneAndUpdate(
-          { id: conversation.id },
-          {
-            id: conversation.id,
-            agentId: conversation.agentId,
-            walletAddress: conversation.walletAddress,
-            title: conversation.title,
-            messages: conversation.messages,
-          },
-          { upsert: true, new: true }
-        );
 
-        return NextResponse.json({ success: true });
+        return await withMongoTransaction(async (session) => {
+          const sessionOptions = session ? { session } : {};
+          await Conversation.findOneAndUpdate(
+            { id: conversation.id },
+            {
+              id: conversation.id,
+              agentId: conversation.agentId,
+              walletAddress: conversation.walletAddress,
+              title: conversation.title,
+              messages: conversation.messages,
+            },
+            { upsert: true, new: true, ...sessionOptions }
+          );
+
+          return NextResponse.json({ success: true });
+        });
       }
 
       case "delete-conversation": {
         const { conversationId } = validationResult.data as any;
-        
-        const existingConversation = await Conversation.findOne({ id: conversationId });
-        if (!existingConversation) {
-          return NextResponse.json({ error: "Conversation not found" }, { status: 404 });
-        }
 
-        const authResult = await verifyWalletAuth(request as any);
-        if (authResult.valid && existingConversation.walletAddress !== authResult.publicKey.toBase58()) {
-          return NextResponse.json({ error: "Unauthorized: conversation belongs to another user" }, { status: 403 });
-        }
+        return await withMongoTransaction(async (session) => {
+          const sessionOptions = session ? { session } : {};
+          const existingConversation = await Conversation.findOne({ id: conversationId }).session(session ?? null);
+          if (!existingConversation) {
+            return NextResponse.json({ error: "Conversation not found" }, { status: 404 });
+          }
 
-        await Conversation.deleteOne({ id: conversationId });
-        return NextResponse.json({ success: true });
+          const authResult = await verifyWalletAuth(authRequest as any);
+          if (authResult.valid && existingConversation.walletAddress !== authResult.publicKey.toBase58()) {
+            return NextResponse.json({ error: "Unauthorized: conversation belongs to another user" }, { status: 403 });
+          }
+
+          await Conversation.deleteOne({ id: conversationId }, sessionOptions);
+          return NextResponse.json({ success: true });
+        });
       }
 
       case "fetch-conversations": {
@@ -407,90 +465,102 @@ export async function POST(request: Request) {
 
       case "follow-agent": {
         const { agentId } = validationResult.data as any;
-        
-        const authResult = await verifyWalletAuth(request as any);
-        if (!authResult.valid) {
-          return NextResponse.json({ error: "Authentication required to follow" }, { status: 401 });
-        }
-        
-        const walletAddress = authResult.publicKey.toBase58();
-        const followId = `follow_${walletAddress}_${agentId}`;
-        
-        await Follow.findOneAndUpdate(
-          { id: followId },
-          {
-            id: followId,
-            followerWallet: walletAddress,
-            agentId,
-          },
-          { upsert: true, new: true }
-        );
-        
-        const followerCount = await Follow.countDocuments({ agentId });
-        
-        return NextResponse.json({ success: true, followerCount });
+
+        return await withMongoTransaction(async (session) => {
+          const sessionOptions = session ? { session } : {};
+          const authResult = await verifyWalletAuth(authRequest as any);
+          if (!authResult.valid) {
+            return NextResponse.json({ error: "Authentication required to follow" }, { status: 401 });
+          }
+
+          const walletAddress = authResult.publicKey.toBase58();
+          const followId = `follow_${walletAddress}_${agentId}`;
+
+          await Follow.findOneAndUpdate(
+            { id: followId },
+            {
+              id: followId,
+              followerWallet: walletAddress,
+              agentId,
+            },
+            { upsert: true, new: true, ...sessionOptions }
+          );
+
+          const followerCount = await Follow.countDocuments({ agentId }).session(session ?? null);
+
+          return NextResponse.json({ success: true, followerCount });
+        });
       }
 
       case "unfollow-agent": {
         const { agentId } = validationResult.data as any;
-        
-        const authResult = await verifyWalletAuth(request as any);
-        if (!authResult.valid) {
-          return NextResponse.json({ error: "Authentication required" }, { status: 401 });
-        }
-        
-        const walletAddress = authResult.publicKey.toBase58();
-        const followId = `follow_${walletAddress}_${agentId}`;
-        
-        await Follow.deleteOne({ id: followId });
-        
-        const followerCount = await Follow.countDocuments({ agentId });
-        
-        return NextResponse.json({ success: true, followerCount });
+
+        return await withMongoTransaction(async (session) => {
+          const sessionOptions = session ? { session } : {};
+          const authResult = await verifyWalletAuth(authRequest as any);
+          if (!authResult.valid) {
+            return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+          }
+
+          const walletAddress = authResult.publicKey.toBase58();
+          const followId = `follow_${walletAddress}_${agentId}`;
+
+          await Follow.deleteOne({ id: followId }, sessionOptions);
+
+          const followerCount = await Follow.countDocuments({ agentId }).session(session ?? null);
+
+          return NextResponse.json({ success: true, followerCount });
+        });
       }
 
       case "like-agent": {
         const { agentId } = validationResult.data as any;
-        
-        const authResult = await verifyWalletAuth(request as any);
-        if (!authResult.valid) {
-          return NextResponse.json({ error: "Authentication required to like" }, { status: 401 });
-        }
-        
-        const walletAddress = authResult.publicKey.toBase58();
-        const likeId = `like_${walletAddress}_${agentId}`;
-        
-        await Like.findOneAndUpdate(
-          { id: likeId },
-          {
-            id: likeId,
-            walletAddress,
-            agentId,
-          },
-          { upsert: true, new: true }
-        );
-        
-        const likeCount = await Like.countDocuments({ agentId });
-        
-        return NextResponse.json({ success: true, likeCount });
+
+        return await withMongoTransaction(async (session) => {
+          const sessionOptions = session ? { session } : {};
+          const authResult = await verifyWalletAuth(authRequest as any);
+          if (!authResult.valid) {
+            return NextResponse.json({ error: "Authentication required to like" }, { status: 401 });
+          }
+
+          const walletAddress = authResult.publicKey.toBase58();
+          const likeId = `like_${walletAddress}_${agentId}`;
+
+          await Like.findOneAndUpdate(
+            { id: likeId },
+            {
+              id: likeId,
+              walletAddress,
+              agentId,
+            },
+            { upsert: true, new: true, ...sessionOptions }
+          );
+
+          const likeCount = await Like.countDocuments({ agentId }).session(session ?? null);
+
+          return NextResponse.json({ success: true, likeCount });
+        });
       }
 
       case "unlike-agent": {
         const { agentId } = validationResult.data as any;
-        
-        const authResult = await verifyWalletAuth(request as any);
-        if (!authResult.valid) {
-          return NextResponse.json({ error: "Authentication required" }, { status: 401 });
-        }
-        
-        const walletAddress = authResult.publicKey.toBase58();
-        const likeId = `like_${walletAddress}_${agentId}`;
-        
-        await Like.deleteOne({ id: likeId });
-        
-        const likeCount = await Like.countDocuments({ agentId });
-        
-        return NextResponse.json({ success: true, likeCount });
+
+        return await withMongoTransaction(async (session) => {
+          const sessionOptions = session ? { session } : {};
+          const authResult = await verifyWalletAuth(authRequest as any);
+          if (!authResult.valid) {
+            return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+          }
+
+          const walletAddress = authResult.publicKey.toBase58();
+          const likeId = `like_${walletAddress}_${agentId}`;
+
+          await Like.deleteOne({ id: likeId }, sessionOptions);
+
+          const likeCount = await Like.countDocuments({ agentId }).session(session ?? null);
+          
+          return NextResponse.json({ success: true, likeCount });
+        });
       }
 
       case "get-social-status": {

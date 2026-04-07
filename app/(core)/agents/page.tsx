@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Search, ShoppingBag, Bot as BotIcon, Trash2, ExternalLink, X, Wallet, ShieldCheck, Sparkles, Filter, ChevronRight } from "lucide-react";
+import { Plus, Search, ShoppingBag, Bot as BotIcon, Trash2, ExternalLink, X, Wallet, ShieldCheck, Sparkles, Filter, ChevronRight, Loader2 } from "lucide-react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
@@ -100,6 +100,7 @@ export default function AgentsPage() {
   const [sortKey, setSortKey] = useState<SortKey>("newest");
   const [isListModalOpen, setIsListModalOpen] = useState(false);
   const [listModalAgents, setListModalAgents] = useState<typeof agents>([]);
+  const [runningAgentId, setRunningAgentId] = useState<string | null>(null);
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; agentId: string | null; agentName: string }>({
     isOpen: false,
     agentId: null,
@@ -230,6 +231,17 @@ export default function AgentsPage() {
     router.push(`/agents/${agentId}`);
   };
 
+  const handleRunAgent = (agentId: string) => {
+    if (runningAgentId) return;
+    setRunningAgentId(agentId);
+    window.setTimeout(() => {
+      router.push(`/agents/${agentId}`);
+    }, 260);
+    window.setTimeout(() => {
+      setRunningAgentId(null);
+    }, 2200);
+  };
+
   const handleBuyAgent = (agentId: string) => {
     router.push(`/marketplace/${agentId}?action=buy`);
   };
@@ -266,7 +278,7 @@ export default function AgentsPage() {
 
   if (!hasHydrated) {
     return (
-      <div className="-mx-4 min-h-screen bg-[var(--bg-base)] px-4 pb-10 pt-24 text-[var(--text-primary)] sm:-mx-6 sm:px-6">
+      <div className="-mx-4 min-h-screen overflow-x-clip bg-[var(--bg-base)] px-4 pb-10 pt-24 text-[var(--text-primary)] sm:-mx-6 sm:px-6">
         <div className="mx-auto w-full max-w-[1320px]">
           <div className="mb-6 space-y-3">
             <div className="flex items-center gap-2">
@@ -299,7 +311,7 @@ export default function AgentsPage() {
 
   return (
     <>
-      <div className="-mx-4 min-h-screen bg-[var(--bg-base)] px-4 pb-10 pt-24 text-[var(--text-primary)] sm:-mx-6 sm:px-6">
+      <div className="-mx-4 min-h-screen overflow-x-clip bg-[var(--bg-base)] px-4 pb-10 pt-24 text-[var(--text-primary)] sm:-mx-6 sm:px-6">
       <div className="mx-auto w-full max-w-[1320px]">
         <div className="mb-6 space-y-3">
           <div className="flex items-center justify-between gap-2 overflow-x-auto pb-1">
@@ -433,7 +445,7 @@ export default function AgentsPage() {
           <div className="sticky top-[80px] z-30 mb-4 bg-[#fafafa] pb-2 lg:hidden">
             <button
               onClick={() => setIsMobileFiltersOpen((p) => !p)}
-              className="flex w-full items-center justify-between rounded-[4px] border border-black/10 bg-white px-4 py-2.5 text-[12px] font-semibold text-black/70 transition hover:bg-black/5"
+              className="btn-press flex w-full items-center justify-between rounded-[4px] border border-black/10 bg-white px-4 py-2.5 text-[12px] font-semibold text-black/70 transition hover:bg-black/5"
             >
               <span className="flex items-center gap-2">
                 <Filter className="h-4 w-4" />
@@ -457,7 +469,7 @@ export default function AgentsPage() {
                         <button
                           key={item.key}
                           onClick={() => setActiveCategory(item.key)}
-                          className={`h-7 rounded-[4px] px-2.5 text-[11px] transition-colors ${
+                          className={`btn-press min-h-[36px] rounded-[4px] px-3 py-2 text-[12px] transition-colors ${
                             activeCategory === item.key
                               ? "bg-[#e7f3f2] text-[#171819]"
                               : "bg-transparent text-black/65 hover:bg-black/5"
@@ -468,11 +480,11 @@ export default function AgentsPage() {
                       ))}
                     </div>
                     <div className="mt-4">
-                      <p className="text-[10px] font-semibold tracking-[0.18em] text-black/58">SORT BY</p>
+                      <p className="text-[11px] font-semibold tracking-[0.18em] text-black/58">SORT BY</p>
                       <select
                         value={sortKey}
                         onChange={(e) => setSortKey(e.target.value as SortKey)}
-                        className="mt-2 h-9 w-full rounded-[4px] border border-black/12 bg-[#f1f2f3] px-3 text-[12px] text-black/75 outline-none focus:border-[#171819]"
+                        className="mt-2 min-h-[40px] w-full rounded-[4px] border border-black/12 bg-[#f1f2f3] px-3 text-[13px] text-black/75 outline-none focus:border-[#171819]"
                       >
                         <option value="newest">Newest</option>
                         <option value="popularity">Popularity</option>
@@ -485,7 +497,7 @@ export default function AgentsPage() {
                         <button
                           onClick={() => openListModal()}
                           disabled={agents.length === 0}
-                          className="w-full rounded-[4px] bg-[#171819] py-2 text-[11px] font-semibold text-white transition-colors hover:bg-[#111111] disabled:opacity-50"
+                          className="btn-press btn-cta w-full rounded-[4px] bg-[#171819] py-2 text-[11px] font-semibold text-white transition-colors hover:bg-[#111111] disabled:opacity-50"
                         >
                           LIST ON MARKETPLACE
                         </button>
@@ -560,10 +572,10 @@ export default function AgentsPage() {
           <section>
             <div className="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <h1 className="text-[32px] font-semibold leading-[0.95] tracking-[-0.03em] text-[#1d1f21] sm:text-[50px] md:text-[56px]">
+                <h1 className="text-[24px] font-semibold leading-[0.95] tracking-[-0.03em] text-[#1d1f21] sm:text-[36px] md:text-[48px] lg:text-[56px]">
                   {viewMode === "my-agents" ? "My Agents" : "Marketplace"}
                 </h1>
-                <p className="mt-1.5 max-w-[560px] text-[13px] leading-[1.35] tracking-[-0.02em] text-black/70 sm:text-[14px] md:text-[16px]">
+                <p className="mt-1.5 max-w-[560px] text-[12px] leading-[1.35] tracking-[-0.02em] text-black/70 sm:text-[14px] md:text-[16px]">
                   {viewMode === "my-agents"
                     ? `${agents.length} agent${agents.length !== 1 ? "s" : ""} in your collection. Chat, manage, and list them.`
                     : `Browse ${marketplaceListings.length} agent${marketplaceListings.length !== 1 ? "s" : ""} available for purchase or rent.`}
@@ -631,14 +643,14 @@ export default function AgentsPage() {
                 {viewMode === "my-agents" ? (
                   <button
                     onClick={handleForgeAgent}
-                    className="mt-4 h-10 rounded-[4px] bg-[#171819] px-5 text-[12px] font-semibold tracking-[0.08em] text-white hover:bg-[#111111]"
+                    className="btn-press btn-cta mt-4 h-10 rounded-[4px] bg-[#171819] px-5 text-[12px] font-semibold tracking-[0.08em] text-white hover:bg-[#111111]"
                   >
                     GO TO FORGE
                   </button>
                 ) : (
                   <button
                     onClick={() => handleViewModeChange("my-agents")}
-                    className="mt-4 h-10 rounded-[4px] bg-[#171819] px-5 text-[12px] font-semibold tracking-[0.08em] text-white hover:bg-[#111111]"
+                    className="btn-press btn-cta mt-4 h-10 rounded-[4px] bg-[#171819] px-5 text-[12px] font-semibold tracking-[0.08em] text-white hover:bg-[#111111]"
                   >
                     VIEW MY AGENTS
                   </button>
@@ -670,12 +682,12 @@ export default function AgentsPage() {
                       <div className="absolute inset-0 bg-[radial-gradient(circle_at_22%_30%,rgba(16,199,204,0.2),transparent_45%)]" />
                       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/45 to-transparent" />
                       {agent.listed && (
-                        <span className="absolute right-2 top-2 rounded-[2px] bg-[#171819] px-2 py-1 text-[9px] font-semibold text-white">
+                        <span className="absolute right-2 top-2 rounded-[2px] bg-[#171819] px-2 py-1 text-[10px] font-semibold text-white sm:text-[11px]">
                           LISTED
                         </span>
                       )}
                       {agent.isRental && (
-                        <span className="absolute right-2 top-2 rounded-[2px] bg-blue-500 px-2 py-1 text-[9px] font-semibold text-white">
+                        <span className="absolute right-2 top-2 rounded-[2px] bg-blue-500 px-2 py-1 text-[10px] font-semibold text-white sm:text-[11px]">
                           RENTAL
                         </span>
                       )}
@@ -683,19 +695,19 @@ export default function AgentsPage() {
 
                     <div className="mt-2.5 flex items-start justify-between gap-2 sm:mt-3 sm:gap-3">
                       <div className="min-w-0 flex-1">
-                        <p className="text-[18px] font-semibold leading-none tracking-[-0.02em] text-black truncate sm:text-[24px]">
+                        <p className="text-[16px] font-semibold leading-none tracking-[-0.02em] text-black truncate sm:text-[22px]">
                           {agent.name || "UNTITLED_AGENT"}
                         </p>
                         {agent.tagline && (
-                          <p className="mt-1 text-[9px] text-black/50 truncate sm:text-[10px]">{agent.tagline}</p>
+                          <p className="mt-1 text-[11px] text-black/50 truncate sm:text-[12px]">{agent.tagline}</p>
                         )}
                       </div>
-                      <span className="shrink-0 rounded-[2px] bg-[#e7f3f2] px-1.5 py-0.5 text-[8px] font-semibold tracking-[0.1em] text-[#171819] sm:px-2 sm:py-1 sm:text-[9px]">
+                      <span className="shrink-0 rounded-[2px] bg-[#e7f3f2] px-1.5 py-1 text-[10px] font-semibold tracking-[0.1em] text-[#171819] sm:px-2 sm:text-[11px]">
                         {mapCategory(agent.tools).toUpperCase()}
                       </span>
                     </div>
 
-                    <p className="mt-1.5 text-[9px] tracking-[0.08em] text-black/48 sm:mt-2 sm:text-[10px]">
+                    <p className="mt-1.5 text-[10px] tracking-[0.08em] text-black/48 sm:mt-2 sm:text-[11px]">
                       BY <span className="text-[#171819]">@{shortAddress(agent.owner)}</span>
                     </p>
                     <p className="mt-2 min-h-[36px] text-[12px] leading-relaxed text-black/72 line-clamp-2 sm:mt-3 sm:min-h-[40px] sm:text-[13px]">
@@ -704,20 +716,20 @@ export default function AgentsPage() {
 
                     <div className="mt-3 grid grid-cols-4 gap-1.5 border-t border-black/8 pt-2.5 text-center sm:mt-4 sm:gap-2 sm:pt-3">
                       <div>
-                        <p className="text-[7px] tracking-[0.12em] text-black/45 sm:text-[8px]">REP</p>
+                        <p className="text-[9px] tracking-[0.12em] text-black/45 sm:text-[10px]">REP</p>
                         <p className="mt-0.5 text-[11px] font-semibold text-black sm:text-[13px]">{agent.reputation ?? 80}%</p>
                       </div>
                       <div>
-                        <p className="text-[7px] tracking-[0.12em] text-black/45 sm:text-[8px]">ACTIONS</p>
+                        <p className="text-[9px] tracking-[0.12em] text-black/45 sm:text-[10px]">ACTIONS</p>
                         <p className="mt-0.5 text-[11px] font-semibold text-black sm:text-[13px]">{(agent.totalActions ?? 0).toLocaleString()}</p>
                       </div>
                       <div>
-                        <p className="text-[7px] tracking-[0.12em] text-black/45 sm:text-[8px]">ACTIVE</p>
+                        <p className="text-[9px] tracking-[0.12em] text-black/45 sm:text-[10px]">ACTIVE</p>
                         <p className="mt-0.5 text-[11px] font-semibold text-black sm:text-[13px]">{relativeTime(agent.lastActionAt)}</p>
                       </div>
                       <div>
-                        <p className="text-[7px] tracking-[0.12em] text-black/45 sm:text-[8px]">RISK</p>
-                        <p className="mt-0.5 text-[9px] font-semibold text-black sm:text-[11px]">
+                        <p className="text-[9px] tracking-[0.12em] text-black/45 sm:text-[10px]">RISK</p>
+                        <p className="mt-0.5 text-[11px] font-semibold text-black sm:text-[12px]">
                           {agent.riskLevel ? agent.riskLevel.slice(0, 4).toUpperCase() : "BAL"}
                         </p>
                       </div>
@@ -727,15 +739,23 @@ export default function AgentsPage() {
                       {viewMode === "my-agents" ? (
                         <>
                           <button
-                            onClick={() => handleViewAgent(agent.id)}
-                            className="h-9 flex-1 rounded-[3px] bg-[#171819] text-[10px] font-semibold tracking-[0.11em] text-white transition-colors hover:bg-[#111111] sm:h-10 sm:text-[11px]"
+                            onClick={() => handleRunAgent(agent.id)}
+                            disabled={runningAgentId === agent.id}
+                            className="btn-press btn-cta h-10 flex-1 rounded-[3px] bg-[#171819] text-[11px] font-semibold tracking-[0.11em] text-white transition-colors hover:bg-[#111111] disabled:cursor-wait disabled:opacity-85 sm:h-10 sm:text-[12px]"
                           >
-                            RUN AGENT
+                            {runningAgentId === agent.id ? (
+                              <span className="inline-flex items-center gap-1.5">
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                RUNNING...
+                              </span>
+                            ) : (
+                              "RUN AGENT"
+                            )}
                           </button>
                           {agent.listed ? (
                             <button
                               onClick={() => handleUnlist(agent.id, agent.name)}
-                              className="inline-flex h-9 items-center justify-center rounded-[3px] border border-black/10 bg-[#f1f2f3] px-2.5 text-[9px] font-semibold tracking-[0.08em] text-black/70 transition-colors hover:bg-black/5 sm:h-10 sm:px-3 sm:text-[10px]"
+                              className="btn-press inline-flex h-10 items-center justify-center rounded-[3px] border border-black/10 bg-[#f1f2f3] px-2.5 text-[10px] font-semibold tracking-[0.08em] text-black/70 transition-colors hover:bg-black/5 sm:h-10 sm:px-3 sm:text-[11px]"
                               aria-label="Unlist from marketplace"
                               title="Unlist from marketplace"
                             >
@@ -745,7 +765,7 @@ export default function AgentsPage() {
                             <button
                               onClick={() => openListModal(agent.id)}
                               disabled={agent.isRental || isPremadeDerivedAgent(agent)}
-                              className="inline-flex h-9 w-9 items-center justify-center rounded-[3px] border border-black/10 bg-[#f1f2f3] text-black/70 transition-colors hover:bg-black/5 disabled:opacity-50 sm:h-10 sm:w-10"
+                              className="btn-press inline-flex h-10 w-10 items-center justify-center rounded-[3px] border border-black/10 bg-[#f1f2f3] text-black/70 transition-colors hover:bg-black/5 disabled:opacity-50 sm:h-10 sm:w-10"
                               aria-label="List on marketplace"
                               title="List on marketplace"
                             >
@@ -754,7 +774,7 @@ export default function AgentsPage() {
                           )}
                           <button
                             onClick={() => handleDeleteAgent(agent.id, agent.name)}
-                            className="inline-flex h-9 w-9 items-center justify-center rounded-[3px] border border-black/10 bg-[#f1f2f3] text-red-500/70 transition-colors hover:bg-red-50 hover:text-red-500 sm:h-10 sm:w-10"
+                            className="btn-press inline-flex h-9 w-9 items-center justify-center rounded-[3px] border border-black/10 bg-[#f1f2f3] text-red-500/70 transition-colors hover:bg-red-50 hover:text-red-500 sm:h-10 sm:w-10"
                             aria-label="Delete agent"
                             title="Delete agent"
                           >
@@ -767,13 +787,13 @@ export default function AgentsPage() {
                             <>
                               <button
                                 onClick={() => handleViewAgent(agent.id)}
-                                className="h-9 flex-1 rounded-[3px] bg-[#171819] text-[10px] font-semibold tracking-[0.11em] text-white transition-colors hover:bg-[#111111] sm:h-10 sm:text-[11px]"
+                                className="btn-press btn-cta h-9 flex-1 rounded-[3px] bg-[#171819] text-[10px] font-semibold tracking-[0.11em] text-white transition-colors hover:bg-[#111111] sm:h-10 sm:text-[11px]"
                               >
                                 OPEN AGENT
                               </button>
                               <button
                                 onClick={() => handleUnlist(agent.id, agent.name)}
-                                className="inline-flex h-9 items-center justify-center rounded-[3px] border border-black/10 bg-[#f1f2f3] px-2.5 text-[9px] font-semibold tracking-[0.08em] text-black/70 transition-colors hover:bg-black/5 sm:h-10 sm:px-3 sm:text-[10px]"
+                                className="btn-press inline-flex h-9 items-center justify-center rounded-[3px] border border-black/10 bg-[#f1f2f3] px-2.5 text-[9px] font-semibold tracking-[0.08em] text-black/70 transition-colors hover:bg-black/5 sm:h-10 sm:px-3 sm:text-[10px]"
                                 aria-label="Unlist from marketplace"
                                 title="Unlist from marketplace"
                               >

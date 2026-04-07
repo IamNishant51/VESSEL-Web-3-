@@ -10,6 +10,7 @@ type Props = {
 export function SmoothScrollProvider({ children }: Props) {
   const lenisRef = useRef<Lenis | null>(null);
   const frameRef = useRef<number>(0);
+  const restartRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     const lenis = new Lenis({
@@ -32,14 +33,20 @@ export function SmoothScrollProvider({ children }: Props) {
       const now = Date.now();
       if (now - lastScrollTime > 2000) {
         cancelAnimationFrame(rafId);
-        // Restart on next wheel event
-        const restart = () => {
+        if (!restartRef.current) {
+          restartRef.current = () => {
+            rafId = requestAnimationFrame(raf);
+            window.removeEventListener("wheel", restartRef.current!);
+            window.removeEventListener("touchstart", restartRef.current!);
+          };
+        }
+
+        const restart = restartRef.current;
+        if (restart) {
           rafId = requestAnimationFrame(raf);
-        window.removeEventListener("wheel", restart);
-        window.removeEventListener("touchstart", restart);
-        };
-        window.addEventListener("wheel", restart, { passive: true });
-        window.addEventListener("touchstart", restart, { passive: true });
+          window.addEventListener("wheel", restart, { passive: true, once: true });
+          window.addEventListener("touchstart", restart, { passive: true, once: true });
+        }
       }
       lastScrollTime = now;
     };
@@ -49,6 +56,11 @@ export function SmoothScrollProvider({ children }: Props) {
 
     return () => {
       cancelAnimationFrame(rafId);
+      if (restartRef.current) {
+        window.removeEventListener("wheel", restartRef.current);
+        window.removeEventListener("touchstart", restartRef.current);
+        restartRef.current = null;
+      }
       lenis.destroy();
       lenisRef.current = null;
     };

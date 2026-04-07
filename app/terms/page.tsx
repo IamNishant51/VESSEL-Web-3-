@@ -71,17 +71,17 @@ const sections = [
 
 export default function TermsPage() {
    return (
-     <div className="min-h-screen bg-[#fafafa] text-[#111112]">
+     <div className="min-h-screen overflow-x-clip bg-[#fafafa] text-[#111112]">
        <LandingNavigation forceLight />
  
-       <main className="mx-auto w-full max-w-[1100px] px-5 py-10 pt-8 sm:px-8 sm:py-12">
-        <div className="rounded-xl border border-black/10 bg-white p-6 sm:p-10">
+       <main className="mx-auto w-full max-w-[1100px] px-4 py-24 sm:px-8 sm:py-12">
+        <div className="rounded-xl border border-black/10 bg-white p-5 sm:p-10">
           <p className="text-[11px] font-semibold tracking-[0.14em] text-[#9e1422]">LEGAL</p>
-          <h1 className="mt-2 text-[44px] font-semibold leading-[1.02] tracking-[-0.03em] text-black sm:text-[58px]">
+          <h1 className="mt-2 text-[34px] font-semibold leading-[1.02] tracking-[-0.03em] text-black sm:text-[58px]">
             Terms of Service
           </h1>
           <p className="mt-3 text-[14px] text-black/65">Effective Date: April 4, 2026</p>
-          <p className="mt-5 max-w-[780px] text-[16px] leading-relaxed text-black/75">
+          <p className="mt-5 max-w-[780px] text-[15px] leading-relaxed text-black/75 sm:text-[16px]">
             These Terms of Service govern your access to and use of Vessel, including agent orchestration,
             policy-controlled execution, and marketplace interactions.
           </p>

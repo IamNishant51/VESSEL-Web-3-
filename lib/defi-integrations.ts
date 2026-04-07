@@ -122,7 +122,7 @@ export async function getPortfolio(
 
     // Get token accounts (SPL tokens)
     const tokenAccounts = await connection.getParsedTokenAccountsByOwner(wallet, {
-      programId: new PublicKey("TokenkegQfeZyiNwAJsyFbPVwwQQUq7vcLduydxn24m"),
+      programId: new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss613VQ5DA"),
     });
 
     const assets: PortfolioAsset[] = [];

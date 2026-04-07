@@ -71,6 +71,7 @@ export default function Home() {
   const { agents } = useAgent();
   const { listings } = useMarketplace();
   const [isForgeCtaLoading, setIsForgeCtaLoading] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
   const [loaderStage, setLoaderStage] = useState<"intro" | "circle-travel" | "circle-arrived" | "text-travel" | "text-arrived" | "glow-pulse" | "fade-all" | "reveal" | "done">("intro");
   const [loaderTargets, setLoaderTargets] = useState({
     textX: 0,
@@ -137,6 +138,8 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    setIsHydrated(true);
+
     const hasVisited = sessionStorage.getItem("vessel_landing_visited") === "true";
 
     if (hasVisited) {
@@ -306,76 +309,35 @@ export default function Home() {
       <main className="bg-black text-white antialiased [text-rendering:optimizeLegibility]">
       <LandingNavigation darkSectionsRefs={[forgeSectionRef, orchestraSectionRef]} />
       <AnimatePresence>
-        {loaderStage !== "done" && loaderStage !== "reveal" && (
+        {!isHydrated && (
           <motion.div
-            className="pointer-events-none fixed inset-0 z-20 flex items-center justify-center"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black"
             initial={{ opacity: 1 }}
-            animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.25, ease: "easeOut" }}
+            transition={{ duration: 0.4 }}
           >
-            <motion.div
-              className="absolute inset-0 bg-black"
-              initial={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.25, ease: "easeOut" }}
-            />
-
-            <motion.div
-              className="relative flex h-[260px] w-[260px] items-center justify-center rounded-full bg-[#ff2338]"
-              initial={{ scale: 0.85, opacity: 0 }}
-              animate={getCircleStyle()}
-              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            >
-              {showGlow && (
-                <motion.div
-                  className="absolute inset-0 rounded-full bg-white"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 0, scale: 1.5 }}
-                  transition={{ duration: 0.3, ease: "easeOut" }}
-                />
-              )}
-              {showGlow && (
-                <motion.div
-                  className="absolute inset-[-20px] rounded-full bg-[#ff2338]/30 blur-xl"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: [0, 0.6, 0], scale: [0.9, 1.2, 1.5] }}
-                  transition={{ duration: 0.4, ease: "easeOut" }}
-                />
-              )}
-            </motion.div>
-
-            <motion.p
-              ref={loaderTextRef}
-              className="absolute font-black leading-none tracking-tight text-white"
-              style={{ writingMode: "vertical-rl", fontSize: `${loaderTargets.textFontSize}px` }}
-              initial={{ opacity: 0, y: 10 }}
-              animate={getTextStyle()}
-              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            >
-              VESSEL
-            </motion.p>
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-white border-t-transparent" />
           </motion.div>
         )}
       </AnimatePresence>
 
       <motion.div
         initial={false}
-        animate={loaderStage === "intro" ? { opacity: 0, y: 16 } : { opacity: 1, y: 0 }}
+        animate={isHydrated && loaderStage === "intro" ? { opacity: 0, y: 16 } : { opacity: 1, y: 0 }}
         transition={{ duration: 0.55, ease: "easeOut" }}
         className="relative z-30"
       >
-           <motion.section
-             initial={{ opacity: 0, y: 34 }}
-             whileInView={{ opacity: 1, y: 0 }}
-             viewport={{ once: false, amount: 0.15 }}
-             transition={{ duration: 0.55, ease: "easeOut" }}
-             className="relative bg-gradient-to-b from-[#d7d7da] via-[#d1d1d4] to-[#1a1a1d] pt-6 text-black"
-           >
-           <div className="mx-auto max-w-[82.5rem] px-4 pb-2 pt-14 sm:pb-6 sm:pt-14 lg:px-10">
-             <div className="relative mt-4 grid grid-cols-1 items-center gap-2 sm:gap-4 md:grid-cols-[6.875rem_1fr_38.75rem]">
+            <motion.section
+              initial={{ opacity: 0, y: 34 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: false, amount: 0.15 }}
+              transition={{ duration: 0.55, ease: "easeOut" }}
+              className="relative overflow-hidden bg-white pt-16 text-black sm:pt-20"
+            >
+             <div className="mx-auto w-full max-w-[1480px] px-4 pb-2 pt-2 sm:px-6 sm:pt-6 lg:px-10 lg:pt-8">
+               <div className="relative grid min-h-[calc(100svh-7rem)] grid-cols-1 items-center gap-8 sm:min-h-[calc(100svh-8.5rem)] lg:grid-cols-2 lg:gap-12">
               <motion.div
-                className="hidden h-full items-center justify-center lg:flex"
+                className="pointer-events-none absolute inset-y-0 left-0 z-0 hidden items-center justify-center lg:flex"
                 initial={{ opacity: 0, x: -20 }}
                 animate={imageReveal ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
                 transition={{ duration: 0.4, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
@@ -389,9 +351,9 @@ export default function Home() {
                  </span>
               </motion.div>
 
-              <div className="z-10 mx-auto w-full max-w-[520px] pt-6 md:ml-auto md:translate-x-20 md:pt-0 lg:translate-x-28">
+              <div className="z-10 mx-auto w-full max-w-[520px] pt-3 sm:pt-6 md:ml-auto md:translate-x-20 md:pt-0 lg:translate-x-28">
                 <motion.h1 
-                  className="text-[44px] font-semibold leading-[1.04] tracking-[-0.025em] text-black md:text-[52px]"
+                  className="text-[32px] font-semibold leading-tight tracking-tight text-black sm:text-[48px] md:text-[52px] lg:text-[64px]"
                   initial={{ opacity: 0, y: 15 }}
                   animate={imageReveal ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }}
                   transition={{ duration: 0.4, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
@@ -399,7 +361,7 @@ export default function Home() {
                   Mint AI Agents as On-Chain NFTs
                 </motion.h1>
                 <motion.p 
-                  className="mt-2 text-[11px] text-black/65"
+                  className="mt-3 text-[10px] leading-relaxed text-black/65 sm:mt-2 sm:text-[11px]"
                   initial={{ opacity: 0, y: 10 }}
                   animate={imageReveal ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
                   transition={{ duration: 0.4, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
@@ -407,7 +369,7 @@ export default function Home() {
                   The premier Solana-Native AI Agent Orchestrator &amp; Marketplace
                 </motion.p>
                 <motion.p 
-                  className="mt-1 text-[11px] text-black/52"
+                  className="mt-1 text-[10px] leading-relaxed text-black/52 sm:text-[11px]"
                   initial={{ opacity: 0, y: 10 }}
                   animate={imageReveal ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
                   transition={{ duration: 0.4, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
@@ -416,28 +378,22 @@ export default function Home() {
                 </motion.p>
 
                 <motion.div 
-                  className="mt-7 flex flex-wrap items-center gap-3"
+                  className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row sm:justify-start"
                   initial={{ opacity: 0, y: 10 }}
                   animate={imageReveal ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
                   transition={{ duration: 0.4, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
                 >
                   <motion.button
                     onClick={() => {
-                      if (isForgeCtaLoading) {
-                        return;
-                      }
-
+                      if (isForgeCtaLoading) return;
                       setIsForgeCtaLoading(true);
-                      window.setTimeout(() => {
-                        router.push("/forge");
-                      }, 140);
+                      window.setTimeout(() => { router.push("/forge"); }, 140);
                     }}
                     disabled={isForgeCtaLoading}
-                    className="inline-flex h-10 min-w-[186px] cursor-pointer items-center justify-center gap-2 bg-black px-5 text-[12px] font-semibold tracking-[0.06em] text-white shadow-sm transition-all duration-200 hover:bg-black/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/35 disabled:cursor-not-allowed disabled:opacity-90"
+                    className="inline-flex h-12 w-full items-center justify-center gap-2 bg-black px-6 text-xs font-semibold tracking-wide text-white transition-all hover:bg-black/85 sm:w-auto sm:px-5 sm:text-sm"
                     whileHover={{ y: -2, scale: 1.01 }}
                     whileTap={{ scale: 0.96 }}
                     animate={isForgeCtaLoading ? { scale: [1, 0.985, 1] } : { scale: 1 }}
-                    transition={isForgeCtaLoading ? { duration: 0.7, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" } : { duration: 0.18, ease: "easeOut" }}
                   >
                     {isForgeCtaLoading ? (
                       <>
@@ -450,13 +406,13 @@ export default function Home() {
                   </motion.button>
                   <motion.button
                     onClick={() => router.push("/preview")}
-                    className="inline-flex h-10 min-w-[164px] cursor-pointer items-center justify-center gap-2 border border-black/14 bg-white px-5 text-[12px] font-semibold tracking-[0.06em] text-black shadow-sm transition-all duration-200 hover:bg-black/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20"
+                    className="inline-flex h-12 w-full items-center justify-center gap-2 border border-black/10 bg-white px-6 text-xs font-semibold tracking-wide text-black transition-all hover:bg-black/[0.03] sm:w-auto sm:px-5 sm:text-sm"
                     whileHover={{ y: -2, scale: 1.01 }}
                     whileTap={{ scale: 0.96 }}
                   >
                     Preview Gallery
                   </motion.button>
-                  <WalletConnectButton className="!h-10 !cursor-pointer !rounded-none !border !border-black/20 !bg-[#BDBDBD] !px-5 !text-[12px] !font-semibold !tracking-[0.06em] !text-black !transition-all !duration-200 hover:!bg-[#B3B3B3] hover:!shadow-sm !hidden lg:!inline-flex" />
+                  <WalletConnectButton className="!h-12 !cursor-pointer !rounded-none !border !border-black/20 !bg-[#BDBDBD] !px-5 !text-xs !font-semibold !tracking-wide !text-black !transition-all hover:!bg-[#B3B3B3] !hidden lg:!inline-flex" />
                 </motion.div>
 
                 <motion.button
@@ -473,35 +429,35 @@ export default function Home() {
                 </motion.button>
 
                 <motion.div 
-                  className="mt-6 flex flex-wrap items-center gap-4"
+                  className="mt-8 flex flex-wrap items-center justify-center gap-6 sm:justify-start"
                   initial={{ opacity: 0, y: 10 }}
                   animate={imageReveal ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
                   transition={{ duration: 0.4, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
                 >
-                  <div className="text-center">
-                    <p className="text-[22px] font-bold text-black">{totalAgents}</p>
-                    <p className="text-[9px] text-black/50 uppercase tracking-wider">Your Agents</p>
+                  <div className="text-center sm:text-left">
+                    <p className="text-2xl font-bold text-black">{totalAgents}</p>
+                    <p className="text-[10px] text-black/50 uppercase tracking-wider">Your Agents</p>
                   </div>
                   <div className="h-8 w-px bg-black/10" />
-                  <div className="text-center">
-                    <p className="text-[22px] font-bold text-black">{totalListings}</p>
-                    <p className="text-[9px] text-black/50 uppercase tracking-wider">Listed</p>
+                  <div className="text-center sm:text-left">
+                    <p className="text-2xl font-bold text-black">{totalListings}</p>
+                    <p className="text-[10px] text-black/50 uppercase tracking-wider">Listed</p>
                   </div>
                   <div className="h-8 w-px bg-black/10" />
-                  <div className="text-center">
-                    <p className="text-[22px] font-bold text-black">{totalListings > 0 ? totalListings : '1,420+'}</p>
-                    <p className="text-[9px] text-black/50 uppercase tracking-wider">Available</p>
+                  <div className="text-center sm:text-left">
+                    <p className="text-2xl font-bold text-black">{totalListings > 0 ? totalListings : '1,420+'}</p>
+                    <p className="text-[10px] text-black/50 uppercase tracking-wider">Available</p>
                   </div>
                 </motion.div>
               </div>
 
-               <div className="pointer-events-none relative mx-auto w-[85%] sm:w-full max-w-[17.5rem] sm:max-w-[48.75rem] translate-y-2 sm:translate-y-10 self-end md:mx-0 md:ml-auto md:translate-y-16 lg:max-w-[53.75rem]">
+              <div className="relative z-10 mx-auto w-full max-w-[26rem] self-center sm:max-w-[30rem] md:mx-0 md:ml-auto md:self-center lg:max-w-[44rem]">
                   <motion.div
                     ref={heroCircleRef}
                     initial={false}
                     animate={imageReveal ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 1 }}
                     transition={{ duration: 0.3, ease: "easeOut" }}
-                    className="absolute left-1/2 top-[36%] z-0 aspect-square w-[84%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#ff2338]"
+                    className="absolute left-1/2 top-1/2 z-0 aspect-square w-[80%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#ff2338]"
                   />
                   <motion.div
                     initial={false}
@@ -523,6 +479,10 @@ export default function Home() {
                 </div>
             </div>
           </div>
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent via-black/18 to-black"
+            />
         </motion.section>
 
         <motion.section
@@ -531,7 +491,7 @@ export default function Home() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: false, amount: 0.2 }}
           transition={{ duration: 0.55, ease: "easeOut" }}
-          className="bg-black py-16 sm:py-20"
+          className="-mt-px bg-black py-16 sm:py-20"
         >
           <div className="mx-auto max-w-[1480px] px-4 sm:px-6 lg:px-10">
             <div className="rounded-[2px] bg-[#030303] px-4 py-10 sm:px-10 sm:py-12">

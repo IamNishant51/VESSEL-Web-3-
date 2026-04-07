@@ -8,14 +8,38 @@ import type { Agent, Conversation, ConversationListItem } from "@/types/agent";
 
 const DB_ENABLED = typeof process !== "undefined" && !!process.env.MONGODB_URI;
 
-// ===== Client-side sync functions =====
-// These run in the browser and sync localStorage with MongoDB via API routes
+function getAuthToken(): string | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(/(?:^|; )token=([^;]*)/);
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+function getWalletAddress(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const stored = localStorage.getItem("wallet-adapter-network");
+    const walletData = localStorage.getItem("walletName");
+    if (walletData) return walletData;
+  } catch {}
+  return null;
+}
 
 async function apiCall(path: string, options: RequestInit = {}): Promise<unknown> {
+  const token = getAuthToken();
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  
   const response = await fetch(`/api/db${path}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     ...options,
+    body: options.body ? JSON.stringify({
+      ...(typeof options.body === "string" ? JSON.parse(options.body) : {}),
+      _authToken: token,
+    }) : undefined,
   });
 
   if (!response.ok) {
@@ -281,9 +305,15 @@ export type UserPreferences = {
 export async function syncUserPreferences(prefs: UserPreferences): Promise<void> {
   if (!DB_ENABLED) return;
   try {
+    const token = getAuthToken();
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+    
     await fetch("/api/auth/user", {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify({ preferences: prefs }),
     });
   } catch (e) {
@@ -294,7 +324,15 @@ export async function syncUserPreferences(prefs: UserPreferences): Promise<void>
 export async function fetchUserPreferences(): Promise<UserPreferences | null> {
   if (!DB_ENABLED) return null;
   try {
-    const response = await fetch("/api/auth/user");
+    const token = getAuthToken();
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+    
+    const response = await fetch("/api/auth/user", {
+      headers,
+    });
     if (!response.ok) return null;
     const data = await response.json() as { user?: { preferences?: UserPreferences } };
     return data.user?.preferences || null;
@@ -307,8 +345,15 @@ export async function fetchUserPreferences(): Promise<UserPreferences | null> {
 export async function logoutDevice(deviceId: string): Promise<boolean> {
   if (!DB_ENABLED) return false;
   try {
+    const token = getAuthToken();
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+    
     const response = await fetch(`/api/auth/user?deviceId=${deviceId}`, {
       method: "DELETE",
+      headers,
     });
     return response.ok;
   } catch (e) {
@@ -325,7 +370,15 @@ export async function getDevices(): Promise<Array<{
 }>> {
   if (!DB_ENABLED) return [];
   try {
-    const response = await fetch("/api/auth/user");
+    const token = getAuthToken();
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+    
+    const response = await fetch("/api/auth/user", {
+      headers,
+    });
     if (!response.ok) return [];
     const data = await response.json() as { devices?: Array<{ id: string; name?: string; ip?: string; lastActive: string }> };
     return data.devices || [];

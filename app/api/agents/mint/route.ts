@@ -14,6 +14,7 @@ import { mplTokenMetadata } from "@metaplex-foundation/mpl-token-metadata";
 import { toWeb3JsLegacyTransaction } from "@metaplex-foundation/umi-web3js-adapters";
 
 import { solanaRpcUrl, solanaNetwork } from "@/lib/solana";
+import { checkWalletBalance, getWalletBalanceSol } from "@/lib/solana-payments";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -173,6 +174,30 @@ export async function POST(request: Request): Promise<NextResponse<MintResponse>
       return NextResponse.json(
         { error: "Missing required fields: owner, name, uri, merkleTree, collectionMint" },
         { status: 400 }
+      );
+    }
+
+    // Verify wallet balance before minting
+    // Mint requires at least 0.01 SOL for transaction fees
+    const MIN_MINT_BALANCE_LAMPORTS = 10_000_000; // 0.01 SOL
+    
+    try {
+      const hasBalance = await checkWalletBalance(owner, MIN_MINT_BALANCE_LAMPORTS);
+      if (!hasBalance) {
+        const currentBalance = await getWalletBalanceSol(owner);
+        return NextResponse.json(
+          {
+            error: `Insufficient balance. Current balance: ${currentBalance.toFixed(6)} SOL. Required: 0.01 SOL for transaction fees.`,
+            status: "insufficient_balance",
+          },
+          { status: 402 }
+        );
+      }
+    } catch (balanceCheckError) {
+      console.error("[Mint] Balance check failed:", balanceCheckError);
+      return NextResponse.json(
+        { error: "Failed to verify wallet balance" },
+        { status: 500 }
       );
     }
 

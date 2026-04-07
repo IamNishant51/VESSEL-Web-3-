@@ -82,9 +82,8 @@ export function calculateToolCost(
   }
 
   if (tool === "swap") {
-    // Swap cost: escalates with amount, capped
     let cost = config.baseCost;
-    if (amount && amount > 0.1) {
+    if (amount && amount > 0.1 && "maxCost" in config) {
       cost = Math.min(config.maxCost, config.baseCost + amount * 0.0001);
     }
     return cost;
@@ -160,9 +159,54 @@ interface PaymentRecord {
   transactionSignature: string;
   timestamp: number;
   status: "paid" | "pending" | "failed";
+  lastAccessTime: number; // Track last access for TTL cleanup
 }
 
 const paymentRecords = new Map<string, PaymentRecord>();
+
+// Cleanup stale entries every 5 minutes (300,000ms)
+const CLEANUP_INTERVAL = 5 * 60 * 1000;
+// Remove entries not accessed in 24 hours (86,400,000ms)
+const STALE_ENTRY_TTL = 24 * 60 * 60 * 1000;
+// Max entries before forced cleanup
+const MAX_ENTRIES = 10000;
+let cleanupIntervalId: NodeJS.Timeout | null = null;
+let hasInitialized = false;
+
+function startCleanupInterval(): void {
+  if (cleanupIntervalId) return;
+
+  cleanupIntervalId = setInterval(() => {
+    const now = Date.now();
+    let removed = 0;
+    
+    // Remove stale entries not accessed in TTL window
+    for (const [id, record] of paymentRecords.entries()) {
+      if (now - record.lastAccessTime > STALE_ENTRY_TTL) {
+        paymentRecords.delete(id);
+        removed++;
+      }
+    }
+    
+    // If still over max, remove oldest accessed
+    if (paymentRecords.size > MAX_ENTRIES) {
+      const sorted = Array.from(paymentRecords.entries())
+        .sort(([, a], [, b]) => a.lastAccessTime - b.lastAccessTime);
+      const toRemove = sorted.length - MAX_ENTRIES;
+      for (let i = 0; i < toRemove; i++) {
+        paymentRecords.delete(sorted[i][0]);
+        removed++;
+      }
+    }
+    
+    if (removed > 0) {
+      console.log(`[x402-Payments] Cleaned up ${removed} stale entries. Map size: ${paymentRecords.size}`);
+    }
+  }, CLEANUP_INTERVAL);
+
+  // Prevent Node.js from keeping process alive just for this interval
+  cleanupIntervalId.unref();
+}
 
 /**
  * Record a payment after transaction confirms
@@ -174,6 +218,13 @@ export function recordPayment(
   txSignature: string,
   userId?: string
 ): PaymentRecord {
+  // Initialize cleanup on first use
+  if (!hasInitialized) {
+    startCleanupInterval();
+    hasInitialized = true;
+  }
+
+  const now = Date.now();
   const record: PaymentRecord = {
     id: `${agentId}-${Date.now()}`,
     agentId,
@@ -181,8 +232,9 @@ export function recordPayment(
     tool,
     costSol,
     transactionSignature: txSignature,
-    timestamp: Date.now(),
+    timestamp: now,
     status: "paid",
+    lastAccessTime: now,
   };
 
   paymentRecords.set(record.id, record);
@@ -195,18 +247,32 @@ export function recordPayment(
  * Get payment history for an agent
  */
 export function getPaymentHistory(agentId: string): PaymentRecord[] {
-  return Array.from(paymentRecords.values())
+  const history = Array.from(paymentRecords.values())
     .filter(r => r.agentId === agentId)
     .sort((a, b) => b.timestamp - a.timestamp);
+  
+  // Update access time for all returned records
+  const now = Date.now();
+  history.forEach(record => {
+    record.lastAccessTime = now;
+  });
+  
+  return history;
 }
 
 /**
  * Calculate total paid by agent
  */
 export function getTotalPaid(agentId: string): number {
-  return getPaymentHistory(agentId)
-    .filter(r => r.status === "paid")
-    .reduce((sum, r) => sum + r.costSol, 0);
+  const now = Date.now();
+  const records = getPaymentHistory(agentId).filter(r => r.status === "paid");
+  
+  // Update access time
+  records.forEach(record => {
+    record.lastAccessTime = now;
+  });
+  
+  return records.reduce((sum, r) => sum + r.costSol, 0);
 }
 
 /**
@@ -217,7 +283,13 @@ export function getPaymentEfficiency(agentId: string): {
   totalTransactions: number;
   averageCostPerTransaction: number;
 } {
+  const now = Date.now();
   const records = getPaymentHistory(agentId).filter(r => r.status === "paid");
+  
+  // Update access time
+  records.forEach(record => {
+    record.lastAccessTime = now;
+  });
 
   if (records.length === 0) {
     return {

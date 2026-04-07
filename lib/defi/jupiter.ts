@@ -56,19 +56,18 @@ export interface SwapResult {
 
 const TOKEN_MINT_MAP: Record<string, string> = {
   sol: "So11111111111111111111111111111111111111112",
-  usdc: "EPjFWdd5AufqSSCwM1X5rUoU5Hq2U3qfK9oKkYqB5qB",
-  usdt: "Es9vMFrzaNmM48x7ejVUoqoA6yiMt6YC2cY5k7FDe5b",
-  btc: "btcBRJakJmF1q5S3Nir4YxSC5S2Qh4GxiCdh3K7apm",
-  eth: "7fpynCPWU9D4uC3EGq7P7g7EuhGLw3XJqNRfLGT9pS",
-  jup: "jupSoLaHXQiZZTSfEWMTRRgpnyi8dzfHcjMVWkFuG9",
-  ray: "4k3Dyjzvzp8eMZWUXbBCjEvvSkqdtpj3NPwWtVBF8iw",
-  bonk: "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pP3iup",
-  wif: "85VBFQZC9TZkfaptBWqv14ALD9fJNUKtZ41K5caw5kwm",
-  msol: "mSoLzYCxHdYgGaU2zqE7J7rMmqTM2rY3v7Y3k1p7F8",
-  jitosol: "J1toso1uCkdtDbrH17YXo5hG5Z4E1h6vEp7ELiHsJiYk",
-  stsol: "LidoSTUSdcDtLRaDxyEQdS5USYyhgMV6ULd5Y7g9NYq",
-  orca: "orcaEKTdK7LKq57V2GkhZ3Dre5E9w9R4SoXJQWXqK3M4",
-  ftx: "8M9YdoDyYwdN9P6rRgH4F4g5y6J7d8K9L0M1N2O3P4Q",
+  usdc: "EPjFWdd5AufqSSCwM3NJnqFvSmu3oefnsrfEOo5H",
+  usdt: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+  btc: "3NZ9JMVBmGAqocybic2c7LQCJScmgsAZ6vQqTDzcqmJh",
+  eth: "7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs",
+  jup: "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
+  ray: "4k3Dyjzvzp8eMZWUXbBCjEvwSkiKsCVa8N8L2GgzwVPR",
+  bonk: "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB2h7",
+  wif: "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm",
+  msol: "mSoLzYCxHdYdbz9g5Y4cFihfiHb2SH34bXjNvN9KiEY",
+  jitosol: "jtojtomepa8beP8AuQc6eXt5FriJwfFMwQx2v2f9mCL",
+  stsol: "7dHbWXmci3dT8UFYWYZweBLXgycu7Y3iL6trKn1Y7ARj",
+  orca: "orcaEKTdK7LKz57vaA3Yd5J2camCBYxRu3M3WK88Pom",
 };
 
 export function getTokenMint(symbol: string): string | null {
@@ -153,13 +152,6 @@ export async function getJupiterSwapTransaction(
       };
     }
 
-    const latestBlockhash = await connection.getLatestBlockhash();
-    if ("setVersion" in transaction) {
-      (transaction as VersionedTransaction).message.recentBlockhash = latestBlockhash.blockhash;
-    } else {
-      (transaction as Transaction).recentBlockhash = latestBlockhash.blockhash;
-    }
-
     return {
       success: true,
       transaction: data.swapTransaction,
@@ -217,8 +209,10 @@ export async function executeJupiterSwap(
       success: true,
       signature,
       explorerUrl,
-      inputMint: quoteResponse.inAmount.toString(),
-      outputMint: quoteResponse.outAmount.toString(),
+      inputMint: quoteResponse.marketInfos[0]?.inputMint,
+      outputMint: quoteResponse.marketInfos[0]?.outputMint,
+      inputAmount: quoteResponse.inAmount,
+      outputAmount: quoteResponse.outAmount,
       priceImpactPct: quoteResponse.priceImpactPct,
     };
   } catch (error) {

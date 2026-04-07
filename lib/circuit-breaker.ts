@@ -9,9 +9,42 @@ export interface CircuitBreakerState {
   nextRetryTime: number;
   dailySpentSol: number;
   dailyResetTime: number;
+  lastAccessTime: number; // Track last access for cleanup
 }
 
 const circuitBreakerMap = new Map<string, CircuitBreakerState>();
+
+// Cleanup stale entries every 5 minutes (300,000ms)
+const CLEANUP_INTERVAL = 5 * 60 * 1000;
+// Remove entries not accessed in 2 hours
+const STALE_ENTRY_TTL = 2 * 60 * 60 * 1000;
+let cleanupIntervalId: NodeJS.Timeout | null = null;
+
+function startCleanupInterval(): void {
+  if (cleanupIntervalId) return;
+  
+  cleanupIntervalId = setInterval(() => {
+    const now = Date.now();
+    let removed = 0;
+    
+    for (const [agentId, state] of circuitBreakerMap.entries()) {
+      if (now - state.lastAccessTime > STALE_ENTRY_TTL) {
+        circuitBreakerMap.delete(agentId);
+        removed++;
+      }
+    }
+    
+    if (removed > 0) {
+      console.log(`[CircuitBreaker] Cleaned up ${removed} stale entries. Map size: ${circuitBreakerMap.size}`);
+    }
+  }, CLEANUP_INTERVAL);
+
+  // Prevent Node.js from keeping process alive just for this interval
+  cleanupIntervalId.unref();
+}
+
+// Start cleanup on first use
+let hasInitialized = false;
 
 export interface CircuitBreakerCheck {
   allowed: boolean;
@@ -20,6 +53,12 @@ export interface CircuitBreakerCheck {
 }
 
 function getOrCreateState(agentId: string): CircuitBreakerState {
+  if (!hasInitialized) {
+    startCleanupInterval();
+    hasInitialized = true;
+  }
+
+  const now = Date.now();
   let state = circuitBreakerMap.get(agentId);
   if (!state) {
     state = {
@@ -29,9 +68,12 @@ function getOrCreateState(agentId: string): CircuitBreakerState {
       isTripped: false,
       nextRetryTime: 0,
       dailySpentSol: 0,
-      dailyResetTime: Date.now(),
+      dailyResetTime: now,
+      lastAccessTime: now,
     };
     circuitBreakerMap.set(agentId, state);
+  } else {
+    state.lastAccessTime = now; // Update access time for cleanup tracking
   }
   return state;
 }

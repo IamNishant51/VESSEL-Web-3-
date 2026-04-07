@@ -732,7 +732,7 @@ export const useVesselStore = create<VesselStore>()(
          agentStats: state.agentStats,
          userProfile: state.userProfile,
          // Don't persist loading state
-       }),
+       }) as VesselStore,
        onRehydrateStorage: () => (state) => {
          if (state) {
            state._hasHydrated = true;

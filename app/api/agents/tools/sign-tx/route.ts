@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
 
     if (!limitCheck.allowed) {
       auditLog({
-        level: "warning",
+        level: "warn",
         event: "circuit_breaker_limit",
         details: {
           agentId: validated.agentId,

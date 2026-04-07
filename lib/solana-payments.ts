@@ -8,6 +8,42 @@ export type ConfirmedPayment = {
   explorerUrl: string;
 };
 
+/**
+ * Check if wallet has minimum balance
+ * @param walletAddress Solana public key as string
+ * @param minLamports Minimum balance required in lamports
+ * @returns true if wallet has sufficient balance
+ */
+export async function checkWalletBalance(
+  walletAddress: string,
+  minLamports: number = 5000 // ~0.000005 SOL default
+): Promise<boolean> {
+  try {
+    const connection = new Connection(solanaRpcUrl, "confirmed");
+    const publicKey = new PublicKey(walletAddress);
+    const balance = await connection.getBalance(publicKey);
+    return balance >= minLamports;
+  } catch (error) {
+    console.error("[Balance Check] Failed to check wallet balance:", error);
+    throw new Error("Failed to verify wallet balance. Please try again.");
+  }
+}
+
+/**
+ * Get wallet balance in SOL
+ */
+export async function getWalletBalanceSol(walletAddress: string): Promise<number> {
+  try {
+    const connection = new Connection(solanaRpcUrl, "confirmed");
+    const publicKey = new PublicKey(walletAddress);
+    const balanceLamports = await connection.getBalance(publicKey);
+    return balanceLamports / 1_000_000_000;
+  } catch (error) {
+    console.error("[Balance Check] Failed to fetch wallet balance:", error);
+    throw new Error("Failed to fetch wallet balance. Please try again.");
+  }
+}
+
 export async function sendConfirmedSolTransfer(params: {
   wallet: WalletContextState;
   to: string;

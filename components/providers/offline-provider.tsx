@@ -9,6 +9,7 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     setMounted(true);
+    let swUpdateIntervalId: NodeJS.Timeout | undefined;
 
     // Register service worker - gracefully handle registration errors
     if ("serviceWorker" in navigator) {
@@ -18,7 +19,7 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
           console.log("✓ Service Worker registered successfully", reg);
 
           // Check for updates periodically
-          setInterval(() => {
+          swUpdateIntervalId = setInterval(() => {
             reg.update().catch((error) => {
               console.warn("[SW] Update check failed:", error);
             });
@@ -40,8 +41,8 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
       if ("serviceWorker" in navigator && "SyncManager" in window) {
         navigator.serviceWorker.ready
           .then((reg) => {
-            reg.sync.register("sync-conversations").catch(console.error);
-            reg.sync.register("sync-preferences").catch(console.error);
+            void (reg as ServiceWorkerRegistration & { sync?: { register: (tag: string) => Promise<void> } }).sync?.register("sync-conversations").catch(console.error);
+            void (reg as ServiceWorkerRegistration & { sync?: { register: (tag: string) => Promise<void> } }).sync?.register("sync-preferences").catch(console.error);
           })
           .catch((error) => {
             console.warn("[Sync] Background sync unavailable:", error);
@@ -63,6 +64,7 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
     return () => {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
+      if (swUpdateIntervalId) clearInterval(swUpdateIntervalId);
     };
   }, [setOnlineStatus]);
 

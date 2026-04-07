@@ -63,8 +63,16 @@ export function middleware(request: NextRequest) {
   );
   response.headers.set(
     "Content-Security-Policy",
-    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https: ik.imagekit.io; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https: *.solana.com *.helius.xyz *.rpcpool.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https: ik.imagekit.io; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https: *.solana.com *.helius.xyz *.rpcpool.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; report-uri /api/security/csp-report"
   );
+
+  // Add CSP reporting endpoint
+  response.headers.set("Report-To", JSON.stringify({
+    group: "csp-endpoint",
+    max_age: 10886400,
+    endpoints: [{ url: "/api/security/csp-report" }],
+    include_subdomains: true,
+  }));
 
   // CORS headers for API routes
   if (pathname.startsWith("/api/")) {

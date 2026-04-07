@@ -97,26 +97,26 @@ export default function PricingPage() {
    return (
      <>
        <LandingNavigation forceLight />
-       <div className="min-h-screen bg-background py-4 px-4 sm:px-6 lg:px-8">
+       <div className="min-h-screen overflow-x-clip bg-background px-4 py-24 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold text-foreground mb-4">
+          <div className="mb-10 text-center sm:mb-12">
+            <h1 className="mb-3 text-3xl font-bold text-foreground sm:mb-4 sm:text-4xl">
               Simple, Transparent Pricing
             </h1>
-            <p className="text-xl text-muted-foreground">
+            <p className="text-base text-muted-foreground sm:text-xl">
               Choose the plan that works best for your needs
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3 lg:gap-6">
             {PLANS.map((plan, idx) => (
               <div
                 key={idx}
                 className={`rounded-2xl border transition-all ${
                   plan.highlighted
-                    ? "border-primary bg-primary/5 scale-105 md:scale-100 md:shadow-lg"
+                    ? "border-primary bg-primary/5 shadow-lg md:scale-100"
                     : "border-border bg-card"
-                } p-8`}
+                } p-5 sm:p-8`}
               >
               {plan.highlighted && (
                 <div className="mb-4 inline-block bg-primary px-3 py-1 rounded-full text-sm font-semibold text-primary-foreground">
@@ -124,13 +124,13 @@ export default function PricingPage() {
                 </div>
               )}
 
-              <h3 className="text-2xl font-bold text-foreground mb-2">
+              <h3 className="mb-2 text-xl font-bold text-foreground sm:text-2xl">
                 {plan.name}
               </h3>
               <p className="text-muted-foreground mb-6">{plan.description}</p>
 
               <div className="mb-6">
-                <span className="text-4xl font-bold text-foreground">
+                <span className="text-3xl font-bold text-foreground sm:text-4xl">
                   ${plan.price}
                 </span>
                 {plan.price > 0 && (

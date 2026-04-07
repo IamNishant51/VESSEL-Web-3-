@@ -1,7 +1,7 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
-export interface Subscription extends Document {
-  userId: string; // Wallet address or user ID
+export interface SubscriptionDoc {
+  userId: string;
   tier: "free" | "pro" | "enterprise";
   status: "active" | "canceled" | "past_due" | "trialing";
   stripeSubscriptionId: string;
@@ -17,7 +17,7 @@ export interface Subscription extends Document {
   updatedAt: Date;
 }
 
-const subscriptionSchema = new Schema<Subscription>({
+const subscriptionSchema = new Schema<SubscriptionDoc>({
   userId: { type: String, required: true, unique: true, index: true },
   tier: {
     type: String,
@@ -45,9 +45,8 @@ const subscriptionSchema = new Schema<Subscription>({
 });
 
 // Update updatedAt on save
-subscriptionSchema.pre("save", function (next) {
+subscriptionSchema.pre("save", function () {
   this.updatedAt = new Date();
-  next();
 });
 
 export const SubscriptionModel =
@@ -104,4 +103,4 @@ export const SUBSCRIPTION_PLANS = {
 };
 
 export type SubscriptionTier = keyof typeof SUBSCRIPTION_PLANS;
-export type SubscriptionStatus = Subscription["status"];
+export type SubscriptionStatus = SubscriptionDoc["status"];

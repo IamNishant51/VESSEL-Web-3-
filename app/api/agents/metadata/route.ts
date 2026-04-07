@@ -15,7 +15,7 @@ type RiskLevel = "Conservative" | "Balanced" | "Aggressive";
 
 export async function GET(request: Request) {
   const ip = getClientIp(request);
-  const limit = checkRateLimit(`metadata:${ip}`, { windowMs: 60_000, max: 60 });
+  const limit = await checkRateLimit(`metadata:${ip}`, { windowMs: 60_000, max: 60 });
   if (!limit.allowed) {
     return NextResponse.json(
       { error: "Too many metadata requests." },

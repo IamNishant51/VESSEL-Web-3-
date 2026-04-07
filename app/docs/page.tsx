@@ -51,8 +51,8 @@ export default function DocsPage() {
    return (
      <>
        <LandingNavigation forceLight />
-       <div className="min-h-screen bg-[#fafafa] px-4 pt-8 sm:px-6">
-      <div className="grid w-full grid-cols-1 gap-6 md:grid-cols-[230px_minmax(0,1fr)] lg:grid-cols-[250px_minmax(0,1fr)_200px] lg:gap-8 mx-auto max-w-[1320px]">
+       <div className="min-h-screen overflow-x-clip bg-[#fafafa] px-4 pb-8 pt-24 sm:px-6">
+      <div className="mx-auto grid w-full max-w-[1320px] grid-cols-1 gap-6 md:grid-cols-[230px_minmax(0,1fr)] lg:grid-cols-[250px_minmax(0,1fr)_200px] lg:gap-8">
         <aside className="rounded-xl border border-black/10 bg-white p-4 md:sticky md:top-28 md:h-fit">
           <p className="text-[12px] font-semibold tracking-[0.14em] text-black">DOCS</p>
           <p className="mt-1 text-[10px] font-medium tracking-[0.1em] text-[#ff2338]">v1.0.4-alpha</p>
@@ -95,24 +95,24 @@ export default function DocsPage() {
           </div>
         </aside>
 
-        <main className="rounded-xl border border-black/10 bg-white p-5 sm:p-8 lg:p-10">
+        <main className="rounded-xl border border-black/10 bg-white p-4 sm:p-8 lg:p-10">
           <p className="text-[11px] tracking-[0.08em] text-black/60">Documentation  &gt;  Overview</p>
 
           <section id="introduction" className="mt-4 border-b border-black/10 pb-8">
-            <h1 className="text-[40px] font-semibold leading-[1.05] tracking-[-0.03em] text-black sm:text-[56px]">
+            <h1 className="text-[30px] font-semibold leading-[1.05] tracking-[-0.03em] text-black sm:text-[56px]">
               Introduction to Vessel Engine
             </h1>
-            <p className="mt-4 max-w-[860px] text-[27px] leading-[1.35] tracking-[-0.02em] text-black/70 sm:text-[32px]">
+            <p className="mt-4 max-w-[860px] text-[20px] leading-[1.35] tracking-[-0.02em] text-black/70 sm:text-[32px]">
               Vessel is the high-performance orchestration layer for Solana-native AI agents.
             </p>
-            <p className="mt-3 max-w-[860px] text-[17px] leading-relaxed text-black/75 sm:text-[18px]">
+            <p className="mt-3 max-w-[860px] text-[15px] leading-relaxed text-black/75 sm:text-[18px]">
               Build, deploy, and scale autonomous entities with cryptographically secured identities and atomic execution.
             </p>
           </section>
 
           <section id="getting-started" className="mt-8">
-            <h2 className="text-[33px] font-semibold tracking-[-0.02em] text-black">Getting Started</h2>
-            <p className="mt-3 text-[16px] leading-relaxed text-black/70">
+            <h2 className="text-[27px] font-semibold tracking-[-0.02em] text-black sm:text-[33px]">Getting Started</h2>
+            <p className="mt-3 text-[15px] leading-relaxed text-black/70 sm:text-[16px]">
               To begin building with Vessel, install the SDK and connect a Solana wallet. Start by creating your first forge draft,
               define policy limits, and publish to marketplace when your strategy is ready.
             </p>
@@ -136,8 +136,8 @@ export default function DocsPage() {
           </section>
 
           <section id="installation" className="mt-10">
-            <h2 className="text-[33px] font-semibold tracking-[-0.02em] text-black">Installation</h2>
-            <p className="mt-3 text-[16px] text-black/70">Run this command in your terminal to install the orchestration toolkit:</p>
+            <h2 className="text-[27px] font-semibold tracking-[-0.02em] text-black sm:text-[33px]">Installation</h2>
+            <p className="mt-3 text-[15px] text-black/70 sm:text-[16px]">Run this command in your terminal to install the orchestration toolkit:</p>
 
             <div className="mt-4 rounded-lg border border-black/15 bg-[#161617] p-4 text-white">
               <div className="mb-3 flex items-center justify-between">
@@ -155,7 +155,7 @@ export default function DocsPage() {
           </section>
 
           <section id="key-principles" className="mt-10 border-b border-black/10 pb-8">
-            <h2 className="text-[33px] font-semibold tracking-[-0.02em] text-black">Key Principles</h2>
+            <h2 className="text-[27px] font-semibold tracking-[-0.02em] text-black sm:text-[33px]">Key Principles</h2>
             <div className="mt-4 space-y-4">
               <div className="flex gap-3 rounded-lg border border-black/10 bg-white p-4">
                 <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#ff2338]/15 text-[12px] font-semibold text-[#ff2338]">
@@ -190,8 +190,8 @@ export default function DocsPage() {
           </section>
 
           <section id="quick-start" className="mt-10 border-b border-black/10 pb-8">
-            <h2 className="text-[33px] font-semibold tracking-[-0.02em] text-black">Quick Start</h2>
-            <p className="mt-3 text-[16px] leading-relaxed text-black/70">
+            <h2 className="text-[27px] font-semibold tracking-[-0.02em] text-black sm:text-[33px]">Quick Start</h2>
+            <p className="mt-3 text-[15px] leading-relaxed text-black/70 sm:text-[16px]">
               Follow this four-step flow to launch your first policy-aware Vessel agent.
             </p>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -219,8 +219,8 @@ export default function DocsPage() {
           </section>
 
           <section id="api-reference" className="mt-10 border-b border-black/10 pb-8">
-            <h2 className="text-[33px] font-semibold tracking-[-0.02em] text-black">API Reference</h2>
-            <p className="mt-3 text-[16px] leading-relaxed text-black/70">
+            <h2 className="text-[27px] font-semibold tracking-[-0.02em] text-black sm:text-[33px]">API Reference</h2>
+            <p className="mt-3 text-[15px] leading-relaxed text-black/70 sm:text-[16px]">
               Vessel exposes focused endpoints for execution and tooling. Use these as your orchestration surface.
             </p>
             <div className="mt-5 space-y-3">
@@ -242,8 +242,8 @@ export default function DocsPage() {
           </section>
 
           <section id="architecture" className="mt-10 border-b border-black/10 pb-8">
-            <h2 className="text-[33px] font-semibold tracking-[-0.02em] text-black">Architecture</h2>
-            <p className="mt-3 text-[16px] leading-relaxed text-black/70">
+            <h2 className="text-[27px] font-semibold tracking-[-0.02em] text-black sm:text-[33px]">Architecture</h2>
+            <p className="mt-3 text-[15px] leading-relaxed text-black/70 sm:text-[16px]">
               Vessel runtime composes four deterministic layers so agent execution remains explainable and safe.
             </p>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -266,8 +266,8 @@ export default function DocsPage() {
           </section>
 
           <section id="security" className="mt-10 border-b border-black/10 pb-8">
-            <h2 className="text-[33px] font-semibold tracking-[-0.02em] text-black">Security</h2>
-            <p className="mt-3 text-[16px] leading-relaxed text-black/70">
+            <h2 className="text-[27px] font-semibold tracking-[-0.02em] text-black sm:text-[33px]">Security</h2>
+            <p className="mt-3 text-[15px] leading-relaxed text-black/70 sm:text-[16px]">
               Security is enforced by design through identity, policy constraints, and execution traceability.
             </p>
             <ul className="mt-4 space-y-2 text-[14px] leading-relaxed text-black/75">

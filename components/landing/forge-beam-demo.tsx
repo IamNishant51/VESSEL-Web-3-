@@ -37,19 +37,19 @@ export function ForgeBeamDemo({
   return (
     <div
       className={cn(
-        "relative flex h-[320px] w-full max-w-[980px] items-center justify-center overflow-hidden px-8 sm:px-16",
+        "relative flex h-[280px] w-full max-w-[980px] items-center justify-center overflow-hidden px-3 sm:h-[320px] sm:px-16",
         className
       )}
       ref={containerRef}
     >
-      <div className="flex w-full max-w-[760px] flex-row items-center justify-between">
-        <Circle ref={div1Ref} className="size-24 [&>svg]:h-14 [&>svg]:w-14">
+      <div className="flex w-full max-w-[760px] flex-row items-center justify-center gap-2 sm:justify-between sm:gap-0">
+        <Circle ref={div1Ref} className="size-16 [&>svg]:h-8 [&>svg]:w-8 sm:size-24 sm:[&>svg]:h-14 sm:[&>svg]:w-14">
           <Icons.user />
         </Circle>
-        <Circle ref={div2Ref} className="size-24 [&>svg]:h-14 [&>svg]:w-14">
+        <Circle ref={div2Ref} className="size-16 [&>svg]:h-8 [&>svg]:w-8 sm:size-24 sm:[&>svg]:h-14 sm:[&>svg]:w-14">
           <Icons.neuron />
         </Circle>
-        <Circle ref={div3Ref} className="size-24 [&>svg]:h-14 [&>svg]:w-14">
+        <Circle ref={div3Ref} className="size-16 [&>svg]:h-8 [&>svg]:w-8 sm:size-24 sm:[&>svg]:h-14 sm:[&>svg]:w-14">
           <Icons.rocket />
         </Circle>
       </div>

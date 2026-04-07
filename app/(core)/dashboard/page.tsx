@@ -83,7 +83,7 @@ export default function DashboardPage() {
 
   if (!hasHydrated) {
     return (
-      <div className="-mx-4 -mt-8 min-h-screen bg-[var(--bg-base)] px-4 pb-10 pt-4 text-[var(--text-primary)] sm:-mx-6 sm:px-6">
+      <div className="-mx-4 -mt-8 min-h-screen overflow-x-clip bg-[var(--bg-base)] px-4 pb-10 pt-4 text-[var(--text-primary)] sm:-mx-6 sm:px-6">
         <div className="mx-auto w-full max-w-[1320px]">
           <div className="mb-8">
             <div className="h-14 w-64 animate-pulse rounded bg-black/10" />
@@ -298,7 +298,7 @@ export default function DashboardPage() {
               <div className="mt-3 grid grid-cols-2 gap-2">
                 <button
                   onClick={() => router.push("/forge")}
-                  className="flex flex-col items-center gap-2 rounded-lg border border-black/8 bg-white p-3 text-center transition hover:border-black/15 hover:bg-black/[0.02]"
+                  className="btn-press card-hover flex flex-col items-center gap-2 rounded-lg border border-black/8 bg-white p-3 text-center transition hover:border-black/15 hover:bg-black/[0.02]"
                 >
                   <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-black/[0.04]">
                     <Sparkles className="h-4 w-4 text-black/60" />
@@ -307,7 +307,7 @@ export default function DashboardPage() {
                 </button>
                 <button
                   onClick={() => router.push("/marketplace")}
-                  className="flex flex-col items-center gap-2 rounded-lg border border-black/8 bg-white p-3 text-center transition hover:border-black/15 hover:bg-black/[0.02]"
+                  className="btn-press card-hover flex flex-col items-center gap-2 rounded-lg border border-black/8 bg-white p-3 text-center transition hover:border-black/15 hover:bg-black/[0.02]"
                 >
                   <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-black/[0.04]">
                     <Layers className="h-4 w-4 text-black/60" />
@@ -316,7 +316,7 @@ export default function DashboardPage() {
                 </button>
                 <button
                   onClick={() => router.push("/agents")}
-                  className="flex flex-col items-center gap-2 rounded-lg border border-black/8 bg-white p-3 text-center transition hover:border-black/15 hover:bg-black/[0.02]"
+                  className="btn-press card-hover flex flex-col items-center gap-2 rounded-lg border border-black/8 bg-white p-3 text-center transition hover:border-black/15 hover:bg-black/[0.02]"
                 >
                   <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-black/[0.04]">
                     <Bot className="h-4 w-4 text-black/60" />
@@ -325,7 +325,7 @@ export default function DashboardPage() {
                 </button>
                 <button
                   onClick={() => router.push("/")}
-                  className="flex flex-col items-center gap-2 rounded-lg border border-black/8 bg-white p-3 text-center transition hover:border-black/15 hover:bg-black/[0.02]"
+                  className="btn-press card-hover flex flex-col items-center gap-2 rounded-lg border border-black/8 bg-white p-3 text-center transition hover:border-black/15 hover:bg-black/[0.02]"
                 >
                   <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-black/[0.04]">
                     <BarChart3 className="h-4 w-4 text-black/60" />

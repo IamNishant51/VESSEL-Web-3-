@@ -1,9 +1,11 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X, TrendingUp, TrendingDown } from "lucide-react";
-import { useState, useEffect } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+
 import { WalletConnectButton } from "@/components/wallet/connect-button";
 
 const navLinks = [
@@ -57,8 +59,8 @@ export function AppHeader() {
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-[var(--border-subtle)] bg-[var(--bg-surface)]/95 backdrop-blur-md">
-        <div className="mx-auto flex max-w-full items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-10">
+      <header className="fixed inset-x-0 top-0 z-50 flex flex-col border-b border-[var(--border-subtle)] bg-[var(--bg-surface)]/95 backdrop-blur-md">
+        <div className="mx-auto flex w-full items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-10">
           {/* Logo */}
           <Link href="/" className="text-lg font-bold tracking-wider text-[var(--text-primary)] hover:opacity-70">
             VESSEL
@@ -103,7 +105,7 @@ export function AppHeader() {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden h-10 w-10 flex items-center justify-center rounded-lg border border-[var(--border-subtle)] text-[var(--text-primary)] hover:bg-[var(--bg-subtle)]"
+              className="btn-press lg:hidden min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg border border-[var(--border-subtle)] text-[var(--text-primary)] hover:bg-[var(--bg-subtle)]"
             >
               {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
@@ -112,33 +114,40 @@ export function AppHeader() {
         </div>
 
         {/* Mobile Navigation Menu */}
-        {isMobileMenuOpen && (
-          <div className="border-t border-[var(--border-subtle)] bg-[var(--bg-surface)]/95 px-4 py-3 sm:px-6 lg:hidden">
-            <nav className="flex flex-col gap-2">
-              {navLinks.map((link) => {
-                const isActive = pathname === link.href || pathname.startsWith(link.href + "/");
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className={`rounded-lg px-3 py-2 text-sm font-semibold tracking-widest transition ${
-                      isActive
-                        ? "bg-[var(--bg-subtle)] text-[var(--text-primary)]"
-                        : "text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]"
-                    }`}
-                  >
-                    {link.label}
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
-        )}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="border-t border-[var(--border-subtle)] bg-[var(--bg-surface)] px-4 py-3 sm:px-6 lg:hidden overflow-hidden"
+            >
+              <nav className="flex flex-col gap-2 pb-2">
+                {navLinks.map((link) => {
+                  const isActive = pathname === link.href || pathname.startsWith(link.href + "/");
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={`rounded-lg px-3 py-3 text-sm font-semibold tracking-widest transition ${
+                        isActive
+                          ? "bg-[var(--bg-subtle)] text-[var(--text-primary)]"
+                          : "text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]"
+                      }`}
+                    >
+                      {link.label}
+                    </Link>
+                  );
+                })}
+              </nav>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
-      {/* Spacer to prevent content overlap */}
-      <div className="h-16" />
+      {/* Spacer to prevent content overlap - matches header height */}
+      <div className="h-[56px] sm:h-[60px]" />
     </>
   );
 }

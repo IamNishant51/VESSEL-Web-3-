@@ -389,12 +389,15 @@ export async function enhanceTraitPng(inputPath: string, outputPath: string, opt
     const vignette = Buffer.from(buildBackgroundVignetteSvg(size, options.seed));
     const colorGradeOverlay = Buffer.from(buildColorGradeOverlay(size, colorGrade));
     
+    const blurredWithOpacity = await sharp(blurred).modulate({ brightness: 0.28 }).toBuffer();
+    const colorGradeWithOpacity = await sharp(colorGradeOverlay).modulate({ brightness: 0.35 }).toBuffer();
+    
     await sharp(inputPath)
       .composite([
-        { input: blurred, blend: "screen" as Blend, opacity: 0.28 },
-        { input: grainPng, blend: "soft-light" as Blend, opacity: 1 },
-        { input: vignette, blend: "multiply" as Blend, opacity: 1 },
-        { input: colorGradeOverlay, blend: "overlay" as Blend, opacity: 0.35 },
+        { input: blurredWithOpacity, blend: "screen" as Blend },
+        { input: grainPng, blend: "soft-light" as Blend },
+        { input: vignette, blend: "multiply" as Blend },
+        { input: colorGradeWithOpacity, blend: "overlay" as Blend },
       ])
       .modulate({ brightness: 1.03, saturation: 1.22 })
       .gamma(1.06)
@@ -503,8 +506,10 @@ export async function enhanceTraitPng(inputPath: string, outputPath: string, opt
     .png({ compressionLevel: 9, effort: 8 })
     .toBuffer();
 
+  const filmGrainWithOpacity = await sharp(filmGrainPng).modulate({ brightness: 0.6 }).toBuffer();
+
   await sharp(enhancedRgb)
-    .composite([{ input: filmGrainPng, blend: "overlay" as Blend, opacity: 0.6 }])
+    .composite([{ input: filmGrainWithOpacity, blend: "overlay" as Blend }])
     .png({ compressionLevel: 9, effort: 8 })
     .toFile(outputPath);
 }

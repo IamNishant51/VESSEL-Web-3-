@@ -76,7 +76,7 @@ export default function AnalyticsPage() {
 
   if (!hasHydrated) {
     return (
-      <div className="-mx-4 -mt-8 min-h-screen bg-[var(--bg-base)] px-4 pb-10 pt-4 text-[var(--text-primary)] sm:-mx-6 sm:px-6">
+      <div className="-mx-4 -mt-8 min-h-screen overflow-x-clip bg-[var(--bg-base)] px-4 pb-10 pt-4 text-[var(--text-primary)] sm:-mx-6 sm:px-6">
         <div className="mx-auto w-full max-w-[1400px]">
           <div className="mb-8">
             <div className="h-10 w-48 animate-pulse rounded bg-black/10" />

@@ -24,26 +24,26 @@ export function WalletConnectButton({ className }: Props) {
           window.dispatchEvent(new CustomEvent("vessel:wallet-explicit-disconnect"));
           void disconnect();
         }}
+          className={cn(
+            "btn-press inline-flex min-h-[44px] cursor-pointer items-center rounded-lg bg-black px-5 text-[12px] font-semibold tracking-[0.06em] text-white transition-all duration-200 hover:bg-black/85",
+            className
+          )}
+        >
+          {shortAddress(publicKey.toBase58())}
+        </button>
+      );
+    }
+
+    return (
+      <button
+        onClick={() => {
+          localStorage.removeItem(WALLET_EXPLICIT_DISCONNECT_KEY);
+          setVisible(true);
+        }}
         className={cn(
-          "inline-flex h-10 cursor-pointer items-center bg-black px-5 text-[12px] font-semibold tracking-[0.06em] text-white transition-all duration-200 hover:bg-black/85",
+          "btn-press inline-flex min-h-[44px] cursor-pointer items-center rounded-lg bg-black px-5 text-[12px] font-semibold tracking-[0.06em] text-white transition-all duration-200 hover:bg-black/85",
           className
         )}
-      >
-        {shortAddress(publicKey.toBase58())}
-      </button>
-    );
-  }
-
-  return (
-    <button
-      onClick={() => {
-        localStorage.removeItem(WALLET_EXPLICIT_DISCONNECT_KEY);
-        setVisible(true);
-      }}
-      className={cn(
-        "inline-flex h-10 cursor-pointer items-center bg-black px-5 text-[12px] font-semibold tracking-[0.06em] text-white transition-all duration-200 hover:bg-black/85",
-        className
-      )}
     >
       Connect Wallet
     </button>
