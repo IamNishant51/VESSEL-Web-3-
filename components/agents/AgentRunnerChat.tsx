@@ -703,7 +703,7 @@ export function AgentRunnerChat({ agent }: Props) {
   ];
 
   return (
-    <div className="relative flex h-full min-h-0 bg-white">
+    <div className="relative flex h-[100dvh] min-h-0 flex-col bg-white sm:h-full">
       {/* Mobile sidebar overlay */}
       <AnimatePresence>
         {showSidebar && (
@@ -720,7 +720,7 @@ export function AgentRunnerChat({ agent }: Props) {
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: -280, opacity: 1 }}
               transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-              className="fixed left-0 top-0 z-50 h-full w-[280px] border-r border-black/8 shadow-xl lg:hidden"
+              className="fixed bottom-0 left-0 top-0 z-50 w-[min(280px,85vw)] border-r border-black/8 shadow-xl lg:hidden"
             >
               <SidebarContent
                 sessions={sessions}
@@ -812,7 +812,7 @@ export function AgentRunnerChat({ agent }: Props) {
           className="relative min-h-0 flex-1 overflow-y-auto bg-white"
         >
           {!hasUserMessages ? (
-            <div className="flex h-full flex-col items-center justify-center px-4 py-8 sm:py-12">
+            <div className="flex h-full flex-col items-center justify-center px-3 py-6 sm:py-12">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -820,19 +820,19 @@ export function AgentRunnerChat({ agent }: Props) {
                 className="flex w-full max-w-[680px] flex-col items-center"
               >
                 <div className="relative mb-4 sm:mb-6">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#171819] text-xl font-bold text-white shadow-2xl sm:h-16 sm:w-16 sm:text-2xl">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#171819] text-lg font-bold text-white shadow-2xl sm:h-16 sm:w-16 sm:text-2xl">
                     {agent.name.charAt(0).toUpperCase()}
                   </div>
-                  <div className={`absolute -bottom-1 -right-1 h-3.5 w-3.5 rounded-full border-2 border-white sm:h-4 sm:w-4 ${stateColors[agentState]}`} />
+                  <div className={`absolute -bottom-1 -right-1 h-3 w-3 rounded-full border-2 border-white sm:h-4 sm:w-4 ${stateColors[agentState]}`} />
                 </div>
-                <h3 className="text-lg font-semibold tracking-[-0.02em] text-black sm:text-[20px]">
+                <h3 className="text-base font-semibold tracking-[-0.02em] text-black sm:text-[20px]">
                   What should I work on?
                 </h3>
-                <p className="mt-1.5 max-w-[400px] text-center text-[12px] leading-relaxed text-black/40 sm:mt-2 sm:max-w-[480px] sm:text-[13px]">
+                <p className="mt-1.5 max-w-[400px] text-center text-[11px] leading-relaxed text-black/40 sm:mt-2 sm:max-w-[480px] sm:text-[13px]">
                   {agent.personality}
                 </p>
 
-                <div className="mt-6 grid w-full gap-2 sm:mt-8 sm:grid-cols-2">
+                <div className="mt-5 grid w-full gap-2 sm:mt-8 sm:grid-cols-2">
                   {suggestedActions.map((action, i) => (
                     <motion.button
                       key={action.label}
@@ -843,13 +843,13 @@ export function AgentRunnerChat({ agent }: Props) {
                         setInput(action.prompt);
                         inputRef.current?.focus();
                       }}
-                      className="group flex items-start gap-2.5 rounded-xl border border-black/8 bg-white p-3 text-left transition-all duration-150 hover:border-black/15 hover:bg-black/[0.02] hover:shadow-sm sm:gap-3 sm:p-3.5"
+                      className="group flex items-start gap-2 rounded-xl border border-black/8 bg-white p-2.5 text-left transition-all duration-150 hover:border-black/15 hover:bg-black/[0.02] hover:shadow-sm sm:gap-3 sm:p-3.5"
                     >
                       <div className="mt-0.5 shrink-0 rounded-md bg-black/[0.04] p-1.5 text-black/40 transition-colors group-hover:text-black/60">
                         {action.icon}
                       </div>
                       <div className="min-w-0">
-                        <p className="text-[11px] font-medium text-black/60 group-hover:text-black/80 sm:text-[12px]">
+                        <p className="text-[11px] font-medium text-black/60 group-hover:text-black/80">
                           {action.label}
                         </p>
                       </div>
@@ -1104,9 +1104,9 @@ export function AgentRunnerChat({ agent }: Props) {
         </div>
 
         {/* Input */}
-        <div className="shrink-0 border-t border-black/8 bg-white px-3 py-2.5 sm:px-4 sm:py-3">
+        <div className="shrink-0 border-t border-black/8 bg-white px-2 py-2 sm:px-4 sm:py-3">
           <div className="mx-auto max-w-[800px]">
-            <div className="flex items-end gap-2 rounded-2xl border border-black/10 bg-white p-1.5 transition-colors focus-within:border-black/20 focus-within:shadow-sm sm:p-2">
+            <div className="flex items-end gap-1.5 rounded-2xl border border-black/10 bg-white p-1.5 transition-colors focus-within:border-black/20 focus-within:shadow-sm sm:p-2">
               <textarea
                 ref={inputRef}
                 value={input}
@@ -1114,9 +1114,9 @@ export function AgentRunnerChat({ agent }: Props) {
                 onKeyDown={handleKeyDown}
                 placeholder={`Tell ${agent.name} what to do...`}
                 rows={1}
-                className="flex-1 resize-none bg-transparent px-2 py-2 text-[13px] leading-relaxed text-black placeholder-black/30 focus:outline-none disabled:opacity-40 sm:text-[14px]"
+                className="flex-1 resize-none bg-transparent px-2 py-1.5 text-[12px] leading-relaxed text-black placeholder-black/30 focus:outline-none disabled:opacity-40 sm:text-[14px]"
                 disabled={isLoading}
-                style={{ maxHeight: "160px" }}
+                style={{ maxHeight: "120px" }}
               />
               <button
                 onClick={() => void handleSendMessage()}
@@ -1134,8 +1134,8 @@ export function AgentRunnerChat({ agent }: Props) {
                 )}
               </button>
             </div>
-            <div className="mt-1.5 flex items-center justify-between sm:mt-2">
-              <p className="text-[9px] text-black/20 sm:text-[10px]">
+            <div className="mt-1 flex items-center justify-between sm:mt-2">
+              <p className="text-[8px] text-black/20 sm:text-[10px]">
                 {agent.name} executes on-chain actions. Always verify transactions before approving.
               </p>
               <div className="hidden items-center gap-2 text-[10px] text-black/15 sm:flex">

@@ -30,6 +30,8 @@ import { useAgent } from "@/hooks/useAgent";
 import { useStoreHydrated } from "@/hooks/useStoreHydrated";
 import { getAgentArtworkUrl } from "@/lib/agent-visuals";
 import { getCyberpunkAgentDataUrl } from "@/lib/agent-avatar";
+import { AgentLeaderboard } from "@/components/dashboard/AgentLeaderboard";
+import { LiveActivityFeed } from "@/components/dashboard/LiveActivityFeed";
 import { shortAddress } from "@/lib/utils";
 import { useVesselStore } from "@/store/useVesselStore";
 import type { Agent } from "@/types/agent";
@@ -197,8 +199,14 @@ export default function DashboardPage() {
 
         {/* Main Grid */}
         <div className="mt-6 grid gap-6 lg:grid-cols-3">
-          {/* Agents List */}
-          <div className="lg:col-span-2">
+          {/* Left Column (Agents List + New Features) */}
+          <div className="lg:col-span-2 flex flex-col gap-6">
+            {/* Live Activity Feed */}
+            <LiveActivityFeed />
+            
+            {/* Split Leaderboard and Agents */}
+            <div className="grid lg:grid-cols-2 gap-6">
+              <AgentLeaderboard agents={agents} />
             <div className="rounded-xl border border-black/6 bg-white">
               <div className="flex items-center justify-between border-b border-black/6 px-4 py-3 sm:px-6">
                 <div>
@@ -278,6 +286,7 @@ export default function DashboardPage() {
                   ))}
                 </div>
               )}
+            </div>
             </div>
           </div>
 

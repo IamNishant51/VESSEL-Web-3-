@@ -11,7 +11,7 @@ const Circle = forwardRef<
     <div
       ref={ref}
       className={cn(
-        "z-10 flex size-[4.5rem] items-center justify-center rounded-full border-2 bg-white p-3 shadow-[0_0_20px_-12px_rgba(0,0,0,0.8)] [&>svg]:h-9 [&>svg]:w-9",
+        "z-10 flex size-10 items-center justify-center rounded-full border-2 bg-white p-1.5 shadow-[0_0_20px_-12px_rgba(0,0,0,0.8)] [&>svg]:h-5 [&>svg]:w-5 sm:size-12 sm:p-2 sm:[&>svg]:h-7 sm:[&>svg]:w-7 md:size-[4.5rem] md:p-3 md:[&>svg]:h-9 md:[&>svg]:w-9",
         className
       )}
     >
@@ -38,23 +38,23 @@ export function AnimatedBeamMultipleOutputDemo({
   return (
     <div
       className={cn(
-        "relative flex h-[620px] w-full items-center justify-center overflow-hidden p-14",
+        "relative flex h-[280px] w-full items-center justify-center overflow-hidden p-4 sm:h-[380px] sm:p-8 md:h-[500px] md:p-10 lg:h-[620px] lg:p-14",
         className
       )}
       ref={containerRef}
     >
-      <div className="flex size-full max-w-[1020px] flex-row items-stretch justify-between gap-24">
+      <div className="flex size-full max-w-[1020px] flex-row items-stretch justify-between gap-6 sm:gap-12 md:gap-18 lg:gap-24">
         <div className="flex flex-col justify-center">
-          <Circle ref={div7Ref} className="size-28 [&>svg]:h-14 [&>svg]:w-14">
+          <Circle ref={div7Ref} className="size-12 sm:size-16 md:size-20 lg:size-28 [&>svg]:h-6 [&>svg]:w-6 sm:[&>svg]:h-8 sm:[&>svg]:w-8 md:[&>svg]:h-10 md:[&>svg]:w-10 lg:[&>svg]:h-14 lg:[&>svg]:w-14">
             <Icons.user />
           </Circle>
         </div>
         <div className="flex flex-col justify-center">
-          <Circle ref={div6Ref} className="size-28 [&>svg]:h-14 [&>svg]:w-14">
+          <Circle ref={div6Ref} className="size-12 sm:size-16 md:size-20 lg:size-28 [&>svg]:h-6 [&>svg]:w-6 sm:[&>svg]:h-8 sm:[&>svg]:w-8 md:[&>svg]:h-10 md:[&>svg]:w-10 lg:[&>svg]:h-14 lg:[&>svg]:w-14">
             <Icons.openai />
           </Circle>
         </div>
-        <div className="flex flex-col justify-center gap-4">
+        <div className="flex flex-col justify-center gap-2 sm:gap-3 md:gap-4">
           <Circle ref={div1Ref}>
             <Icons.googleDrive />
           </Circle>

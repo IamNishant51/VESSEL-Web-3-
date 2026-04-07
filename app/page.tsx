@@ -365,13 +365,13 @@ export default function Home() {
         transition={{ duration: 0.55, ease: "easeOut" }}
         className="relative z-30"
       >
-        <motion.section
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: false, amount: 0.15 }}
-          transition={{ duration: 0.55, ease: "easeOut" }}
-          className="relative bg-gradient-to-b from-[#d7d7da] via-[#d1d1d4] to-[#1a1a1d] pt-16 text-black"
-        >
+           <motion.section
+             initial={{ opacity: 0, y: 34 }}
+             whileInView={{ opacity: 1, y: 0 }}
+             viewport={{ once: false, amount: 0.15 }}
+             transition={{ duration: 0.55, ease: "easeOut" }}
+             className="relative bg-gradient-to-b from-[#d7d7da] via-[#d1d1d4] to-[#1a1a1d] pt-6 text-black"
+           >
           <div className="mx-auto max-w-[1320px] px-4 pb-6 pt-7 sm:px-6 lg:px-10">
             <div className="relative mt-4 grid min-h-[560px] grid-cols-1 items-center gap-4 md:grid-cols-[110px_1fr_620px]">
               <motion.div
@@ -396,7 +396,7 @@ export default function Home() {
                   animate={imageReveal ? { opacity: 1, y: 0 } : { opacity: 0, y: 15 }}
                   transition={{ duration: 0.4, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
                 >
-                  Give Your Ideas a Soul
+                  Mint AI Agents as On-Chain NFTs
                 </motion.h1>
                 <motion.p 
                   className="mt-2 text-[11px] text-black/65"
@@ -404,7 +404,7 @@ export default function Home() {
                   animate={imageReveal ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
                   transition={{ duration: 0.4, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
                 >
-                  Solana-Native AI Agent Orchestrator &amp; Marketplace
+                  The premier Solana-Native AI Agent Orchestrator &amp; Marketplace
                 </motion.p>
                 <motion.p 
                   className="mt-1 text-[11px] text-black/52"
@@ -412,7 +412,7 @@ export default function Home() {
                   animate={imageReveal ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
                   transition={{ duration: 0.4, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
                 >
-                  From forge to ownership to collaborative execution.
+                  Create, own, and deploy autonomous agents that execute tasks, earn crypto, and collaborate on-chain.
                 </motion.p>
 
                 <motion.div 
@@ -537,24 +537,30 @@ export default function Home() {
             <div className="rounded-[2px] bg-[#030303] px-4 py-10 sm:px-10 sm:py-12">
               <h2 className="text-[48px] font-semibold tracking-tight text-white sm:text-[56px]">The Forge</h2>
 
-              <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_1fr_260px]">
-                <div className="-m-3 max-w-[290px] rounded-lg border border-transparent p-3 transition-colors duration-200 hover:border-white/10 hover:bg-white/[0.02]">
+              <div className="mt-10 grid gap-8 lg:grid-cols-3">
+                <div className="-m-3 rounded-lg border border-transparent p-3 transition-colors duration-200 hover:border-white/10 hover:bg-white/[0.02]">
                   <p className="text-[30px] text-zinc-100">Step 01</p>
-                  <h3 className="mt-1 text-[34px] font-semibold leading-[1.08] text-white">Name &amp; Personality</h3>
-                  <p className="mt-2 text-[11px] leading-relaxed text-zinc-400">
-                    Define the essence. From technical analyst to aggressive trader, shape your neural architecture.
+                  <h3 className="mt-1 text-[24px] font-semibold leading-[1.08] text-white">Design &amp; Personality</h3>
+                  <p className="mt-2 text-[13px] leading-relaxed text-zinc-400">
+                    Give your agent a unique system prompt, specialty, and risk tolerance. We generate a unique production-ready NFT visual identity based on its archetype.
                   </p>
                 </div>
 
-                <div className="-m-3 max-w-[290px] rounded-lg border border-transparent p-3 transition-colors duration-200 hover:border-white/10 hover:bg-white/[0.02]">
+                <div className="-m-3 rounded-lg border border-transparent p-3 transition-colors duration-200 hover:border-white/10 hover:bg-white/[0.02]">
                   <p className="text-[30px] text-zinc-100">Step 02</p>
-                  <h3 className="mt-1 text-[34px] font-semibold leading-[1.08] text-white">Tools &amp; Capabilities</h3>
-                  <p className="mt-2 text-[11px] leading-relaxed text-zinc-400">
-                    Connect Jupiter, Orca, or Helius. Give your seeker the hands to move across agents the way you command.
+                  <h3 className="mt-1 text-[24px] font-semibold leading-[1.08] text-white">Equip Web3 Tools</h3>
+                  <p className="mt-2 text-[13px] leading-relaxed text-zinc-400">
+                    Grant your agent execution capabilities via pre-built integrations with Jupiter, Orca, Helius, or open web search. Set its budget limits.
                   </p>
                 </div>
 
-                <div className="relative min-h-[190px]" />
+                <div className="-m-3 rounded-lg border border-transparent p-3 transition-colors duration-200 hover:border-white/10 hover:bg-white/[0.02]">
+                  <p className="text-[30px] text-zinc-100">Step 03</p>
+                  <h3 className="mt-1 text-[24px] font-semibold leading-[1.08] text-white">Mint as cNFT</h3>
+                  <p className="mt-2 text-[13px] leading-relaxed text-zinc-400">
+                    Sign a transaction to mint your agent as a compressed NFT on Solana. It's now fully yours to deploy, rent out, or list on the decentralized marketplace.
+                  </p>
+                </div>
               </div>
 
               <AnimatedBeamMultipleOutputDemo className="-mt-24 hidden h-[680px] lg:block" />

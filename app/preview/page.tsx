@@ -20,10 +20,10 @@ const previewAgents = PREMADE_FREE_AGENTS.map((agent) => ({
 }));
 
 export default function PreviewPage() {
-  return (
-    <>
-      <LandingNavigation forceDark />
-      <div className="-mx-4 -mt-8 min-h-screen bg-[#fafafa] px-4 pb-10 pt-28 text-[#171819] sm:-mx-6 sm:px-6">
+   return (
+     <>
+       <LandingNavigation forceDark />
+       <div className="-mx-4 -mt-8 min-h-screen bg-[#fafafa] px-4 pb-10 pt-8 text-[#171819] sm:-mx-6 sm:px-6">
       <div className="mx-auto w-full max-w-[1320px]">
         <section className="mb-6 grid gap-4 rounded-[6px] border border-black/10 bg-white p-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)] sm:grid-cols-[1.2fr_0.8fr] sm:gap-6 sm:p-6 lg:p-8">
           <div>

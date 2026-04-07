@@ -75,7 +75,7 @@ export function LandingNavigation({
 
   return (
     <header className="fixed inset-x-0 top-0 z-50">
-      <div className="mx-auto max-w-[1320px] px-4 pt-4 sm:px-6 lg:px-10">
+      <div className="mx-auto max-w-[1320px] px-3 pt-3 sm:px-4 sm:pt-4 lg:px-10">
         <div
           className={`flex items-center justify-between rounded-xl px-3 py-2 backdrop-blur-md transition-colors duration-300 ${
             isNavOnDark ? "bg-black/35" : forceLight ? "bg-white/65" : "bg-white/45"

@@ -13,7 +13,7 @@ const Circle = forwardRef<
     <div
       ref={ref}
       className={cn(
-        "z-10 flex size-20 items-center justify-center rounded-full border-2 bg-white p-4 shadow-[0_0_28px_-10px_rgba(0,0,0,0.85)] [&>svg]:h-11 [&>svg]:w-11",
+        "z-10 flex size-12 items-center justify-center rounded-full border-2 bg-white p-2 shadow-[0_0_28px_-10px_rgba(0,0,0,0.85)] [&>svg]:h-6 [&>svg]:w-6 sm:size-16 sm:p-3 sm:[&>svg]:h-9 sm:[&>svg]:w-9 md:size-20 md:p-4 md:[&>svg]:h-11 md:[&>svg]:w-11",
         className
       )}
     >
@@ -36,16 +36,16 @@ export function AnimatedBeamDemo({
   return (
     <div
       className={cn(
-        "relative flex h-[420px] w-full max-w-[980px] items-center justify-center overflow-hidden px-8 sm:px-16",
+        "relative flex h-[240px] w-full max-w-[980px] items-center justify-center overflow-hidden px-4 sm:h-[320px] sm:px-8 md:h-[420px] md:px-16",
         className
       )}
       ref={containerRef}
     >
       <div className="flex w-full max-w-[760px] flex-row items-center justify-between">
-        <Circle ref={div1Ref} className="size-24 [&>svg]:h-14 [&>svg]:w-14">
+        <Circle ref={div1Ref} className="size-14 sm:size-20 md:size-24 [&>svg]:h-7 [&>svg]:w-7 sm:[&>svg]:h-10 sm:[&>svg]:w-10 md:[&>svg]:h-14 md:[&>svg]:w-14">
           <Icons.user />
         </Circle>
-        <Circle ref={div2Ref} className="size-24 [&>svg]:h-14 [&>svg]:w-14">
+        <Circle ref={div2Ref} className="size-14 sm:size-20 md:size-24 [&>svg]:h-7 [&>svg]:w-7 sm:[&>svg]:h-10 sm:[&>svg]:w-10 md:[&>svg]:h-14 md:[&>svg]:w-14">
           <Icons.openai />
         </Circle>
       </div>

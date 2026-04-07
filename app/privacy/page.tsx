@@ -66,11 +66,11 @@ const sections = [
 ];
 
 export default function PrivacyPage() {
-  return (
-    <div className="min-h-screen bg-[#fafafa] text-[#111112]">
-      <LandingNavigation forceLight />
-
-      <main className="mx-auto w-full max-w-[1100px] px-5 py-10 pt-24 sm:px-8 sm:py-12">
+   return (
+     <div className="min-h-screen bg-[#fafafa] text-[#111112]">
+       <LandingNavigation forceLight />
+ 
+       <main className="mx-auto w-full max-w-[1100px] px-5 py-10 pt-8 sm:px-8 sm:py-12">
         <div className="rounded-xl border border-black/10 bg-white p-6 sm:p-10">
           <p className="text-[11px] font-semibold tracking-[0.14em] text-[#9e1422]">LEGAL</p>
           <h1 className="mt-2 text-[44px] font-semibold leading-[1.02] tracking-[-0.03em] text-black sm:text-[58px]">
