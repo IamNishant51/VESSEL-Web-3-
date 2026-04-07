@@ -31,9 +31,9 @@ const API_PATHS = ["/api/health", "/api/agents/tools"];
 
 // Allowed origins for CORS
 const ALLOWED_ORIGINS = [
-  process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+  process.env.NEXT_PUBLIC_APP_URL,
   "https://vessel-engine.vercel.app",
-];
+].filter(Boolean); // Remove falsy values
 
 export function middleware(request: NextRequest) {
   const { pathname, origin } = request.nextUrl;

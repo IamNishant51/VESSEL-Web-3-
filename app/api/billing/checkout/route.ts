@@ -31,7 +31,10 @@ export async function POST(request: Request) {
       validated.walletAddress
     );
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+    if (!baseUrl) {
+        throw new Error("NEXT_PUBLIC_BASE_URL is not configured");
+    }
     const session = await createCheckoutSession(
       customer.id,
       validated.tier as SubscriptionTier,
