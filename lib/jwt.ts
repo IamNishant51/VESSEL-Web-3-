@@ -8,15 +8,17 @@ interface JwtPayload {
   exp?: number;
 }
 
-const JWT_SECRET = process.env.JWT_SECRET;
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
+const JWT_SECRET_FALLBACK = "your-super-secret-jwt-key-change-in-production";
+const JWT_REFRESH_SECRET_FALLBACK = "your-super-secret-refresh-key-change-in-production";
 
-if (!JWT_SECRET || JWT_SECRET === "your-super-secret-jwt-key-change-in-production") {
-  throw new Error("JWT_SECRET environment variable is required and must be changed from default in production");
-}
+function getJwtSecret(name: "JWT_SECRET" | "JWT_REFRESH_SECRET", fallback: string): string {
+  const value = process.env[name];
 
-if (!JWT_REFRESH_SECRET || JWT_REFRESH_SECRET === "your-super-secret-refresh-key-change-in-production") {
-  throw new Error("JWT_REFRESH_SECRET environment variable is required and must be changed from default in production");
+  if (!value || value === fallback) {
+    throw new Error(`${name} environment variable is required and must be changed from default in production`);
+  }
+
+  return value;
 }
 
 const JWT_EXPIRES_IN = "7d"; // Token expiration time
@@ -26,24 +28,26 @@ const JWT_REFRESH_EXPIRES_IN = "30d"; // Refresh token expiration time
  * Generate a JWT token for a user
  */
 export function generateToken(user: IUserDoc): string {
+  const jwtSecret = getJwtSecret("JWT_SECRET", JWT_SECRET_FALLBACK);
   const payload: JwtPayload = {
     userId: user._id.toString(),
     walletAddress: user.walletAddress,
   };
 
-  return jwt.sign(payload, JWT_SECRET!, { expiresIn: JWT_EXPIRES_IN });
+  return jwt.sign(payload, jwtSecret, { expiresIn: JWT_EXPIRES_IN });
 }
 
 /**
  * Generate a refresh token for a user
  */
 export function generateRefreshToken(user: IUserDoc): string {
+  const jwtRefreshSecret = getJwtSecret("JWT_REFRESH_SECRET", JWT_REFRESH_SECRET_FALLBACK);
   const payload: JwtPayload = {
     userId: user._id.toString(),
     walletAddress: user.walletAddress,
   };
 
-  return jwt.sign(payload, JWT_REFRESH_SECRET!, { expiresIn: JWT_REFRESH_EXPIRES_IN });
+  return jwt.sign(payload, jwtRefreshSecret, { expiresIn: JWT_REFRESH_EXPIRES_IN });
 }
 
 /**
@@ -51,7 +55,7 @@ export function generateRefreshToken(user: IUserDoc): string {
  */
 export function verifyToken(token: string): JwtPayload | null {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET!);
+    const decoded = jwt.verify(token, getJwtSecret("JWT_SECRET", JWT_SECRET_FALLBACK));
     return decoded as unknown as JwtPayload;
   } catch (error) {
     return null;
@@ -63,7 +67,7 @@ export function verifyToken(token: string): JwtPayload | null {
  */
 export function verifyRefreshToken(token: string): JwtPayload | null {
   try {
-    const decoded = jwt.verify(token, JWT_REFRESH_SECRET!);
+    const decoded = jwt.verify(token, getJwtSecret("JWT_REFRESH_SECRET", JWT_REFRESH_SECRET_FALLBACK));
     return decoded as unknown as JwtPayload;
   } catch (error) {
     return null;
