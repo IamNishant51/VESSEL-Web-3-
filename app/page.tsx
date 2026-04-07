@@ -372,21 +372,21 @@ export default function Home() {
              transition={{ duration: 0.55, ease: "easeOut" }}
              className="relative bg-gradient-to-b from-[#d7d7da] via-[#d1d1d4] to-[#1a1a1d] pt-6 text-black"
            >
-          <div className="mx-auto max-w-[1320px] px-4 pb-6 pt-7 sm:px-6 lg:px-10">
-            <div className="relative mt-4 grid min-h-[560px] grid-cols-1 items-center gap-4 md:grid-cols-[110px_1fr_620px]">
+           <div className="mx-auto max-w-[82.5rem] px-4 pb-2 pt-14 sm:pb-6 sm:pt-14 lg:px-10">
+             <div className="relative mt-4 grid grid-cols-1 items-center gap-2 sm:gap-4 md:grid-cols-[6.875rem_1fr_38.75rem]">
               <motion.div
                 className="hidden h-full items-center justify-center lg:flex"
                 initial={{ opacity: 0, x: -20 }}
                 animate={imageReveal ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
                 transition={{ duration: 0.4, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
               >
-                <span
-                  ref={sideTitleRef}
-                  className="rotate-180 text-[132px] font-black leading-none tracking-tight lg:text-[150px]"
-                  style={{ writingMode: "vertical-rl" }}
-                >
-                  VESSEL
-                </span>
+                 <span
+                   ref={sideTitleRef}
+                   className="rotate-180 text-[8.25rem] font-black leading-none tracking-tight lg:text-[9.375rem]"
+                   style={{ writingMode: "vertical-rl" }}
+                 >
+                   VESSEL
+                 </span>
               </motion.div>
 
               <div className="z-10 mx-auto w-full max-w-[520px] pt-6 md:ml-auto md:translate-x-20 md:pt-0 lg:translate-x-28">
@@ -495,32 +495,32 @@ export default function Home() {
                 </motion.div>
               </div>
 
-              <div className="pointer-events-none relative mx-auto w-full max-w-[780px] translate-y-10 self-end md:mx-0 md:ml-auto md:translate-y-16 lg:max-w-[860px]">
-                <motion.div
-                  ref={heroCircleRef}
-                  initial={false}
-                  animate={imageReveal ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 1 }}
-                  transition={{ duration: 0.3, ease: "easeOut" }}
-                  className="absolute left-1/2 top-[36%] z-0 aspect-square w-[84%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#ff2338]"
-                />
-                <motion.div
-                  initial={false}
-                  animate={
-                    imageReveal
-                      ? { opacity: 1, clipPath: "circle(150% at 50% 50%)" }
-                      : { opacity: 1, clipPath: "circle(0% at 50% 50%)" }
-                  }
-                  transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                  className="relative z-10 h-full w-full"
-                >
-                  <SkeletonImage
-                    src="https://ik.imagekit.io/9pfz6g8ri/VESSSEL/women-hero-section-main-asset.png"
-                    alt="Vessel hero"
-                    fallbackSrc="/women-hero-section-main-asset.png"
-                    className="h-full w-full object-contain"
+               <div className="pointer-events-none relative mx-auto w-[85%] sm:w-full max-w-[17.5rem] sm:max-w-[48.75rem] translate-y-2 sm:translate-y-10 self-end md:mx-0 md:ml-auto md:translate-y-16 lg:max-w-[53.75rem]">
+                  <motion.div
+                    ref={heroCircleRef}
+                    initial={false}
+                    animate={imageReveal ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 1 }}
+                    transition={{ duration: 0.3, ease: "easeOut" }}
+                    className="absolute left-1/2 top-[36%] z-0 aspect-square w-[84%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#ff2338]"
                   />
-                </motion.div>
-              </div>
+                  <motion.div
+                    initial={false}
+                    animate={
+                      imageReveal
+                        ? { opacity: 1, clipPath: "circle(150% at 50% 50%)" }
+                        : { opacity: 1, clipPath: "circle(0% at 50% 50%)" }
+                    }
+                    transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                    className="relative z-10 h-full w-full"
+                  >
+                    <SkeletonImage
+                      src="https://ik.imagekit.io/9pfz6g8ri/VESSSEL/women-hero-section-main-asset.png"
+                      alt="Vessel hero"
+                      fallbackSrc="/women-hero-section-main-asset.png"
+                      className="h-full w-full object-contain"
+                    />
+                  </motion.div>
+                </div>
             </div>
           </div>
         </motion.section>
