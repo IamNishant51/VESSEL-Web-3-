@@ -42,7 +42,7 @@ export const ArtworkImage = memo(function ArtworkImage({ artworkUrl, alt }: { ar
           setCurrentSrc((previous) => (previous === fallbackSrc ? previous : fallbackSrc));
           setIsLoaded(true);
         }}
-        className={`absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-500 ${isLoaded ? "opacity-100" : "opacity-0"}`}
+        className={`absolute inset-0 h-full w-full object-contain object-center transition-opacity duration-500 scale-[1.03] ${isLoaded ? "opacity-100" : "opacity-0"}`}
       />
     </div>
   );
