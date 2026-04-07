@@ -196,10 +196,14 @@ export function getAgentVisualLabel(input: VisualInput): string {
 /**
  * Get artwork URL for an agent - returns premium cyberpunk cNFT SVG
  * Same agent always gets the same avatar (deterministic based on agent ID)
+ * Includes version parameter for cache busting when generation code changes
  */
 export function getAgentArtworkUrl(input: VisualInput, size = 1024): string {
   void size;
-  return getCyberpunkCnftAvatarUrl(input.id || input.mintAddress || input.name || "0");
+  const baseUrl = getCyberpunkCnftAvatarUrl(input.id || input.mintAddress || input.name || "0");
+  // Add version parameter for cache busting - update this when changing avatar generation
+  const version = "v2";
+  return `${baseUrl}?v=${version}`;
 }
 
 /**

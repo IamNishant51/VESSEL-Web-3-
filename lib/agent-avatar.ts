@@ -311,6 +311,9 @@ function drawTexturesAndUI(rng: RNG, p: Palette, archetype: string): string {
   `;
 }
 
+// Version for cache busting - increment when making changes to avatar generation
+const AVATAR_VERSION = "2";
+
 // ─── Main Export ─────────────────────────────────────────────────────────────
 
 export function getCyberpunkAgentSVG(agentId: string): string {

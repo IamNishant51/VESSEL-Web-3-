@@ -71,41 +71,51 @@ const nextConfig: NextConfig = {
 
     return config;
   },
-  async headers() {
-    const baseHeaders = [
-      {
-        source: "/:path*",
-        headers: [
-          { key: "X-Content-Type-Options", value: "nosniff" },
-          { key: "X-Frame-Options", value: "DENY" },
-          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
-          { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
-          { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
-        ],
-      },
-    ];
+   async headers() {
+     const baseHeaders = [
+       {
+         source: "/:path*",
+         headers: [
+           { key: "X-Content-Type-Options", value: "nosniff" },
+           { key: "X-Frame-Options", value: "DENY" },
+           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+           { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+           { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
+         ],
+       },
+     ];
 
-    if (process.env.NODE_ENV !== "production") {
-      return baseHeaders;
-    }
+     // Add cache-busting headers for HTML pages in production to prevent stale content
+     const isProduction = process.env.NODE_ENV === "production";
+     
+     if (!isProduction) {
+       return baseHeaders;
+     }
 
-    return [
-      ...baseHeaders,
-      {
-        source: "/_next/static/:path*",
-        headers: [
-          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
-        ],
-      },
-      {
-        source: "/:path*.(png|jpg|jpeg|webp|avif|svg|ico|woff|woff2)",
-        headers: [
-          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
-        ],
-      },
-    ];
-  },
+     return [
+       ...baseHeaders,
+       {
+         // Cache HTML pages for a short time to allow for updates
+         source: "/:path*",
+         headers: [
+           { key: "Cache-Control", value: "public, max-age=600, must-revalidate" }, // 10 minutes
+         ],
+       },
+       {
+         source: "/_next/static/:path*",
+         headers: [
+           { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+         ],
+       },
+       {
+         source: "/:path*.(png|jpg|jpeg|webp|avif|svg|ico|woff|woff2)",
+         headers: [
+           { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+         ],
+       },
+     ];
+   },
   async rewrites() {
     return [];
   },

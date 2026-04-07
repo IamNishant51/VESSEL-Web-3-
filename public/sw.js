@@ -1,6 +1,8 @@
-const CACHE_NAME = "vessel-v1";
-const RUNTIME_CACHE = "vessel-runtime";
-const API_CACHE = "vessel-api";
+// Update this version when making changes that require cache invalidation
+const CACHE_VERSION = "v2";
+const CACHE_NAME = `vessel-${CACHE_VERSION}`;
+const RUNTIME_CACHE = `vessel-runtime-${CACHE_VERSION}`;
+const API_CACHE = `vessel-api-${CACHE_VERSION}`;
 
 // Cache strategies
 const CACHE_FIRST_URLS = ["/assets/", "/_next/static/", "/_next/image"];
@@ -61,7 +63,7 @@ self.addEventListener("install", (event) => {
   );
 });
 
-// Activate event - clean old caches
+// Activate event - clean old caches when version changes
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     (async () => {
@@ -77,12 +79,46 @@ self.addEventListener("activate", (event) => {
             )
             .map((name) => caches.delete(name))
         );
+        console.log("[SW] Old caches cleared");
       } catch (error) {
         console.warn("[SW] Activate error:", error.message);
       }
       self.clients.claim();
     })()
   );
+});
+
+// Add a message handler to force cache reload
+self.addEventListener("message", (event) => {
+  if (!event.data) return;
+
+  if (event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
+
+  if (event.data.type === "CLEAR_CACHE") {
+    event.waitUntil(
+      (async () => {
+        try {
+          const names = await caches.keys();
+          await Promise.all(names.map((name) => caches.delete(name)));
+          console.log("[SW] All caches cleared via message");
+        } catch (error) {
+          console.warn("[SW] Clear cache error:", error.message);
+        }
+      })()
+    );
+  }
+
+  // Force reload when receiving update message
+  if (event.data.type === "UPDATE_AVAILABLE") {
+    self.skipWaiting();
+    self.clients.matchAll().then(clients => {
+      clients.forEach(client => {
+        client.postMessage({ type: "FORCE_PAGE_RELOAD" });
+      });
+    });
+  }
 });
 
 // Fetch event with proper Response handling
