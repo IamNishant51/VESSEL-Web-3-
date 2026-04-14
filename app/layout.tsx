@@ -10,8 +10,55 @@ import "./globals.css";
 import "@solana/wallet-adapter-react-ui/styles.css";
 
 export const metadata: Metadata = {
-  title: "Vessel",
-  description: "Give Your Ideas a Soul.",
+  metadataBase: new URL("https://vessel-agent.vercel.app"),
+  title: {
+    default: "Vessel - AI Agents on Solana",
+    template: "%s | Vessel",
+  },
+  description: "Create, deploy, and trade AI agents as compressed NFTs on Solana. Powered by Groq LLMs.",
+  keywords: ["AI", "agents", "Solana", "NFT", "Web3", "LLM", "DeAI", "compressed NFT", "cNFT"],
+  authors: [{ name: "Vessel", url: "https://vessel-agent.vercel.app" }],
+  creator: "Vessel",
+  publisher: "Vessel",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://vessel-agent.vercel.app",
+    siteName: "Vessel",
+    title: "Vessel - AI Agents on Solana",
+    description: "Create, deploy, and trade AI agents as compressed NFTs on Solana. Powered by Groq LLMs.",
+    images: [
+      {
+        url: "/assets/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Vessel - AI Agents Marketplace",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Vessel - AI Agents on Solana",
+    description: "Create, deploy, and trade AI agents as compressed NFTs on Solana.",
+    creator: "@vessel_ai",
+    images: ["/assets/og-image.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   icons: {
     icon: [
       { url: "/assets/favicon-16x16.png", sizes: "16x16", type: "image/png" },

@@ -72,6 +72,8 @@ export default function Home() {
   const { listings } = useMarketplace();
   const [isForgeCtaLoading, setIsForgeCtaLoading] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
+  const [totalMarketplaceCount, setTotalMarketplaceCount] = useState(0);
+  const [isLoadingMarketplaceCount, setIsLoadingMarketplaceCount] = useState(true);
   const [loaderStage, setLoaderStage] = useState<"intro" | "circle-travel" | "circle-arrived" | "text-travel" | "text-arrived" | "glow-pulse" | "fade-all" | "reveal" | "done">("intro");
   const [loaderTargets, setLoaderTargets] = useState({
     textX: 0,
@@ -186,6 +188,41 @@ export default function Home() {
       clearTimeout(revealTimer);
       clearTimeout(doneTimer);
     };
+  }, []);
+
+  // Fetch real marketplace count from database
+  useEffect(() => {
+    async function fetchMarketplaceCount() {
+      try {
+        const response = await fetch("/api/db", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "fetch-listings",
+            includeAll: true,
+          }),
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          // The response is paginated, check the structure
+          if (data.listings && Array.isArray(data.listings)) {
+            setTotalMarketplaceCount(data.listings.length);
+          } else if (typeof data.total === "number") {
+            setTotalMarketplaceCount(data.total);
+          }
+        }
+      } catch (error) {
+        console.warn("[Landing] Failed to fetch marketplace count:", error);
+      } finally {
+        setIsLoadingMarketplaceCount(false);
+      }
+    }
+
+    fetchMarketplaceCount();
+    // Refresh every 60 seconds
+    const interval = setInterval(fetchMarketplaceCount, 60000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -445,7 +482,13 @@ export default function Home() {
                   </div>
                   <div className="h-8 w-px bg-black/10" />
                   <div className="text-center sm:text-left">
-                    <p className="text-2xl font-bold text-black">{totalListings > 0 ? totalListings : '1,420+'}</p>
+                    <p className="text-2xl font-bold text-black">
+                      {isLoadingMarketplaceCount ? (
+                        <span className="animate-pulse">...</span>
+                      ) : (
+                        totalMarketplaceCount > 0 ? totalMarketplaceCount.toLocaleString() : '0'
+                      )}
+                    </p>
                     <p className="text-[10px] text-black/50 uppercase tracking-wider">Available</p>
                   </div>
                 </motion.div>

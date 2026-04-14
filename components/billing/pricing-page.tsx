@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { toast } from "sonner";
 
@@ -172,11 +172,16 @@ export function PricingPage() {
                           : "bg-card border border-border text-foreground hover:bg-accent"
                     } ${loading === key ? "opacity-50 cursor-wait" : ""}`}
                   >
-                    {loading === key
-                      ? "Processing..."
-                      : key === "free"
-                        ? "Current Plan"
-                        : "Upgrade"}
+                    {loading === key ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Processing...
+                      </span>
+                    ) : key === "free" ? (
+                      "Current Plan"
+                    ) : (
+                      "Upgrade"
+                    )}
                   </button>
 
                   {/* Features */}

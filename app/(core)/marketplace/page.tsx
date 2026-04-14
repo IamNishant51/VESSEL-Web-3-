@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Filter, Search } from "lucide-react";
+import { Filter, Search, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useWallet } from "@solana/wallet-adapter-react";
 
@@ -59,8 +59,74 @@ export default function MarketplacePage() {
   const [query, setQuery] = useState("");
   const [descendingPrice, setDescendingPrice] = useState(true);
   const [visibleCount, setVisibleCount] = useState(8);
+  const [isFetchingListings, setIsFetchingListings] = useState(false);
+  const [pendingAction, setPendingAction] = useState<string | null>(null);
 
   const currentWallet = publicKey?.toBase58();
+
+  // Fetch listings from database on mount and when wallet changes
+  useEffect(() => {
+    async function fetchMarketplaceListings() {
+      setIsFetchingListings(true);
+      try {
+        const response = await fetch("/api/db", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "fetch-listings",
+            includeAll: true,
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const dbListings = (data.listings || []) as Array<{
+            id: string;
+            price: number;
+            priceCurrency?: string;
+            isRental?: boolean;
+            rentalDays?: number;
+            seller?: string;
+            owner?: string;
+          }>;
+          
+          // Merge DB listings with local state
+          const currentListings = listings;
+          
+          // Add any listings from DB that aren't in local state
+          const newListings = dbListings.filter((dbListing) => {
+            return !currentListings.some((local) => local.id === dbListing.id);
+          });
+          
+          if (newListings.length > 0) {
+            // Update the store with new listings from DB
+            const { addListing } = useVesselStore.getState();
+            newListings.forEach((listing) => {
+              const agentWithSeller: Agent & { seller: string } = {
+                id: listing.id,
+                name: listing.seller || listing.owner || "Unknown",
+                seller: listing.seller || listing.owner || "",
+                owner: listing.owner || listing.seller || "",
+                price: listing.price,
+                priceCurrency: listing.priceCurrency as "SOL" | "USDC",
+                isRental: listing.isRental,
+                listed: true,
+              } as Agent & { seller: string };
+              addListing(agentWithSeller, listing.price, listing.priceCurrency as "SOL" | "USDC" || "SOL", listing.isRental, listing.rentalDays);
+            });
+          }
+        }
+      } catch (error) {
+        console.warn("[Marketplace] Failed to fetch listings from DB:", error);
+      } finally {
+        setIsFetchingListings(false);
+      }
+    }
+
+    if (hasHydrated) {
+      fetchMarketplaceListings();
+    }
+  }, [hasHydrated, listings]);
 
   const cards = useMemo<SoulCard[]>(() => {
     return listings.map((listing: Agent & { seller: string; listed: true }) => ({
@@ -425,16 +491,33 @@ export default function MarketplacePage() {
                       {isTradable && !isOwnListing ? (
                         <>
                           <button
-                            onClick={() => router.push(`/marketplace/${card.id}?action=buy`)}
-                            className="btn-press btn-cta min-h-[44px] cursor-pointer rounded-[4px] bg-[#171819] text-[12px] font-semibold text-white hover:bg-black"
+                            onClick={() => {
+                              setPendingAction(`${card.id}-buy`);
+                              router.push(`/marketplace/${card.id}?action=buy`);
+                            }}
+                            disabled={pendingAction === `${card.id}-buy`}
+                            className="btn-press btn-cta min-h-[44px] cursor-pointer rounded-[4px] bg-[#171819] text-[12px] font-semibold text-white hover:bg-black disabled:opacity-60"
                           >
-                            Buy Now
+                            {pendingAction === `${card.id}-buy` ? (
+                              <span className="flex items-center justify-center gap-2">
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Loading...
+                              </span>
+                            ) : "Buy Now"}
                           </button>
                           <button
-                            onClick={() => router.push(`/marketplace/${card.id}?action=rent`)}
-                            className="btn-press btn-secondary min-h-[44px] cursor-pointer rounded-[4px] border border-black/10 bg-[#f1f2f3] text-[12px] font-semibold text-black/80 hover:bg-black/5"
+                            onClick={() => {
+                              setPendingAction(`${card.id}-rent`);
+                              router.push(`/marketplace/${card.id}?action=rent`);
+                            }}
+                            disabled={pendingAction === `${card.id}-rent`}
+                            className="btn-press btn-secondary min-h-[44px] cursor-pointer rounded-[4px] border border-black/10 bg-[#f1f2f3] text-[12px] font-semibold text-black/80 hover:bg-black/5 disabled:opacity-60"
                           >
-                            Rent
+                            {pendingAction === `${card.id}-rent` ? (
+                              <span className="flex items-center justify-center gap-2">
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              </span>
+                            ) : "Rent"}
                           </button>
                         </>
                       ) : isOwnListing ? (
@@ -446,10 +529,19 @@ export default function MarketplacePage() {
                             Open Agent
                           </button>
                           <button
-                            onClick={() => removeListing(card.id)}
-                            className="btn-press btn-secondary min-h-[44px] cursor-pointer rounded-[4px] border border-black/10 bg-[#f1f2f3] text-[12px] font-semibold text-black/80 hover:bg-black/5"
+                            onClick={() => {
+                              setPendingAction(`${card.id}-unlist`);
+                              removeListing(card.id);
+                              setTimeout(() => setPendingAction(null), 1000);
+                            }}
+                            disabled={pendingAction === `${card.id}-unlist`}
+                            className="btn-press btn-secondary min-h-[44px] cursor-pointer rounded-[4px] border border-black/10 bg-[#f1f2f3] text-[12px] font-semibold text-black/80 hover:bg-black/5 disabled:opacity-60"
                           >
-                            Unlist
+                            {pendingAction === `${card.id}-unlist` ? (
+                              <span className="flex items-center justify-center gap-2">
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              </span>
+                            ) : "Unlist"}
                           </button>
                         </>
                       ) : (
